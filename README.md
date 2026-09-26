@@ -4,8 +4,8 @@
 
 | Módulo | Responsable |
 |---|---|
-| **Frontend React/Next.js (este repo)** | Pablo Medina (tú) |
-| **Backend Laravel 12 REST API** | Pablo Medina (tú) — estructura base lista |
+| **Frontend React/Next.js (este repo)** | Pablo Medina  |
+| **Backend Laravel 12 REST API** | Pablo Medina  — estructura base lista |
 | **Microservicio Quarkus (IO / analítica)** | Compañero asignado |
 | **Base de Datos PostgreSQL** | Compartido / DBA |
 

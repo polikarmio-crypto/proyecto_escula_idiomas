@@ -56,7 +56,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   // Estados de autenticación
   const { data: session, status } = useSession();
-  const isAuthenticated = status === 'authenticated';
+  const [demoAuth, setDemoAuth] = useState(true);
+  const isAuthenticated = status === 'authenticated' || demoAuth;
   const isAuthenticating = status === 'loading';
   const [authStep, setAuthStep] = useState<string>('');
 
@@ -156,7 +157,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   const handleLogout = () => {
-    signOut();
+    setDemoAuth(false);
+    signOut({ redirect: false });
   };
 
   return (
@@ -377,7 +379,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             ) : (
               <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-                <div style={{ padding: '0.5rem 0' }}>
+                <div style={{ padding: '0.25rem 0', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                   <button type="submit" className="btn" style={{ width: '100%', padding: '0.75rem', background: '#ffffff', color: '#3c4043', border: '1px solid #dadce0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', fontWeight: 500, boxShadow: '0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15)', borderRadius: '4px' }}>
                     <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
                       <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -387,6 +389,31 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                       <path fill="none" d="M0 0h48v48H0z"/>
                     </svg>
                     <span>Iniciar sesión con Google</span>
+                  </button>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.2rem 0' }}>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
+                    <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>O acceso de inspección</span>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setDemoAuth(true)}
+                    className="btn btn-primary"
+                    style={{
+                      width: '100%',
+                      padding: '0.7rem 1rem',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      background: 'var(--military-green-primary)',
+                      border: '1px solid var(--border-accent)',
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                    }}
+                  >
+                    <Shield size={16} style={{ color: 'var(--military-gold-primary)' }} />
+                    <span>Acceso Directo (Modo Demostración Oficial)</span>
                   </button>
                 </div>
 
@@ -565,10 +592,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   </div>
                   <div>
                     <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.1 }}>
-                      {session?.user?.name || 'Oficial Institucional'}
+                      {session?.user?.name || (demoAuth ? 'Cap. Pablo Medina' : 'Oficial Institucional')}
                     </p>
                     <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', lineHeight: 1.1 }}>
-                      {session?.user?.email || 'institucional@ejercito.mil.bo'}
+                      {session?.user?.email || (demoAuth ? 'p.medina@ejercito.mil.bo' : 'institucional@ejercito.mil.bo')}
                     </p>
                   </div>
                 </div>

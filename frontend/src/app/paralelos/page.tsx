@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Layers,
   Plus,
@@ -110,6 +110,7 @@ const PARALELOS_INICIALES: Paralelo[] = [
 
 export default function ParalelosPage() {
   const [paralelos, setParalelos] = useState<Paralelo[]>(PARALELOS_INICIALES);
+  const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filtroIdioma, setFiltroIdioma] = useState<string>('TODOS');
   const [filtroTurno, setFiltroTurno] = useState<string>('TODOS');
@@ -134,6 +135,46 @@ export default function ParalelosPage() {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(null), 3500);
   };
+
+  const cargarParalelos = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/v1/paralelos');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const mapped: Paralelo[] = data.map((p: any) => {
+          let turno: 'MAÑANA' | 'TARDE' | 'NOCHE' = 'MAÑANA';
+          const horaInicio = p.horario ? p.horario.split(' - ')[0] : '08:00';
+          const horaNum = parseInt(horaInicio.split(':')[0], 10) || 8;
+          if (horaNum >= 18) turno = 'NOCHE';
+          else if (horaNum >= 12) turno = 'TARDE';
+
+          return {
+            id: p.codigo_paralelo || `PAR-${p.id_paralelo}`,
+            idioma: p.idioma || 'Inglés Militar',
+            nivel: p.nivel || 'Básico A1',
+            docente: p.docente_actual || 'Docente Asignado',
+            horario: p.horario || '08:00 - 09:30',
+            dias: 'Lun-Vie',
+            aula: p.aula || 'Aula Central CEDMIL',
+            inscritos: p.inscritos || 0,
+            capacidad: p.capacidad_maxima || 30,
+            turno,
+          };
+        });
+        setParalelos(mapped);
+      }
+    } catch (err) {
+      console.warn('Cargando paralelos desde cache local / fallback:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarParalelos();
+  }, []);
 
   const paralelosFiltrados = useMemo(() => {
     return paralelos.filter((p) => {

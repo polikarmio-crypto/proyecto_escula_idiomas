@@ -27,7 +27,148 @@ import {
   ChevronRight,
   CheckCircle,
   FileText,
+  KeyRound,
+  ShieldAlert,
+  UserCheck,
+  LineChart
 } from 'lucide-react';
+
+export type RolUsuario =
+  | 'ESTUDIANTE'
+  | 'DOCENTE'
+  | 'SECRETARIA'
+  | 'CAJERO'
+  | 'ALMACENERO'
+  | 'JEFE_ACADEMICO'
+  | 'ADMIN';
+
+export interface InfoRol {
+  id: RolUsuario;
+  titulo: string;
+  badge: string;
+  nombrePorDefecto: string;
+  emailPorDefecto: string;
+  pinSeguridad: string;
+  palabraClave: string;
+  descripcion: string;
+  color: string;
+  rutasPermitidas: string[];
+}
+
+export const ROLES_CONFIG: Record<RolUsuario, InfoRol> = {
+  ESTUDIANTE: {
+    id: 'ESTUDIANTE',
+    titulo: 'Estudiante / Alumno Regular',
+    badge: 'Alumno Militar / Civil',
+    nombrePorDefecto: 'Cad. Carlos Fernando Mamani',
+    emailPorDefecto: 'c.mamani@ejercito.mil.bo',
+    pinSeguridad: '', // Acceso libre sin PIN
+    palabraClave: '',
+    descripcion: 'Consulta de calificaciones (fórmula 80/10/10), avance libro a libro y trámites en caja.',
+    color: '#3b82f6',
+    rutasPermitidas: ['/', '/calificaciones', '/inscripciones', '/cajas'],
+  },
+  DOCENTE: {
+    id: 'DOCENTE',
+    titulo: 'Docente / Instructor Militar',
+    badge: 'Catedrático de Idiomas',
+    nombrePorDefecto: 'Cap. Fernando Ríos Torrico',
+    emailPorDefecto: 'f.rios@ejercito.mil.bo',
+    pinSeguridad: '1010',
+    palabraClave: 'DOCENTE',
+    descripcion: 'Centralizador de notas, registro de evaluaciones y ciclo de rotación obligatoria de 15 días.',
+    color: '#10b981',
+    rutasPermitidas: ['/', '/docentes', '/calificaciones', '/paralelos', '/metodos-numericos'],
+  },
+  SECRETARIA: {
+    id: 'SECRETARIA',
+    titulo: 'Secretaría Académica',
+    badge: 'Registro y Matrículas',
+    nombrePorDefecto: 'Sgto. 1ro. Patricia Morales Guzmán',
+    emailPorDefecto: 'secretaria@ejercito.mil.bo',
+    pinSeguridad: '2020',
+    palabraClave: 'SECRETARIA',
+    descripcion: 'Gestión de estudiantes militares y civiles, apertura de paralelos y control de cupos.',
+    color: '#8b5cf6',
+    rutasPermitidas: ['/', '/estudiantes', '/paralelos', '/inscripciones'],
+  },
+  CAJERO: {
+    id: 'CAJERO',
+    titulo: 'Cajero / Ventanillas FIFO',
+    badge: 'Caja y Finanzas EIE',
+    nombrePorDefecto: 'Sof. My. David Choquehuanca',
+    emailPorDefecto: 'cajero@ejercito.mil.bo',
+    pinSeguridad: '3030',
+    palabraClave: 'CAJERO',
+    descripcion: 'Emisión y llamada de fichas FIFO en ventanilla, cobro de matrículas y métricas M/M/c.',
+    color: '#f59e0b',
+    rutasPermitidas: ['/', '/cajas'],
+  },
+  ALMACENERO: {
+    id: 'ALMACENERO',
+    titulo: 'Almacenero / Control ROP',
+    badge: 'Logística y Textos',
+    nombrePorDefecto: 'Sgto. 2do. Marcelo Justiniano',
+    emailPorDefecto: 'almacen@ejercito.mil.bo',
+    pinSeguridad: '4040',
+    palabraClave: 'ALMACEN',
+    descripcion: 'Inventario físico de libros, control de punto de reorden (ROP) y pedidos de reposición.',
+    color: '#ec4899',
+    rutasPermitidas: ['/', '/almacen', '/metodos-numericos'],
+  },
+  JEFE_ACADEMICO: {
+    id: 'JEFE_ACADEMICO',
+    titulo: 'Jefe Académico (CEDMIL)',
+    badge: 'Jefatura de Estudios',
+    nombrePorDefecto: 'Tcnl. DEM. Hugo Banzer Rivera',
+    emailPorDefecto: 'jefe.academico@ejercito.mil.bo',
+    pinSeguridad: '5050',
+    palabraClave: 'JEFE',
+    descripcion: 'Supervisión de planes de estudio, aprobación de relevos docentes y fiscalización militar.',
+    color: '#d97706',
+    rutasPermitidas: ['/', '/estudiantes', '/docentes', '/paralelos', '/inscripciones', '/calificaciones', '/cajas', '/almacen', '/metodos-numericos'],
+  },
+  ADMIN: {
+    id: 'ADMIN',
+    titulo: 'Administrador del Sistema',
+    badge: 'Comando General / Admin',
+    nombrePorDefecto: 'Cnl. DAEN. Roberto Méndez Silva',
+    emailPorDefecto: 'admin@ejercito.mil.bo',
+    pinSeguridad: '9999',
+    palabraClave: 'ADMIN',
+    descripcion: 'Control absoluto del sistema, catálogo institucional, auditoría 5FN y configuración global.',
+    color: '#eab308',
+    rutasPermitidas: ['/', '/estudiantes', '/docentes', '/paralelos', '/inscripciones', '/calificaciones', '/cajas', '/almacen', '/metodos-numericos'],
+  },
+};
+
+/* ── MAPEO DE PREFIJO DE EMAIL INSTITUCIONAL → ROL ── */
+const EMAIL_PREFIX_TO_ROLE: Record<string, RolUsuario> = {
+  'admin': 'ADMIN',
+  'jef':   'JEFE_ACADEMICO',
+  'doc':   'DOCENTE',
+  'sec':   'SECRETARIA',
+  'caj':   'CAJERO',
+  'alm':   'ALMACENERO',
+  'est':   'ESTUDIANTE',
+};
+
+/** Detecta el rol a partir del prefijo del email institucional (ej. admin., admin@, est., sec., etc.) */
+function detectarRolPorEmail(email: string): RolUsuario | null {
+  const emailLower = email.toLowerCase().trim();
+  for (const [prefix, rol] of Object.entries(EMAIL_PREFIX_TO_ROLE)) {
+    if (
+      emailLower.startsWith(`${prefix}.`) ||
+      emailLower.startsWith(`${prefix}@`) ||
+      emailLower.startsWith(`${prefix}_`) ||
+      emailLower.startsWith(`${prefix}-`) ||
+      emailLower.startsWith(prefix)
+    ) {
+      return rol;
+    }
+  }
+  return null;
+}
 
 interface NavItem {
   href: string;
@@ -36,7 +177,7 @@ interface NavItem {
   badge?: string;
 }
 
-const navItems: NavItem[] = [
+const ALL_NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/estudiantes', label: 'Estudiantes', icon: Users, badge: 'Activo' },
   { href: '/docentes', label: 'Docentes', icon: GraduationCap },
@@ -45,6 +186,7 @@ const navItems: NavItem[] = [
   { href: '/calificaciones', label: 'Calificaciones', icon: Award },
   { href: '/cajas', label: 'Cajas / Pagos', icon: Landmark },
   { href: '/almacen', label: 'Almacén Libros', icon: Package },
+  { href: '/metodos-numericos', label: 'Métodos Numéricos & IO', icon: LineChart, badge: 'Quarkus' },
 ];
 
 export type ThemeMode = 'dark' | 'light' | 'high-contrast';
@@ -56,10 +198,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   // Estados de autenticación
   const { data: session, status } = useSession();
-  const [demoAuth, setDemoAuth] = useState(true);
+  const [demoAuth, setDemoAuth] = useState(false);
   const isAuthenticated = status === 'authenticated' || demoAuth;
   const isAuthenticating = status === 'loading';
   const [authStep, setAuthStep] = useState<string>('');
+  const [loginEmail, setLoginEmail] = useState<string>(''); // email ingresado en demo
+  const [loginEmailError, setLoginEmailError] = useState<string | null>(null);
+
+  // ROL ACTIVO EN EL SISTEMA (Por defecto: Estudiante para no asumir Admin directamente)
+  const [rolActivo, setRolActivo] = useState<RolUsuario>('ESTUDIANTE');
+  const esAdmin = rolActivo === 'ADMIN';
+  const rolConfig = ROLES_CONFIG[rolActivo];
+
+  // Modal para cambio de rol institucional y verificación de PIN
+  const [modalCambioRol, setModalCambioRol] = useState(false);
+  const [rolObjetivo, setRolObjetivo] = useState<RolUsuario | null>(null);
+  const [pinIngresado, setPinIngresado] = useState('');
+  const [pinError, setPinError] = useState<string | null>(null);
 
   // Estados de accesibilidad
   const [theme, setTheme] = useState<ThemeMode>('dark');
@@ -69,14 +224,26 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Estado de la cortina de transición entre secciones
-  // phase: 'idle' | 'entering' | 'holding' | 'leaving'
   const [transPhase, setTransPhase] = useState<'idle' | 'entering' | 'holding' | 'leaving'>('idle');
   const [transLabel, setTransLabel] = useState<string>('');
   const [TransIcon, setTransIcon] = useState<LucideIcon | null>(null);
   const prevPathRef = useRef(pathname);
-  const expectedPathname = useRef<string | null>(null); // Referencia para evitar doble animación
+  const expectedPathname = useRef<string | null>(null);
 
-  // Manejador de navegación con cortina de transición en toda la pantalla
+  // Filtrado de items de navegación según los permisos del rol activo
+  const navItems = ALL_NAV_ITEMS.filter((item) => rolConfig.rutasPermitidas.includes(item.href));
+
+  // TEMPORIZADOR DE SEGURIDAD ABSOLUTO: La cortina de transición NUNCA puede quedarse atascada
+  useEffect(() => {
+    if (transPhase !== 'idle') {
+      const failsafe = setTimeout(() => {
+        setTransPhase('idle');
+      }, 700);
+      return () => clearTimeout(failsafe);
+    }
+  }, [transPhase]);
+
+  // Manejador de navegación con transición ágil y segura
   const handleNavClick = (e: React.MouseEvent, item: NavItem) => {
     if (pathname === item.href) {
       e.preventDefault();
@@ -84,86 +251,176 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       return;
     }
     e.preventDefault();
-    if (transPhase !== 'idle') return;
-
     setMobileMenuOpen(false);
+
     setTransLabel(item.label);
     setTransIcon(() => item.icon);
     setTransPhase('entering');
     expectedPathname.current = item.href;
 
-    // Al cubrir la pantalla, ejecutar la navegación de Next.js
-    setTimeout(() => {
-      setTransPhase('holding');
-      router.push(item.href);
-    }, 350);
-
-    // Salida de la cortina revelando la nueva pantalla
     setTimeout(() => {
       setTransPhase('leaving');
-    }, 750);
+      router.push(item.href);
+    }, 200);
 
-    // Fin de la transición
     setTimeout(() => {
       setTransPhase('idle');
-    }, 1100);
+    }, 500);
   };
 
-  // Respaldo para cambios de ruta externos (botones atrás/adelante del navegador)
+  // Manejador para transiciones cuando la ruta cambia por enlaces internos (ej: Motor Quarkus)
   useEffect(() => {
     if (prevPathRef.current === pathname) return;
     prevPathRef.current = pathname;
 
-    // Si la ruta cambió por un clic en la barra lateral, ignoramos esta transición extra
     if (expectedPathname.current === pathname) {
       expectedPathname.current = null;
       return;
     }
 
-    if (transPhase !== 'idle') return;
-
-    const match = navItems.find((n) => n.href === pathname);
+    const match = ALL_NAV_ITEMS.find((n) => n.href === pathname);
     setTransLabel(match?.label ?? 'Módulo Académico');
     setTransIcon(() => match?.icon ?? Shield);
     setTransPhase('entering');
 
-    const t1 = setTimeout(() => setTransPhase('holding'), 350);
-    const t2 = setTimeout(() => setTransPhase('leaving'), 750);
-    const t3 = setTimeout(() => setTransPhase('idle'), 1100);
+    const t1 = setTimeout(() => setTransPhase('leaving'), 200);
+    const t2 = setTimeout(() => setTransPhase('idle'), 500);
 
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
-      clearTimeout(t3);
+      setTransPhase('idle'); // Al desmontar siempre restaura a idle
     };
-  }, [pathname, transPhase]);
+  }, [pathname]);
 
-  // Formulario de login
-  // const [loginRole, setLoginRole] = useState('ADMIN'); // Ya no es necesario
-
-
-  // Efecto para sincronizar tema y tamaño de texto en el elemento <html>
+  // Sincronizar tema y accesibilidad en el elemento raíz
   useEffect(() => {
     const root = document.documentElement;
     root.setAttribute('data-theme', theme);
     root.setAttribute('data-font-size', fontSize);
   }, [theme, fontSize]);
 
-  // Manejador del flujo de autenticación con animación y transición estilizada
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setAuthStep('Redirigiendo a autenticación institucional con Google...');
     signIn('google');
   };
 
+  // Login demo con detección automática de rol por prefijo de email
+  // Cargar sesión persistente de localStorage al iniciar
+  useEffect(() => {
+    try {
+      const savedAuth = localStorage.getItem('eie_auth');
+      const savedRole = localStorage.getItem('eie_role');
+      const savedEmail = localStorage.getItem('eie_email');
+      if (savedAuth === 'true') {
+        setDemoAuth(true);
+        if (savedRole && ROLES_CONFIG[savedRole as RolUsuario]) {
+          setRolActivo(savedRole as RolUsuario);
+        }
+        if (savedEmail) {
+          setLoginEmail(savedEmail);
+        }
+      }
+    } catch (e) {
+      // Ignorar en SSR
+    }
+  }, []);
+
+  const triggerCurtain = (label: string, icon: LucideIcon, onMidpoint: () => void) => {
+    setTransLabel(label);
+    setTransIcon(() => icon);
+    setTransPhase('entering');
+
+    setTimeout(() => {
+      onMidpoint();
+      setTransPhase('leaving');
+    }, 300);
+
+    setTimeout(() => {
+      setTransPhase('idle');
+    }, 650);
+  };
+
+  const handleDemoLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const rolDetectado = detectarRolPorEmail(loginEmail);
+    if (!rolDetectado) {
+      setLoginEmailError(
+        'El email no tiene un prefijo institucional válido. Use: admin, jef, doc, sec, caj, alm o est.'
+      );
+      return;
+    }
+    setLoginEmailError(null);
+
+    const config = ROLES_CONFIG[rolDetectado];
+    triggerCurtain(`Acceso Concedido: ${config.titulo}`, Shield, () => {
+      setRolActivo(rolDetectado);
+      setDemoAuth(true);
+
+      try {
+        localStorage.setItem('eie_auth', 'true');
+        localStorage.setItem('eie_role', rolDetectado);
+        localStorage.setItem('eie_email', loginEmail);
+      } catch (err) {}
+    });
+  };
+
+  // Auto-asignar rol cuando la sesión de Google se activa
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user?.email) {
+      const rolDetectado = detectarRolPorEmail(session.user.email);
+      if (rolDetectado) {
+        setRolActivo(rolDetectado);
+      }
+    }
+  }, [status, session]);
+
   const handleLogout = () => {
-    setDemoAuth(false);
-    signOut({ redirect: false });
+    triggerCurtain('Cierre de Sesión Operativa', LogOut, () => {
+      setDemoAuth(false);
+      setLoginEmail('');
+      setLoginEmailError(null);
+      try {
+        localStorage.removeItem('eie_auth');
+        localStorage.removeItem('eie_role');
+        localStorage.removeItem('eie_email');
+      } catch (e) {}
+      signOut({ redirect: false });
+    });
+  };
+
+  // Validación y cambio de rol — SOLO ADMIN puede cambiar roles libremente
+  const handleSeleccionarRol = (targetRol: RolUsuario) => {
+    // Admin puede asumir cualquier rol sin PIN
+    setRolActivo(targetRol);
+    setModalCambioRol(false);
+    setRolObjetivo(null);
+    setPinError(null);
+    setPinIngresado('');
+  };
+
+  const handleConfirmarPin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rolObjetivo) return;
+
+    const config = ROLES_CONFIG[rolObjetivo];
+    const valorLimpio = pinIngresado.trim().toUpperCase();
+
+    if (valorLimpio === config.pinSeguridad || valorLimpio === config.palabraClave) {
+      setRolActivo(rolObjetivo);
+      setModalCambioRol(false);
+      setRolObjetivo(null);
+      setPinIngresado('');
+      setPinError(null);
+    } else {
+      setPinError(`PIN o palabra clave incorrecta para ${config.titulo}.`);
+    }
   };
 
   return (
     <div>
-      {/* ── BARRA SUPERIOR DE ACCESIBILIDAD Y CONTROLES VISUALES (Siempre presente) ── */}
+      {/* ── BARRA SUPERIOR DE ACCESIBILIDAD Y CONTROLES VISUALES ── */}
       <div
         style={{
           background: 'var(--bg-surface-elevated)',
@@ -183,7 +440,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <span>Ejército de Bolivia &bull; Escuela de Idiomas (CEDMIL)</span>
         </div>
 
-        {/* Herramientas de Accesibilidad: Tema y Tamaño de Texto */}
+        {/* Herramientas de Accesibilidad y Control de Sesión */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           {/* Selector de Tamaño de Texto */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
@@ -203,7 +460,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   cursor: 'pointer',
                   fontWeight: 600,
                 }}
-                title="Tamaño de texto Normal (100%)"
+                title="Texto Normal"
               >
                 A
               </button>
@@ -220,7 +477,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   cursor: 'pointer',
                   fontWeight: 700,
                 }}
-                title="Aumento Medio de texto (+16%)"
+                title="Texto Medio (+16%)"
               >
                 A+
               </button>
@@ -237,14 +494,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   cursor: 'pointer',
                   fontWeight: 800,
                 }}
-                title="Gran Aumento de texto para baja visión (+33%)"
+                title="Texto Grande (+33%)"
               >
                 A++
               </button>
             </div>
           </div>
 
-          {/* Selector de Modo de Visualización (Claro / Oscuro / Alto Contraste) */}
+          {/* Selector de Contraste */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
             <span style={{ color: 'var(--text-muted)' }}>Contraste:</span>
             <div style={{ display: 'inline-flex', background: 'var(--bg-surface)', borderRadius: '4px', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
@@ -298,14 +555,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   alignItems: 'center',
                   gap: '0.25rem',
                 }}
-                title="Modo Alto Contraste (Accesibilidad Visual)"
+                title="Modo Alto Contraste"
               >
                 <Eye size={12} /> Alto Contraste
               </button>
             </div>
           </div>
 
-          {/* Botón de alternar pantalla de login / sesión */}
+          {/* Botón de alternar sesión */}
           {isAuthenticated && (
             <button
               onClick={handleLogout}
@@ -313,28 +570,25 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               style={{ padding: '0.25rem 0.65rem', fontSize: '0.72rem' }}
               title="Salir y regresar a la pantalla de bienvenida / login militar"
             >
-              <LogOut size={12} /> Cerrar Sesión
+              <LogOut size={12} /> Salir
             </button>
           )}
         </div>
       </div>
 
-      {/* ── CONDICIONAL: PANTALLA DE BIENVENIDA / LOGIN O SISTEMA COMPLETO ── */}
+      {/* ── PANTALLA DE BIENVENIDA / LOGIN MILITAR O SISTEMA COMPLETO ── */}
       {!isAuthenticated ? (
-        /* ===================================================================
-           PANTALLA DE BIENVENIDA / LOGIN MILITAR SOBRIO Y ELEGANTE
-        =================================================================== */
         <div className="login-screen-wrapper">
-          <div className="login-card animate-solemn-fade">
+          <div className="login-card animate-solemn-fade" style={{ maxWidth: '520px' }}>
             <div className="login-card-border-top" />
 
             {/* Cabecera del login */}
-            <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
               <div
                 style={{
-                  width: 60,
-                  height: 60,
-                  margin: '0 auto 1rem',
+                  width: 58,
+                  height: 58,
+                  margin: '0 auto 0.75rem',
                   borderRadius: '50%',
                   background: 'var(--military-green-primary)',
                   border: '2px solid var(--military-gold-primary)',
@@ -345,20 +599,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   boxShadow: 'var(--shadow-md)',
                 }}
               >
-                <Shield size={32} />
+                <Shield size={30} />
               </div>
-              <h2 className="font-solemn" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.25rem' }}>
+              <h2 className="font-solemn" style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.2rem' }}>
                 ESCUELA DE IDIOMAS DEL EJÉRCITO
               </h2>
-              <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--military-gold-primary)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              <p style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--military-gold-primary)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 Comando de Educación y Doctrina Militar &bull; CEDMIL
               </p>
-              <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
-                Sistema Integrado de Gestión Académica Militar (SACA)
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                Control de Acceso Multi-Rol Institucional
               </p>
             </div>
 
-            {/* Estado de carga con transición durante la autenticación */}
             {isAuthenticating ? (
               <div className="military-loader animate-solemn-fade">
                 <div className="military-crest-spinner">
@@ -378,9 +631,64 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-                <div style={{ padding: '0.25rem 0', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                  <button type="submit" className="btn" style={{ width: '100%', padding: '0.75rem', background: '#ffffff', color: '#3c4043', border: '1px solid #dadce0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', fontWeight: 500, boxShadow: '0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15)', borderRadius: '4px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {/* 1. Acceso por Email Institucional (auto-detección de rol por prefijo) */}
+                <form onSubmit={handleDemoLogin} style={{ background: 'var(--bg-surface)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
+                  <p style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.45rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <KeyRound size={15} style={{ color: 'var(--military-gold-primary)' }} />
+                    Ingreso con Email Institucional
+                  </p>
+                  <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '0.65rem' }}>
+                    El sistema detectará su rol automáticamente según el prefijo de su correo institucional.
+                  </p>
+
+                  <input
+                    type="email"
+                    value={loginEmail}
+                    onChange={(e) => { setLoginEmail(e.target.value); setLoginEmailError(null); }}
+                    placeholder="Ej: admin.mendez@ejercito.mil.bo"
+                    className="input"
+                    required
+                    autoFocus
+                    style={{ width: '100%', padding: '0.6rem', fontSize: '0.85rem', marginBottom: '0.5rem' }}
+                  />
+
+                  {loginEmailError && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#f87171', fontSize: '0.72rem', marginBottom: '0.5rem' }}>
+                      <ShieldAlert size={14} />
+                      <span>{loginEmailError}</span>
+                    </div>
+                  )}
+
+                  {/* Tabla de prefijos de referencia */}
+                  <div style={{ background: 'var(--bg-surface-elevated)', padding: '0.6rem', borderRadius: '5px', border: '1px solid var(--border-subtle)', marginBottom: '0.65rem' }}>
+                    <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      Prefijos Institucionales Registrados:
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.2rem 0.75rem' }}>
+                      {Object.entries(EMAIL_PREFIX_TO_ROLE).map(([prefix, rol]) => (
+                        <div key={prefix} style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'flex', gap: '0.3rem' }}>
+                          <span style={{ fontWeight: 700, color: ROLES_CONFIG[rol].color, fontFamily: 'monospace' }}>{prefix}*</span>
+                          <span>→ {ROLES_CONFIG[rol].badge}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '0.6rem', background: 'var(--military-green-primary)' }}>
+                    <UserCheck size={16} /> Ingresar al Sistema
+                  </button>
+                </form>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.2rem 0' }}>
+                  <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
+                  <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>O Autenticación Institucional</span>
+                  <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
+                </div>
+
+                {/* 2. Login con Google */}
+                <form onSubmit={handleLoginSubmit}>
+                  <button type="submit" className="btn" style={{ width: '100%', padding: '0.65rem', background: '#ffffff', color: '#3c4043', border: '1px solid #dadce0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', fontWeight: 500, borderRadius: '4px' }}>
                     <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
                       <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
                       <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
@@ -388,47 +696,22 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                       <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
                       <path fill="none" d="M0 0h48v48H0z"/>
                     </svg>
-                    <span>Iniciar sesión con Google</span>
+                    <span>Ingresar con Google (Cuenta Institucional)</span>
                   </button>
+                </form>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.2rem 0' }}>
-                    <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
-                    <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>O acceso de inspección</span>
-                    <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setDemoAuth(true)}
-                    className="btn btn-primary"
-                    style={{
-                      width: '100%',
-                      padding: '0.7rem 1rem',
-                      justifyContent: 'center',
-                      gap: '0.5rem',
-                      background: 'var(--military-green-primary)',
-                      border: '1px solid var(--border-accent)',
-                      fontSize: '0.85rem',
-                      fontWeight: 700,
-                    }}
-                  >
-                    <Shield size={16} style={{ color: 'var(--military-gold-primary)' }} />
-                    <span>Acceso Directo (Modo Demostración Oficial)</span>
-                  </button>
-                </div>
-
-                <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.85rem', textAlign: 'center' }}>
-                  <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem', textAlign: 'center' }}>
+                  <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                     &ldquo;Subordinación y Constancia &bull; ¡Viva Bolivia hacia el mar!&rdquo;
                   </p>
                 </div>
-              </form>
+              </div>
             )}
           </div>
         </div>
       ) : (
         /* ===================================================================
-           INTERFAZ PRINCIPAL DEL SISTEMA (LAYOUT CON SIDEBAR Y CONTENIDO)
+           INTERFAZ PRINCIPAL DEL SISTEMA (CON SIDEBAR Y FILTRO DE ROLES)
         =================================================================== */
         <div className="layout">
           {/* Overlay móvil */}
@@ -474,6 +757,44 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </button>
             </div>
 
+            {/* Indicador del rol institucional en la barra lateral */}
+            <div style={{ padding: '0.6rem 0.85rem', margin: '0.5rem 0.75rem', background: 'var(--bg-surface-elevated)', borderRadius: '6px', border: `1px solid ${rolConfig.color}44` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+                <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>Rol Activo</span>
+                <span style={{ fontSize: '0.65rem', padding: '0.1rem 0.35rem', borderRadius: '3px', background: `${rolConfig.color}22`, color: rolConfig.color, fontWeight: 700 }}>
+                  {rolConfig.badge}
+                </span>
+              </div>
+              <p style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
+                {rolConfig.titulo}
+              </p>
+              {/* Solo Admin puede cambiar de rol libremente */}
+              {esAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setModalCambioRol(true)}
+                  style={{
+                    marginTop: '0.45rem',
+                    width: '100%',
+                    padding: '0.3rem',
+                    fontSize: '0.68rem',
+                    background: 'transparent',
+                    border: '1px dashed var(--border-subtle)',
+                    borderRadius: '4px',
+                    color: 'var(--military-gold-primary)',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.35rem',
+                  }}
+                >
+                  <KeyRound size={12} /> Cambiar Rol (Admin)
+                </button>
+              )}
+            </div>
+
             <nav className="sidebar-nav">
               <div
                 style={{
@@ -485,7 +806,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   letterSpacing: '0.08em',
                 }}
               >
-                Módulos Académicos
+                Módulos Habilitados
               </div>
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -531,7 +852,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
           {/* Área Principal */}
           <div className="main-content">
-
             <header className="topbar">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <button
@@ -558,11 +878,26 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
 
-              {/* Información del usuario autenticado */}
+              {/* Información del usuario autenticado y rol activo */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span className="badge badge-military">
-                  <Shield size={12} /> Oficial de Registro
-                </span>
+                {esAdmin ? (
+                  <button
+                    onClick={() => setModalCambioRol(true)}
+                    className="badge badge-gold"
+                    style={{ cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.3rem 0.65rem' }}
+                    title="Haz clic para cambiar de rol institucional (solo Admin)"
+                  >
+                    <KeyRound size={12} /> Rol: {rolConfig.titulo} &bull; [Cambiar]
+                  </button>
+                ) : (
+                  <span
+                    className="badge badge-gold"
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.3rem 0.65rem' }}
+                  >
+                    <Shield size={12} /> Rol: {rolConfig.titulo}
+                  </span>
+                )}
+
                 <div
                   style={{
                     display: 'flex',
@@ -579,7 +914,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                       width: 26,
                       height: 26,
                       borderRadius: '50%',
-                      background: 'var(--military-green-primary)',
+                      background: rolConfig.color,
                       color: '#ffffff',
                       display: 'flex',
                       alignItems: 'center',
@@ -588,14 +923,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                       fontWeight: 700,
                     }}
                   >
-                    PM
+                    {rolActivo.slice(0, 2)}
                   </div>
                   <div>
                     <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.1 }}>
-                      {session?.user?.name || (demoAuth ? 'Cap. Pablo Medina' : 'Oficial Institucional')}
+                      {session?.user?.name || rolConfig.nombrePorDefecto}
                     </p>
                     <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', lineHeight: 1.1 }}>
-                      {session?.user?.email || (demoAuth ? 'p.medina@ejercito.mil.bo' : 'institucional@ejercito.mil.bo')}
+                      {session?.user?.email || rolConfig.emailPorDefecto}
                     </p>
                   </div>
                 </div>
@@ -612,10 +947,88 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       )}
 
       {/* =================================================================
+          MODAL DE SELECCIÓN DE ROL Y VERIFICACIÓN DE PIN DE SEGURIDAD
+      ================================================================= */}
+      {/* Modal de cambio de rol — EXCLUSIVO para Admin */}
+      {modalCambioRol && esAdmin && (
+        <div className="modal-overlay" onClick={() => { setModalCambioRol(false); setRolObjetivo(null); }}>
+          <div className="modal-card animate-solemn-fade" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.85rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <KeyRound size={18} style={{ color: 'var(--military-gold-primary)' }} />
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
+                  Cambio de Rol (Administrador)
+                </h3>
+              </div>
+              <button onClick={() => { setModalCambioRol(false); setRolObjetivo(null); }} className="btn-icon btn-ghost">
+                <X size={16} />
+              </button>
+            </div>
+
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.85rem' }}>
+              Como Administrador del sistema, puede asumir cualquier rol institucional directamente sin verificación adicional.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {(Object.keys(ROLES_CONFIG) as RolUsuario[]).map((rolKey) => {
+                const rol = ROLES_CONFIG[rolKey];
+                const esActual = rolActivo === rolKey;
+
+                return (
+                  <div
+                    key={rolKey}
+                    onClick={() => handleSeleccionarRol(rolKey)}
+                    style={{
+                      padding: '0.65rem 0.85rem',
+                      borderRadius: '6px',
+                      border: `1px solid ${esActual ? rol.color : 'var(--border-subtle)'}`,
+                      background: esActual ? `${rol.color}15` : 'var(--bg-surface-elevated)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '0.75rem',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 700, color: rol.color }}>
+                          {rol.titulo}
+                        </span>
+                        {esActual && (
+                          <span style={{ fontSize: '0.65rem', padding: '0.1rem 0.35rem', borderRadius: '3px', background: rol.color, color: '#fff', fontWeight: 700 }}>
+                            ACTUAL
+                          </span>
+                        )}
+                      </div>
+                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: '0.15rem 0 0' }}>
+                        {rol.descripcion}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--status-active)', fontWeight: 600 }}>
+                        Acceso Directo ✓
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =================================================================
           CORTINA DE TRANSICIÓN MILITAR — VISIBLE EN PANTALLA COMPLETA
+          (Clickable y con tiempo de descarte automático para nunca atascarse)
       ================================================================= */}
       {transPhase !== 'idle' && TransIcon && (
-        <div className={`military-curtain-backdrop curtain-${transPhase}`}>
+        <div
+          className={`military-curtain-backdrop curtain-${transPhase}`}
+          onClick={() => setTransPhase('idle')}
+          title="Haz clic para continuar de inmediato"
+        >
           <div className="military-curtain-panel">
             {/* Cuadrícula táctica militar */}
             <div className="curtain-tactical-grid" />
@@ -625,6 +1038,30 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div className="curtain-hud-corner curtain-hud-top-right" />
             <div className="curtain-hud-corner curtain-hud-bottom-left" />
             <div className="curtain-hud-corner curtain-hud-bottom-right" />
+
+            {/* Botón de omisión rápida en esquina para asegurar que nunca se atasque */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setTransPhase('idle');
+              }}
+              style={{
+                position: 'absolute',
+                top: '1.25rem',
+                right: '1.5rem',
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid var(--military-gold-primary)',
+                color: 'var(--military-gold-primary)',
+                padding: '0.35rem 0.75rem',
+                borderRadius: '4px',
+                fontSize: '0.72rem',
+                cursor: 'pointer',
+                zIndex: 1000,
+                fontWeight: 600,
+              }}
+            >
+              Omitir [✕]
+            </button>
 
             {/* Núcleo central con radar, escudo y textos */}
             <div className="curtain-core">

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   UserPlus,
   Search,
@@ -102,6 +102,7 @@ const INSCRIPCIONES_INICIALES: Inscripcion[] = [
 
 export default function InscripcionesPage() {
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>(INSCRIPCIONES_INICIALES);
+  const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filtroTipo, setFiltroTipo] = useState<string>('TODOS');
   const [filtroEstado, setFiltroEstado] = useState<string>('TODOS');
@@ -119,11 +120,56 @@ export default function InscripcionesPage() {
   const [formIdioma, setFormIdioma] = useState<string>('Inglés Militar');
   const [formNivel, setFormNivel] = useState<string>('Básico A1');
   const [formParalelo, setFormParalelo] = useState<string>('ING-101-A');
+  const [formFecha, setFormFecha] = useState<string>(() => new Date().toISOString().split('T')[0]);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(null), 3500);
   };
+
+  const cargarInscripciones = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/v1/inscripciones');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      const list = json.data || (Array.isArray(json) ? json : []);
+      if (list.length > 0) {
+        const mapped: Inscripcion[] = list.map((ins: any) => {
+          const est = ins.estudiante || {};
+          const mil = est.militar;
+          const par = ins.paralelo || {};
+          const niv = par.nivel || {};
+          const prog = niv.programa || {};
+          const idm = prog.idioma || {};
+          const esMil = (est.tipo_estudiante || '').toLowerCase() === 'militar';
+
+          return {
+            id: `INS-26-00${ins.id_inscripcion}`,
+            estudiante: esMil ? `${mil?.grado_militar || 'Oficial'} ${est.nombre_estudiante || ''} ${est.apellido_estudiante || ''}`.trim() : `${est.nombre_estudiante || ''} ${est.apellido_estudiante || ''}`.trim(),
+            ci: est.ci_estudiante || '—',
+            tipo: esMil ? 'MILITAR' : 'CIVIL',
+            grado: mil?.grado_militar,
+            idioma: idm.nombre_idioma || 'Inglés Militar',
+            nivel: niv.nombre_nivel || 'Básico A1',
+            paralelo: par.codigo_paralelo || 'ING-101-A',
+            fecha: ins.fecha_inscripcion ? new Date(ins.fecha_inscripcion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '14 Oct 2026',
+            estadoPago: esMil ? 'BECA_MILITAR' : 'PAGADO',
+            montoBs: esMil ? 0 : 300,
+          };
+        });
+        setInscripciones(mapped);
+      }
+    } catch (err) {
+      console.warn('Inscripciones en modo fallback:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarInscripciones();
+  }, []);
 
   const inscripcionesFiltradas = useMemo(() => {
     return inscripciones.filter((ins) => {
@@ -153,6 +199,12 @@ export default function InscripcionesPage() {
       return;
     }
 
+    const hoyStr = new Date().toISOString().split('T')[0];
+    if (formFecha > hoyStr) {
+      alert('Seguridad SACA: La fecha de matrícula no puede ser futura (ej. 2028 no permitido).');
+      return;
+    }
+
     const nueva: Inscripcion = {
       id: `INS-26-00${inscripciones.length + 1}`,
       estudiante: formTipo === 'MILITAR' ? `${formGrado} ${formEstudiante}` : formEstudiante,
@@ -162,7 +214,7 @@ export default function InscripcionesPage() {
       idioma: formIdioma,
       nivel: formNivel,
       paralelo: formParalelo,
-      fecha: '14 Oct 2026',
+      fecha: new Date(formFecha + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }),
       estadoPago: formTipo === 'MILITAR' ? 'BECA_MILITAR' : 'PAGADO',
       montoBs: formTipo === 'MILITAR' ? 0 : 300,
     };
@@ -640,19 +692,42 @@ export default function InscripcionesPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="input-label">Paralelo Asignado</label>
-                <select
-                  value={formParalelo}
-                  onChange={(e) => setFormParalelo(e.target.value)}
-                  className="input"
-                >
-                  <option value="ING-101-A">ING-101-A (Lun-Vie 08:00 - Tte. Ramos)</option>
-                  <option value="ING-102-B">ING-102-B (Lun-Vie 10:00 - Sgto. Condori)</option>
-                  <option value="FRA-101-A">FRA-101-A (Mar-Jue 08:00 - Cap. Ríos)</option>
-                  <option value="RUS-INT-01">RUS-INT-01 (Lun-Mie-Vie 14:00 - My. Daza)</option>
-                  <option value="MAN-201-A">MAN-201-A (Lun-Mie-Vie 16:00 - Lic. Blanco)</option>
-                </select>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
+                <div>
+                  <label className="input-label">Paralelo Asignado</label>
+                  <select
+                    value={formParalelo}
+                    onChange={(e) => setFormParalelo(e.target.value)}
+                    className="input"
+                  >
+                    <option value="ING-101-A">ING-101-A (Lun-Vie 08:00 - Tte. Ramos)</option>
+                    <option value="ING-102-B">ING-102-B (Lun-Vie 10:00 - Sgto. Condori)</option>
+                    <option value="FRA-101-A">FRA-101-A (Mar-Jue 08:00 - Cap. Ríos)</option>
+                    <option value="RUS-INT-01">RUS-INT-01 (Lun-Mie-Vie 14:00 - My. Daza)</option>
+                    <option value="MAN-201-A">MAN-201-A (Lun-Mie-Vie 16:00 - Lic. Blanco)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="input-label">Fecha de Matrícula * (Máx: Hoy)</label>
+                  <input
+                    type="date"
+                    value={formFecha}
+                    max={new Date().toISOString().split('T')[0]}
+                    min="2020-01-01"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const hoyStr = new Date().toISOString().split('T')[0];
+                      if (val > hoyStr) {
+                        alert('Seguridad SACA: No se permiten fechas de matrícula futuras (ej. 2028).');
+                        setFormFecha(hoyStr);
+                      } else {
+                        setFormFecha(val);
+                      }
+                    }}
+                    className="input"
+                    required
+                  />
+                </div>
               </div>
 
               {/* Resumen arancel */}

@@ -1,4 +1,7 @@
 /** @type {import('next').NextConfig} */
+const backendUrl = process.env.BACKEND_INTERNAL_URL || 'http://localhost:8000';
+const quarkusUrl = process.env.QUARKUS_INTERNAL_URL || 'http://localhost:8080';
+
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
@@ -6,11 +9,11 @@ const nextConfig = {
     return [
       {
         source: '/api/v1/:path*',
-        destination: 'http://localhost:8000/api/v1/:path*'
+        destination: `${backendUrl}/api/v1/:path*`
       },
       {
         source: '/api/quarkus/:path*',
-        destination: 'http://localhost:8081/api/:path*'
+        destination: `${quarkusUrl}/api/:path*`
       }
     ];
   }

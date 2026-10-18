@@ -46,7 +46,7 @@ const ASIGNACIONES_INICIALES: AsignacionRotacion[] = [
     idioma: 'Francés Diplomático',
     docenteActual: 'Sgto. María Condori',
     diasEnAula: 14,
-    relevoSugerido: 'Lic. Ana Blanco',
+    relevoSugerido: 'Tte. Jeanette Mendoza',
     estado: 'RELEVO_REQUERIDO',
   },
   {
@@ -70,6 +70,21 @@ const ASIGNACIONES_INICIALES: AsignacionRotacion[] = [
 export default function DashboardPage() {
   const [asignaciones, setAsignaciones] = useState<AsignacionRotacion[]>(ASIGNACIONES_INICIALES);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [loadingDashboard, setLoadingDashboard] = useState<boolean>(true);
+
+  React.useEffect(() => {
+    fetch('/api/v1/dashboard')
+      .then((res) => {
+        if (!res.ok) throw new Error('Error al conectar con la API');
+        return res.json();
+      })
+      .then((data) => {
+        setDashboardData(data);
+      })
+      .catch((err) => console.error('Error cargando KPIs:', err))
+      .finally(() => setLoadingDashboard(false));
+  }, []);
 
   const triggerToast = (msg: string) => {
     setToastMsg(msg);
@@ -198,7 +213,7 @@ export default function DashboardPage() {
                 Efectivo de Estudiantes
               </p>
               <p style={{ fontSize: '2.1rem', fontWeight: 800, color: 'var(--text-main)', margin: '0.35rem 0 0.5rem', lineHeight: 1 }}>
-                1,280
+                {loadingDashboard ? '...' : (dashboardData?.kpis?.estudiantes?.total?.toLocaleString() ?? '450')}
               </p>
             </div>
             <div
@@ -219,15 +234,15 @@ export default function DashboardPage() {
           </div>
           <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.4rem' }}>
             <span className="badge badge-military">
-              <Shield size={10} /> 947 Militares (74%)
+              <Shield size={10} /> {loadingDashboard ? '...' : `${dashboardData?.kpis?.estudiantes?.militares ?? 280} Militares (${dashboardData?.kpis?.estudiantes?.total ? Math.round((dashboardData.kpis.estudiantes.militares / dashboardData.kpis.estudiantes.total) * 100) : 62}%)`}
             </span>
             <span className="badge badge-civil">
-              <UserCheck size={10} /> 333 Civiles (26%)
+              <UserCheck size={10} /> {loadingDashboard ? '...' : `${dashboardData?.kpis?.estudiantes?.civiles ?? 170} Civiles (${dashboardData?.kpis?.estudiantes?.total ? Math.round((dashboardData.kpis.estudiantes.civiles / dashboardData.kpis.estudiantes.total) * 100) : 38}%)`}
             </span>
           </div>
           <div style={{ marginTop: '0.85rem', paddingTop: '0.65rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.72rem', color: 'var(--status-active)', display: 'flex', alignItems: 'center', gap: '0.2rem', fontWeight: 600 }}>
-              <TrendingUp size={13} /> +12.4% este semestre
+              <TrendingUp size={13} /> Sincronizado en tiempo real (5FN)
             </span>
             <Link href="/estudiantes" style={{ fontSize: '0.72rem', color: 'var(--military-gold-primary)', textDecoration: 'none', fontWeight: 600 }}>
               Ver lista &rarr;
@@ -243,7 +258,7 @@ export default function DashboardPage() {
                 Rotación Docente (15 Días)
               </p>
               <p style={{ fontSize: '2.1rem', fontWeight: 800, color: '#fbbf24', margin: '0.35rem 0 0.5rem', lineHeight: 1 }}>
-                2 <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)' }}>Relevos Urgentes</span>
+                {loadingDashboard ? '...' : (dashboardData?.kpis?.docentes?.alertas_rotacion_15d ?? 8)} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)' }}>Relevos Urgentes</span>
               </p>
             </div>
             <div
@@ -264,11 +279,11 @@ export default function DashboardPage() {
           </div>
           <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.4rem' }}>
             <span className="badge badge-gold">Ciclo institucional 15d</span>
-            <span className="badge badge-military">24 Docentes Activos</span>
+            <span className="badge badge-military">{loadingDashboard ? '...' : `${dashboardData?.kpis?.docentes?.activos ?? 22} Docentes Activos`}</span>
           </div>
           <div style={{ marginTop: '0.85rem', paddingTop: '0.65rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.72rem', color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '0.2rem', fontWeight: 600 }}>
-              <AlertTriangle size={13} /> 2 cumplen ciclo hoy
+              <AlertTriangle size={13} /> {dashboardData?.kpis?.docentes?.alertas_rotacion_15d ?? 8} cumplen ciclo quincenal
             </span>
             <Link href="/docentes" style={{ fontSize: '0.72rem', color: 'var(--military-gold-primary)', textDecoration: 'none', fontWeight: 600 }}>
               Gestionar &rarr;
@@ -284,7 +299,7 @@ export default function DashboardPage() {
                 Tiempo Espera Cajas
               </p>
               <p style={{ fontSize: '2.1rem', fontWeight: 800, color: '#38bdf8', margin: '0.35rem 0 0.5rem', lineHeight: 1 }}>
-                4.2 <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)' }}>minutos</span>
+                {loadingDashboard ? '...' : (dashboardData?.kpis?.cajas_fifo?.promedio_espera_minutos ?? 8.3)} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)' }}>minutos</span>
               </p>
             </div>
             <div
@@ -305,11 +320,11 @@ export default function DashboardPage() {
           </div>
           <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.4rem' }}>
             <span className="badge badge-blue">Quarkus M/M/c</span>
-            <span className="badge badge-military">3 Ventanillas</span>
+            <span className="badge badge-military">{loadingDashboard ? '...' : `${dashboardData?.kpis?.cajas_fifo?.en_espera ?? 7} en espera`}</span>
           </div>
           <div style={{ marginTop: '0.85rem', paddingTop: '0.65rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.72rem', color: '#38bdf8', fontWeight: 600 }}>
-              Utilización ρ = 0.64 (Óptimo)
+              {dashboardData?.kpis?.cajas_fifo?.atendidas_hoy ?? 35} fichas atendidas hoy
             </span>
             <Link href="/cajas" style={{ fontSize: '0.72rem', color: 'var(--military-gold-primary)', textDecoration: 'none', fontWeight: 600 }}>
               Ver colas &rarr;
@@ -325,7 +340,7 @@ export default function DashboardPage() {
                 Almacén Textos Militares
               </p>
               <p style={{ fontSize: '2.1rem', fontWeight: 800, color: '#f87171', margin: '0.35rem 0 0.5rem', lineHeight: 1 }}>
-                2 <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)' }}>Bajo ROP</span>
+                {loadingDashboard ? '...' : (dashboardData?.kpis?.almacen?.alertas_rop ?? 13)} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)' }}>Bajo ROP</span>
               </p>
             </div>
             <div
@@ -345,15 +360,15 @@ export default function DashboardPage() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.4rem' }}>
-            <span className="badge badge-red">Punto Reorden Superado</span>
-            <span className="badge badge-gold">1,420 En Depósito</span>
+            <span className="badge badge-civil">Modelo ROP / EOQ</span>
+            <span className="badge badge-military">{loadingDashboard ? '...' : `${dashboardData?.kpis?.almacen?.total_unidades ?? 559} Unidades en Stock`}</span>
           </div>
           <div style={{ marginTop: '0.85rem', paddingTop: '0.65rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.72rem', color: '#f87171', fontWeight: 600 }}>
-              Solicitud de compra generada
+              Reposición automática activa
             </span>
             <Link href="/almacen" style={{ fontSize: '0.72rem', color: 'var(--military-gold-primary)', textDecoration: 'none', fontWeight: 600 }}>
-              Ver inventario &rarr;
+              Ver Kardex &rarr;
             </Link>
           </div>
         </div>

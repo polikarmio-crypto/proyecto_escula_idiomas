@@ -16,7 +16,7 @@ cd ..
 
 echo ""
 echo "[2/3] Configurando Backend (Laravel)..."
-cd laravel || exit
+cd backend || exit
 composer install
 if [ ! -f .env ]; then
     if [ -f .env.example ]; then

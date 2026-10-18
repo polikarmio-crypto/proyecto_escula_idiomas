@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Landmark,
   Shield,
@@ -182,6 +182,8 @@ export default function CajasPage() {
   const [pagoMonto, setPagoMonto] = useState<number>(300);
   const [pagoMetodo, setPagoMetodo] = useState<'EFECTIVO' | 'QR' | 'BANCO_UNION' | 'EXENTO_MILITAR'>('QR');
   const [pagoVentanilla, setPagoVentanilla] = useState<number>(2);
+  const [pagoFecha, setPagoFecha] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // Parámetros de Simulación de Colas M/M/c (Quarkus)
   const [cServidores, setCServidores] = useState<number>(3); // c ventanillas
@@ -229,6 +231,35 @@ export default function CajasPage() {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(null), 3500);
   };
+
+  const cargarCajas = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/v1/cajas');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const mapped: Ventanilla[] = data.map((c: any) => ({
+          numero: c.numero_caja || c.id_caja,
+          nombre: `Ventanilla ${c.numero_caja || c.id_caja} - ${c.nombre_caja || 'Caja CEDMIL'}`,
+          operador: c.operador || 'Cajero Operativo',
+          estado: (c.estado_caja === 'Abierta' ? 'DISPONIBLE' : 'EN_PAUSA') as any,
+          turnoActual: '—',
+          clienteActual: 'Disponible para llamada',
+          tipoTramite: 'Atención general',
+        }));
+        setVentanillas(mapped);
+      }
+    } catch (err) {
+      console.warn('Cajas cargadas en modo local:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarCajas();
+  }, []);
 
   const handleLlamarSiguienteTurno = (numeroVentanilla: number) => {
     if (colaTurnos.length === 0) {
@@ -304,6 +335,12 @@ export default function CajasPage() {
     e.preventDefault();
     if (!pagoCliente || !pagoCi) {
       alert('Por favor complete los campos obligatorios.');
+      return;
+    }
+
+    const hoyStr = new Date().toISOString().split('T')[0];
+    if (pagoFecha > hoyStr) {
+      alert('Seguridad SACA: La fecha de cobro no puede ser futura (ej. 2028 no permitido).');
       return;
     }
 
@@ -1172,6 +1209,28 @@ export default function CajasPage() {
                     <option value={3}>Ventanilla 3 (Material)</option>
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="input-label">Fecha de Comprobante / Cobro * (Máx: Hoy)</label>
+                <input
+                  type="date"
+                  value={pagoFecha}
+                  max={new Date().toISOString().split('T')[0]}
+                  min="2020-01-01"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const hoyStr = new Date().toISOString().split('T')[0];
+                    if (val > hoyStr) {
+                      alert('Seguridad SACA: No se permiten fechas de comprobante futuras (ej. 2028).');
+                      setPagoFecha(hoyStr);
+                    } else {
+                      setPagoFecha(val);
+                    }
+                  }}
+                  className="input"
+                  required
+                />
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.65rem', marginTop: '0.5rem' }}>

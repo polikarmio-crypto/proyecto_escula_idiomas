@@ -16,7 +16,7 @@ cd ..
 
 echo.
 echo [2/3] Configurando Backend (Laravel)...
-cd laravel
+cd backend
 call composer install
 if not exist .env (
     if exist .env.example (

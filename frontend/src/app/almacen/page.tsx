@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Package,
   Shield,
@@ -186,19 +186,56 @@ export default function AlmacenPage() {
   // Form Ingreso Lote
   const [loteLibroId, setLoteLibroId] = useState<number>(1);
   const [loteCantidad, setLoteCantidad] = useState<number>(30);
+  const [loteFecha, setLoteFecha] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [loteProveedor, setLoteProveedor] = useState<string>('Distribuidora Oxford Bolivia');
   const [loteOrden, setLoteOrden] = useState<string>('O.C. CEDMIL #2026-145');
 
   // Form Salida Libro
   const [salidaLibroId, setSalidaLibroId] = useState<number>(1);
   const [salidaCantidad, setSalidaCantidad] = useState<number>(1);
+  const [salidaFecha, setSalidaFecha] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [salidaBeneficiario, setSalidaBeneficiario] = useState<string>('');
   const [salidaMatricula, setSalidaMatricula] = useState<string>('');
+
+  const [loading, setLoading] = useState<boolean>(true);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(null), 3500);
   };
+
+  const cargarStock = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/v1/almacen/stock');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      if (json && Array.isArray(json.inventario) && json.inventario.length > 0) {
+        const mapped: LibroInventario[] = json.inventario.map((item: any) => ({
+          id: item.id_almacen_libro,
+          codigoIsbn: `LIB-${(item.idioma || 'EIE').slice(0, 3).toUpperCase()}-00${item.numero_libro || 1}`,
+          titulo: item.libro || 'Libro Curricular',
+          idioma: item.idioma || 'Inglés Militar',
+          nivel: item.nivel || 'Básico A1',
+          editorial: 'Editorial Militar EIE',
+          stockActual: item.stock_actual ?? 0,
+          puntoReorden: item.punto_reorden_rop ?? 20,
+          stockSeguridad: item.stock_minimo ?? 10,
+          precioVentaBs: 180,
+          ubicacionEstante: `Estante ${item.id_almacen_libro <= 5 ? 'A' : 'B'}-0${item.id_almacen_libro}`,
+        }));
+        setLibros(mapped);
+      }
+    } catch (err) {
+      console.warn('Cargando stock de libros en modo local / fallback:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarStock();
+  }, []);
 
   const librosFiltrados = useMemo(() => {
     return libros.filter((l) => {
@@ -222,6 +259,16 @@ export default function AlmacenPage() {
 
   const handleGuardarIngresoLote = (e: React.FormEvent) => {
     e.preventDefault();
+    const hoyStr = new Date().toISOString().split('T')[0];
+    if (loteFecha > hoyStr) {
+      alert('Error de Seguridad: La fecha de adquisición no puede ser futura (ej. 2028 no permitido).');
+      return;
+    }
+    if (Number(loteCantidad) <= 0 || Number(loteCantidad) > 5000) {
+      alert('Error: La cantidad de ingreso debe estar entre 1 y 5000 unidades.');
+      return;
+    }
+
     const libroTarget = libros.find((l) => l.id === Number(loteLibroId));
     if (!libroTarget) return;
 
@@ -233,7 +280,7 @@ export default function AlmacenPage() {
 
     const nuevoMov: MovimientoKardex = {
       id: `KDX-0${kardex.length + 50}`,
-      fecha: '14 Oct 2026 10:40',
+      fecha: `${loteFecha} 10:40`,
       tipo: 'ENTRADA',
       libroTitulo: libroTarget.titulo,
       cantidad: Number(loteCantidad),
@@ -248,6 +295,11 @@ export default function AlmacenPage() {
 
   const handleGuardarSalida = (e: React.FormEvent) => {
     e.preventDefault();
+    const hoyStr = new Date().toISOString().split('T')[0];
+    if (salidaFecha > hoyStr) {
+      alert('Error de Seguridad: La fecha de entrega no puede ser futura.');
+      return;
+    }
     if (!salidaBeneficiario) {
       alert('Por favor ingrese el beneficiario.');
       return;
@@ -256,8 +308,8 @@ export default function AlmacenPage() {
     const libroTarget = libros.find((l) => l.id === Number(salidaLibroId));
     if (!libroTarget) return;
 
-    if (libroTarget.stockActual < Number(salidaCantidad)) {
-      alert('Stock insuficiente para realizar esta entrega.');
+    if (Number(salidaCantidad) <= 0 || Number(salidaCantidad) > libroTarget.stockActual) {
+      alert(`Stock insuficiente o cantidad inválida. Disponible: ${libroTarget.stockActual} unidades.`);
       return;
     }
 
@@ -730,15 +782,38 @@ export default function AlmacenPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="input-label">Proveedor / Editorial *</label>
-                <input
-                  type="text"
-                  value={loteProveedor}
-                  onChange={(e) => setLoteProveedor(e.target.value)}
-                  className="input"
-                  required
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
+                <div>
+                  <label className="input-label">Proveedor / Editorial *</label>
+                  <input
+                    type="text"
+                    value={loteProveedor}
+                    onChange={(e) => setLoteProveedor(e.target.value)}
+                    className="input"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="input-label">Fecha de Compra / Ingreso * (No Futuras)</label>
+                  <input
+                    type="date"
+                    value={loteFecha}
+                    max={new Date().toISOString().split('T')[0]}
+                    min="2020-01-01"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const hoyStr = new Date().toISOString().split('T')[0];
+                      if (val > hoyStr) {
+                        alert('Seguridad SACA: No se permiten fechas futuras (ej. 2028). La fecha se ajustará a la actual.');
+                        setLoteFecha(hoyStr);
+                      } else {
+                        setLoteFecha(val);
+                      }
+                    }}
+                    className="input"
+                    required
+                  />
+                </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.65rem', marginTop: '0.5rem' }}>
@@ -825,6 +900,28 @@ export default function AlmacenPage() {
                     required
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="input-label">Fecha de Entrega / Despacho * (Máx: Hoy)</label>
+                <input
+                  type="date"
+                  value={salidaFecha}
+                  max={new Date().toISOString().split('T')[0]}
+                  min="2020-01-01"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const hoyStr = new Date().toISOString().split('T')[0];
+                    if (val > hoyStr) {
+                      alert('Seguridad SACA: No se permiten fechas de entrega futuras. Se ajustará al día de hoy.');
+                      setSalidaFecha(hoyStr);
+                    } else {
+                      setSalidaFecha(val);
+                    }
+                  }}
+                  className="input"
+                  required
+                />
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.65rem', marginTop: '0.5rem' }}>

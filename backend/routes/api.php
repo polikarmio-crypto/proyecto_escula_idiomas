@@ -43,24 +43,58 @@ Route::prefix('v1')->group(function () {
     // DASHBOARD: Panel ejecutivo con KPIs consolidados
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
-    // CATÁLOGOS BASE: Gestiones, idiomas, aulas, horarios, tipos pago, cajas
+    // MÓDULO 1: CATÁLOGOS BASE (Administrador del Sistema)
     Route::prefix('catalogos')->group(function () {
         Route::get('/', [CatalogoController::class, 'index']);
+        
         Route::get('/gestiones', [CatalogoController::class, 'gestiones']);
+        Route::post('/gestiones', [CatalogoController::class, 'storeGestion']);
+        Route::put('/gestiones/{id}', [CatalogoController::class, 'updateGestion']);
+        Route::delete('/gestiones/{id}', [CatalogoController::class, 'destroyGestion']);
+
         Route::get('/idiomas', [CatalogoController::class, 'idiomas']);
+        Route::post('/idiomas', [CatalogoController::class, 'storeIdioma']);
+        Route::put('/idiomas/{id}', [CatalogoController::class, 'updateIdioma']);
+        Route::delete('/idiomas/{id}', [CatalogoController::class, 'destroyIdioma']);
+
         Route::get('/aulas', [CatalogoController::class, 'aulas']);
+        Route::post('/aulas', [CatalogoController::class, 'storeAula']);
+        Route::put('/aulas/{id}', [CatalogoController::class, 'updateAula']);
+        Route::delete('/aulas/{id}', [CatalogoController::class, 'destroyAula']);
+
         Route::get('/horarios', [CatalogoController::class, 'horarios']);
+        Route::post('/horarios', [CatalogoController::class, 'storeHorario']);
+        Route::put('/horarios/{id}', [CatalogoController::class, 'updateHorario']);
+        Route::delete('/horarios/{id}', [CatalogoController::class, 'destroyHorario']);
+
+        Route::get('/tipos-programa', [CatalogoController::class, 'tiposPrograma']);
+        Route::post('/tipos-programa', [CatalogoController::class, 'storeTipoPrograma']);
+
+        Route::get('/modalidades', [CatalogoController::class, 'modalidades']);
+        Route::post('/modalidades', [CatalogoController::class, 'storeModalidad']);
+
         Route::get('/tipos-pago', [CatalogoController::class, 'tiposPago']);
+        Route::post('/tipos-pago', [CatalogoController::class, 'storeTipoPago']);
+
         Route::get('/cajas', [CatalogoController::class, 'cajas']);
+        Route::post('/cajas', [CatalogoController::class, 'storeCaja']);
     });
 
-    // ESTRUCTURA ACADÉMICA: Programas, niveles, libros curriculares
+    // MÓDULO 2: ESTRUCTURA ACADÉMICA (Jefe Académico)
     Route::prefix('estructura')->group(function () {
         Route::get('/programas', [EstructuraAcademicaController::class, 'index']);
         Route::get('/programas/{id}', [EstructuraAcademicaController::class, 'showPrograma']);
         Route::post('/programas', [EstructuraAcademicaController::class, 'storePrograma']);
+        Route::put('/programas/{id}', [EstructuraAcademicaController::class, 'updatePrograma']);
+        Route::delete('/programas/{id}', [EstructuraAcademicaController::class, 'destroyPrograma']);
+
         Route::post('/niveles', [EstructuraAcademicaController::class, 'storeNivel']);
+        Route::put('/niveles/{id}', [EstructuraAcademicaController::class, 'updateNivel']);
+        Route::delete('/niveles/{id}', [EstructuraAcademicaController::class, 'destroyNivel']);
+
         Route::post('/libros', [EstructuraAcademicaController::class, 'storeLibro']);
+        Route::put('/libros/{id}', [EstructuraAcademicaController::class, 'updateLibro']);
+        Route::delete('/libros/{id}', [EstructuraAcademicaController::class, 'destroyLibro']);
     });
 
     // MÓDULO: ESTUDIANTES (Civiles y Militares - CRUD Completo)
@@ -124,6 +158,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/minimos-cuadrados', [\App\Http\Controllers\Api\MetodosNumericosController::class, 'minimosCuadrados']);
         Route::post('/interpolacion-newton', [\App\Http\Controllers\Api\MetodosNumericosController::class, 'interpolacionNewton']);
         Route::post('/simplex', [\App\Http\Controllers\Api\MetodosNumericosController::class, 'simplex']);
+        // H3: Servicio Predictivo de Rendimiento Académico y Riesgo de Deserción
+        Route::post('/prediccion-rendimiento', [\App\Http\Controllers\Api\MetodosNumericosController::class, 'prediccionRendimiento']);
+        Route::get('/prediccion-rendimiento/validacion-h3', [\App\Http\Controllers\Api\MetodosNumericosController::class, 'validacionH3']);
+        Route::post('/prediccion-rendimiento/lote', [\App\Http\Controllers\Api\MetodosNumericosController::class, 'recalcularLote']);
     });
 });
 

@@ -20,7 +20,12 @@ import {
   ArrowRight,
   Sliders,
   Package,
-  Users
+  Users,
+  GraduationCap,
+  AlertTriangle,
+  TrendingDown,
+  Server,
+  Check
 } from 'lucide-react';
 
 interface Punto {
@@ -30,8 +35,13 @@ interface Punto {
   etiqueta?: string;
 }
 
+interface CalificacionH3 {
+  libro: number;
+  nota: number;
+}
+
 export default function MetodosNumericosPage() {
-  const [tabActiva, setTabActiva] = useState<'MINIMOS_CUADRADOS' | 'NEWTON' | 'SIMPLEX' | 'COLAS'>('MINIMOS_CUADRADOS');
+  const [tabActiva, setTabActiva] = useState<'MINIMOS_CUADRADOS' | 'NEWTON' | 'SIMPLEX' | 'COLAS' | 'PREDICCION_H3'>('MINIMOS_CUADRADOS');
 
   // =========================================================================
   // 1. ESTADO PARA MÍNIMOS CUADRADOS (SUMA DE CUADRADOS DE LAS DIFERENCIAS)
@@ -293,6 +303,356 @@ export default function MetodosNumericosPage() {
     };
   }, [lambda, mu, cajas]);
 
+  // =========================================================================
+  // 5. MODELO PREDICTIVO DE RENDIMIENTO ACADÉMICO & DESERCIÓN (DOCUMENTO H3)
+  // =========================================================================
+  const CASO_OFICIAL_H3: CalificacionH3[] = [
+    { libro: 1, nota: 78 },
+    { libro: 2, nota: 74 },
+    { libro: 3, nota: 75 },
+    { libro: 4, nota: 68 },
+    { libro: 5, nota: 66 },
+    { libro: 6, nota: 61 },
+  ];
+
+  const CASO_RIESGO_MEDIO: CalificacionH3[] = [
+    { libro: 1, nota: 80 },
+    { libro: 2, nota: 77 },
+    { libro: 3, nota: 74 },
+    { libro: 4, nota: 72 },
+    { libro: 5, nota: 69 },
+  ];
+
+  const CASO_OPTIMO: CalificacionH3[] = [
+    { libro: 1, nota: 75 },
+    { libro: 2, nota: 80 },
+    { libro: 3, nota: 84 },
+    { libro: 4, nota: 89 },
+    { libro: 5, nota: 93 },
+  ];
+
+  const LOTE_ESTUDIANTES_DEMO = [
+    {
+      id: 101,
+      nombre: 'Cadete M. Suárez (H3 Tabla 5.3)',
+      programa: 'Inglés Técnico Aeronáutico',
+      calificaciones: CASO_OFICIAL_H3,
+      objetivo: 12
+    },
+    {
+      id: 102,
+      nombre: 'Sbtte. R. Condori',
+      programa: 'Inglés Operativo CEDMIL',
+      calificaciones: CASO_RIESGO_MEDIO,
+      objetivo: 6
+    },
+    {
+      id: 103,
+      nombre: 'Tte. C. Morales',
+      programa: 'Inglés Misiones de Paz ONU',
+      calificaciones: CASO_OPTIMO,
+      objetivo: 6
+    },
+    {
+      id: 104,
+      nombre: 'Sgto. A. Mamani',
+      programa: 'Francés Militar',
+      calificaciones: [{ libro: 1, nota: 65 }, { libro: 2, nota: 70 }],
+      objetivo: 6
+    },
+    {
+      id: 105,
+      nombre: 'Alférez D. Vargas',
+      programa: 'Inglés Avanzado',
+      calificaciones: [
+        { libro: 1, nota: 62 }, { libro: 2, nota: 57 }, { libro: 3, nota: 53 },
+        { libro: 4, nota: 49 }, { libro: 5, nota: 44 }
+      ],
+      objetivo: 6
+    }
+  ];
+
+  const [califsH3, setCalifsH3] = useState<CalificacionH3[]>(CASO_OFICIAL_H3);
+  const [nombreH3, setNombreH3] = useState<string>('Cadete M. Suárez (Caso Tabla 5.3)');
+  const [programaH3, setProgramaH3] = useState<string>('Inglés Técnico Aeronáutico');
+  const [objetivoLvlH3, setObjetivoLvlH3] = useState<number | 'AUTO'>(12);
+  const [nuevoLibroH3, setNuevoLibroH3] = useState<string>('7');
+  const [nuevaNotaH3, setNuevaNotaH3] = useState<string>('58');
+  const [vistaLote, setVistaLote] = useState<boolean>(false);
+  const [cargandoApi, setCargandoApi] = useState<boolean>(false);
+  const [servidorMsg, setServidorMsg] = useState<{ tipo: 'ok' | 'err'; fuente: string; ms: number; data?: any } | null>(null);
+
+  // Motor predictivo H3 interactivo en cliente
+  const resultadoH3 = useMemo(() => {
+    const ordenadas = [...califsH3].sort((a, b) => a.libro - b.libro);
+    const n = ordenadas.length;
+
+    if (n < 3) {
+      return {
+        datosInsuficientes: true,
+        n,
+        a: 0,
+        b: 0,
+        ecuacionRecta: 'y = 0x + 0',
+        sumX: 0,
+        sumY: 0,
+        sumXX: 0,
+        sumXY: 0,
+        delta: 0,
+        ssRes: 0,
+        ssTot: 0,
+        r2: 0,
+        xp: typeof objetivoLvlH3 === 'number' ? objetivoLvlH3 : 6,
+        yp: 0,
+        nivelRiesgo: 'DATOS_INSUFICIENTES' as const,
+        mensajeAlerta: `Se requieren al menos 3 libros evaluados para generar la proyección matemática (actualmente: ${n}).`,
+        tablaAjuste: [] as Array<{
+          libro: number;
+          nota: number;
+          notaAjustada: number;
+          residuo: number;
+          residuoCuadrado: number;
+          xCuadrado: number;
+          xy: number;
+        }>,
+      };
+    }
+
+    let sumX = 0, sumY = 0, sumXX = 0, sumXY = 0;
+    for (const c of ordenadas) {
+      sumX += c.libro;
+      sumY += c.nota;
+      sumXX += (c.libro * c.libro);
+      sumXY += (c.libro * c.nota);
+    }
+
+    const delta = (n * sumXX) - (sumX * sumX);
+    if (Math.abs(delta) < 1e-9) {
+      return {
+        datosInsuficientes: true,
+        n,
+        a: 0,
+        b: 0,
+        ecuacionRecta: 'y = 0x + 0',
+        sumX,
+        sumY,
+        sumXX,
+        sumXY,
+        delta: 0,
+        ssRes: 0,
+        ssTot: 0,
+        r2: 0,
+        xp: typeof objetivoLvlH3 === 'number' ? objetivoLvlH3 : 6,
+        yp: 0,
+        nivelRiesgo: 'ERROR_CALCULO' as const,
+        mensajeAlerta: 'Abscisas sin variación: todos los libros tienen el mismo número.',
+        tablaAjuste: [] as Array<{
+          libro: number;
+          nota: number;
+          notaAjustada: number;
+          residuo: number;
+          residuoCuadrado: number;
+          xCuadrado: number;
+          xy: number;
+        }>,
+      };
+    }
+
+    const a = ((n * sumXY) - (sumX * sumY)) / delta;
+    const b = (sumY - (a * sumX)) / n;
+    const mediaY = sumY / n;
+
+    // Próximo examen de nivel
+    const ultimoLibro = ordenadas[ordenadas.length - 1].libro;
+    let xp = typeof objetivoLvlH3 === 'number' ? objetivoLvlH3 : 36;
+    if (objetivoLvlH3 === 'AUTO') {
+      const examenes = [6, 12, 18, 24, 30, 36];
+      xp = 36;
+      for (const ex of examenes) {
+        if (ex > ultimoLibro) {
+          xp = ex;
+          break;
+        }
+      }
+    }
+
+    const ypRaw = (a * xp) + b;
+    const yp = Math.max(0, Math.min(100, ypRaw));
+
+    let ssRes = 0;
+    let ssTot = 0;
+    const tablaAjuste = ordenadas.map((c) => {
+      const yHat = (a * c.libro) + b;
+      const e = c.nota - yHat;
+      const e2 = e * e;
+      ssRes += e2;
+      ssTot += Math.pow(c.nota - mediaY, 2);
+
+      return {
+        libro: c.libro,
+        nota: c.nota,
+        notaAjustada: Math.round(yHat * 100) / 100,
+        residuo: Math.round(e * 100) / 100,
+        residuoCuadrado: Math.round(e2 * 10000) / 10000,
+        xCuadrado: c.libro * c.libro,
+        xy: c.libro * c.nota,
+      };
+    });
+
+    const r2 = ssTot > 0 ? Math.max(0, Math.min(1, 1 - (ssRes / ssTot))) : 1;
+
+    let nivelRiesgo: 'ALTO' | 'MEDIO' | 'BAJO' = 'BAJO';
+    let mensajeAlerta = '';
+
+    if (yp < 51.0 || a < -3.0) {
+      nivelRiesgo = 'ALTO';
+      const razones: string[] = [];
+      if (yp < 51.0) razones.push(`nota proyectada (${yp.toFixed(2)}) inferior al umbral crítico de 51 puntos`);
+      if (a < -3.0) razones.push(`pendiente (${a.toFixed(4)}) denota pérdida acelerada de más de 3.0 puntos/libro`);
+      mensajeAlerta = `⚠️ RIESGO ALTO DE DESERCIÓN — ${razones.join(' y ')}. Se requiere intervención pedagógica inmediata del Jefe Académico antes del examen de nivel del libro ${xp}.`;
+    } else if (yp < 65.0 || a < 0) {
+      nivelRiesgo = 'MEDIO';
+      const razones: string[] = [];
+      if (yp < 65.0) razones.push(`nota proyectada (${yp.toFixed(2)}) inferior a 65 puntos`);
+      if (a < 0) razones.push(`tendencia descendente (${a.toFixed(4)})`);
+      mensajeAlerta = `⚡ RIESGO MEDIO — ${razones.join(' y ')}. Se sugiere seguimiento académico reforzado y tutoría complementaria.`;
+    } else {
+      nivelRiesgo = 'BAJO';
+      mensajeAlerta = `✅ RIESGO BAJO — Trayectoria estable o ascendente (${a >= 0 ? '+' : ''}${a.toFixed(4)} pts/libro). Proyección de ${yp.toFixed(2)} puntos para el examen del libro ${xp}.`;
+    }
+
+    return {
+      datosInsuficientes: false,
+      n,
+      a: Math.round(a * 10000) / 10000,
+      b: Math.round(b * 10000) / 10000,
+      ecuacionRecta: `y = ${a.toFixed(4)}x ${b >= 0 ? '+' : '-'} ${Math.abs(b).toFixed(4)}`,
+      sumX,
+      sumY: Math.round(sumY * 100) / 100,
+      sumXX,
+      sumXY: Math.round(sumXY * 100) / 100,
+      delta: Math.round(delta * 100) / 100,
+      ssRes: Math.round(ssRes * 10000) / 10000,
+      ssTot: Math.round(ssTot * 10000) / 10000,
+      r2: Math.round(r2 * 10000) / 10000,
+      xp,
+      yp: Math.round(yp * 100) / 100,
+      nivelRiesgo,
+      mensajeAlerta,
+      tablaAjuste,
+    };
+  }, [califsH3, objetivoLvlH3]);
+
+  // Recálculo por lotes (Figura 5.4)
+  const resultadoLote = useMemo(() => {
+    let alto = 0, medio = 0, bajo = 0, insuf = 0;
+    const items = LOTE_ESTUDIANTES_DEMO.map((est) => {
+      const califs = est.calificaciones;
+      const n = califs.length;
+      if (n < 3) {
+        insuf++;
+        return { ...est, riesgo: 'DATOS_INSUFICIENTES', yp: '-', a: '-', r2: '-' };
+      }
+      let sumX = 0, sumY = 0, sumXX = 0, sumXY = 0;
+      for (const c of califs) {
+        sumX += c.libro; sumY += c.nota;
+        sumXX += c.libro * c.libro; sumXY += c.libro * c.nota;
+      }
+      const delta = (n * sumXX) - (sumX * sumX);
+      const a = ((n * sumXY) - (sumX * sumY)) / delta;
+      const b = (sumY - (a * sumX)) / n;
+      const yp = Math.max(0, Math.min(100, (a * est.objetivo) + b));
+
+      let riesgo = 'BAJO';
+      if (yp < 51.0 || a < -3.0) {
+        riesgo = 'ALTO'; alto++;
+      } else if (yp < 65.0 || a < 0) {
+        riesgo = 'MEDIO'; medio++;
+      } else {
+        bajo++;
+      }
+
+      return {
+        ...est,
+        riesgo,
+        yp: yp.toFixed(2),
+        a: a.toFixed(4),
+        b: b.toFixed(2),
+      };
+    });
+
+    return { total: LOTE_ESTUDIANTES_DEMO.length, alto, medio, bajo, insuf, items };
+  }, []);
+
+  const handleAgregarLibroH3 = (e: React.FormEvent) => {
+    e.preventDefault();
+    const l = parseInt(nuevoLibroH3, 10);
+    const n = parseFloat(nuevaNotaH3);
+    if (isNaN(l) || isNaN(n) || l < 1 || l > 36 || n < 0 || n > 100) {
+      alert('El libro debe estar entre 1 y 36, y la nota entre 0 y 100.');
+      return;
+    }
+    if (califsH3.some((c) => c.libro === l)) {
+      alert(`El libro ${l} ya está registrado. Elimínelo primero.`);
+      return;
+    }
+    setCalifsH3((prev) => [...prev, { libro: l, nota: n }].sort((a, b) => a.libro - b.libro));
+    setNuevoLibroH3(String(l + 1 <= 36 ? l + 1 : 36));
+    setNuevaNotaH3('');
+  };
+
+  const handleEliminarLibroH3 = (libro: number) => {
+    if (califsH3.length <= 1) {
+      alert('Debe conservar al menos un registro.');
+      return;
+    }
+    setCalifsH3((prev) => prev.filter((c) => c.libro !== libro));
+  };
+
+  const verificarConQuarkus = async () => {
+    setCargandoApi(true);
+    setServidorMsg(null);
+    const t0 = performance.now();
+    try {
+      const payload = {
+        idEstudiante: 1,
+        nombreEstudiante: nombreH3,
+        programa: programaH3,
+        calificaciones: califsH3,
+        libroExamenNivelObjetivo: typeof objetivoLvlH3 === 'number' ? objetivoLvlH3 : undefined,
+      };
+
+      let res = await fetch('/api/quarkus/analytics/prediccion-rendimiento', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).catch(() => null);
+
+      let fuente = 'Microservicio Quarkus 3.15 (Puerto 8080)';
+
+      if (!res || !res.ok) {
+        res = await fetch('/api/v1/metodos-numericos/prediccion-rendimiento', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }).catch(() => null);
+        fuente = 'API Core Laravel 12 (Puerto 8000)';
+      }
+
+      const t1 = performance.now();
+      if (res && res.ok) {
+        const data = await res.json();
+        setServidorMsg({ tipo: 'ok', fuente, ms: Math.round(t1 - t0), data });
+      } else {
+        setServidorMsg({ tipo: 'err', fuente: 'Error de respuesta en servicios', ms: Math.round(t1 - t0) });
+      }
+    } catch {
+      setServidorMsg({ tipo: 'err', fuente: 'Sin conexión a servicios locales', ms: 0 });
+    } finally {
+      setCargandoApi(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       {/* Encabezado Militar Solemne */}
@@ -361,6 +721,15 @@ export default function MetodosNumericosPage() {
         >
           <Activity size={13} />
           <span>Teoría de Colas M/M/c (FIFO)</span>
+        </button>
+        <button
+          onClick={() => setTabActiva('PREDICCION_H3')}
+          className={`filter-tab ${tabActiva === 'PREDICCION_H3' ? 'active' : ''}`}
+          style={tabActiva === 'PREDICCION_H3' ? { background: 'rgba(217, 119, 6, 0.15)', borderColor: 'var(--military-gold-primary)', color: 'var(--military-gold-primary)' } : {}}
+        >
+          <GraduationCap size={13} />
+          <span style={{ fontWeight: 700 }}>Predicción Rendimiento Académico (H3)</span>
+          <span className="badge badge-gold" style={{ fontSize: '0.62rem', padding: '0.1rem 0.35rem', marginLeft: '0.2rem' }}>PDF H3</span>
         </button>
       </div>
 
@@ -818,6 +1187,545 @@ export default function MetodosNumericosPage() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ===================================================================
+          PESTAÑA 5: MODELO PREDICTIVO DE RENDIMIENTO & DESERCIÓN (H3 MN)
+      =================================================================== */}
+      {tabActiva === 'PREDICCION_H3' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* Barra de Herramientas y Casos Institucionales */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Cargar Escenario H3:</span>
+              <button
+                onClick={() => {
+                  setCalifsH3(CASO_OFICIAL_H3);
+                  setNombreH3('Cadete M. Suárez (Tabla 5.3)');
+                  setObjetivoLvlH3(12);
+                  setNuevoLibroH3('7');
+                }}
+                className="btn btn-secondary"
+                style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem', border: '1px solid var(--military-gold-primary)' }}
+              >
+                <Award size={13} color="var(--military-gold-primary)" /> Caso Validación Oficial H3 (Tabla 5.3)
+              </button>
+              <button
+                onClick={() => {
+                  setCalifsH3(CASO_RIESGO_MEDIO);
+                  setNombreH3('Sbtte. R. Condori');
+                  setObjetivoLvlH3(6);
+                  setNuevoLibroH3('6');
+                }}
+                className="btn btn-secondary"
+                style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem' }}
+              >
+                <TrendingDown size={13} color="#fbbf24" /> Caso Riesgo Medio
+              </button>
+              <button
+                onClick={() => {
+                  setCalifsH3(CASO_OPTIMO);
+                  setNombreH3('Tte. C. Morales');
+                  setObjetivoLvlH3(6);
+                  setNuevoLibroH3('6');
+                }}
+                className="btn btn-secondary"
+                style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem' }}
+              >
+                <TrendingUp size={13} color="var(--status-active)" /> Caso Rendimiento Óptimo
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <button
+                onClick={() => setVistaLote(!vistaLote)}
+                className={`btn ${vistaLote ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+              >
+                <Users size={13} /> {vistaLote ? 'Volver a Estudiante Individual' : 'Recálculo por Lote (Figura 5.4)'}
+              </button>
+              <button
+                onClick={verificarConQuarkus}
+                disabled={cargandoApi}
+                className="btn btn-military"
+                style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                title="Llama al endpoint POST /api/analytics/prediccion-rendimiento"
+              >
+                <Server size={13} /> {cargandoApi ? 'Consultando Microservicio...' : 'Verificar con Quarkus REST'}
+              </button>
+            </div>
+          </div>
+
+          {/* Notificación de Verificación de Servidor */}
+          {servidorMsg && (
+            <div
+              style={{
+                padding: '0.6rem 0.9rem',
+                borderRadius: '6px',
+                fontSize: '0.78rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: servidorMsg.tipo === 'ok' ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                border: `1px solid ${servidorMsg.tipo === 'ok' ? 'rgba(34, 197, 94, 0.35)' : 'rgba(239, 68, 68, 0.35)'}`,
+                color: 'var(--text-main)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Check size={14} color="var(--status-active)" />
+                <span>
+                  <strong>Servicio Activo:</strong> Respuesta validada desde <code>{servidorMsg.fuente}</code> en {servidorMsg.ms} ms.
+                </span>
+              </div>
+              <span className="badge badge-gold" style={{ fontSize: '0.68rem' }}>
+                Riesgo Servidor: {servidorMsg.data?.nivelRiesgo || 'OK'} &bull; R&sup2; = {servidorMsg.data?.r2 ?? '0.936'}
+              </span>
+            </div>
+          )}
+
+          {/* VISTA 1: PREDICCIÓN INDIVIDUAL */}
+          {!vistaLote && (
+            <>
+              {/* Formulario de Parámetros del Estudiante y Examen Objetivo */}
+              <div
+                className="card"
+                style={{
+                  padding: '0.85rem 1rem',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '0.75rem',
+                  alignItems: 'flex-end',
+                }}
+              >
+                <div>
+                  <label className="input-label" style={{ fontSize: '0.72rem' }}>Nombre / Identificación del Estudiante</label>
+                  <input
+                    type="text"
+                    value={nombreH3}
+                    onChange={(e) => setNombreH3(e.target.value)}
+                    className="input"
+                    style={{ fontSize: '0.82rem' }}
+                  />
+                </div>
+
+                <div>
+                  <label className="input-label" style={{ fontSize: '0.72rem' }}>Programa Académico</label>
+                  <input
+                    type="text"
+                    value={programaH3}
+                    onChange={(e) => setProgramaH3(e.target.value)}
+                    className="input"
+                    style={{ fontSize: '0.82rem' }}
+                  />
+                </div>
+
+                <div>
+                  <label className="input-label" style={{ fontSize: '0.72rem' }}>Examen de Nivel Objetivo (Ecuación 4.10)</label>
+                  <select
+                    value={objetivoLvlH3}
+                    onChange={(e) => setObjetivoLvlH3(e.target.value === 'AUTO' ? 'AUTO' : parseInt(e.target.value, 10))}
+                    className="input"
+                    style={{ fontSize: '0.82rem' }}
+                  >
+                    <option value="AUTO">Automático (Siguiente examen no rendido)</option>
+                    <option value={6}>Libro 6 — Examen Nivel 1</option>
+                    <option value={12}>Libro 12 — Examen Nivel 2 (Caso H3)</option>
+                    <option value={18}>Libro 18 — Examen Nivel 3</option>
+                    <option value={24}>Libro 24 — Examen Nivel 4</option>
+                    <option value={30}>Libro 30 — Examen Nivel 5</option>
+                    <option value={36}>Libro 36 — Examen Nivel 6 (Final)</option>
+                  </select>
+                </div>
+
+                {/* Formulario para Registrar Nuevo Libro Evaluado */}
+                <form
+                  onSubmit={handleAgregarLibroH3}
+                  style={{ display: 'flex', gap: '0.35rem', alignItems: 'flex-end' }}
+                >
+                  <div>
+                    <label className="input-label" style={{ fontSize: '0.72rem' }}>Libro (1-36)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="36"
+                      value={nuevoLibroH3}
+                      onChange={(e) => setNuevoLibroH3(e.target.value)}
+                      className="input"
+                      style={{ width: '75px', fontSize: '0.82rem' }}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="input-label" style={{ fontSize: '0.72rem' }}>Nota (0-100)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      value={nuevaNotaH3}
+                      onChange={(e) => setNuevaNotaH3(e.target.value)}
+                      className="input"
+                      style={{ width: '85px', fontSize: '0.82rem' }}
+                      required
+                    />
+                  </div>
+                  <button type="submit" className="btn btn-primary" style={{ padding: '0.4rem 0.65rem', height: '34px' }}>
+                    <Plus size={13} /> Agregar
+                  </button>
+                </form>
+              </div>
+
+              {/* Tarjetas KPI de Resultados H3 */}
+              {!resultadoH3.datosInsuficientes && (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+                    gap: '0.75rem',
+                  }}
+                >
+                  {/* Coeficientes */}
+                  <div className="card" style={{ padding: '0.85rem 1rem' }}>
+                    <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>
+                      Recta de Tendencia (&Ecirc; = ax + b)
+                    </p>
+                    <p style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--military-gold-primary)', margin: '0.2rem 0 0' }}>
+                      {resultadoH3.ecuacionRecta}
+                    </p>
+                    <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', margin: '0.15rem 0 0' }}>
+                      Pendiente a: <strong>{resultadoH3.a}</strong> pts/libro &bull; Intercepto b: <strong>{resultadoH3.b}</strong>
+                    </p>
+                  </div>
+
+                  {/* Coeficiente R2 */}
+                  <div className="card" style={{ padding: '0.85rem 1rem' }}>
+                    <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>
+                      Bondad de Ajuste (R&sup2;)
+                    </p>
+                    <p style={{ fontSize: '1.25rem', fontWeight: 800, color: resultadoH3.r2 >= 0.70 ? 'var(--status-active)' : '#fbbf24', margin: '0.2rem 0 0' }}>
+                      {(resultadoH3.r2 * 100).toFixed(2)}%
+                    </p>
+                    <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', margin: '0.15rem 0 0' }}>
+                      SS<sub>res</sub>: {resultadoH3.ssRes} &bull; SS<sub>tot</sub>: {resultadoH3.ssTot}
+                    </p>
+                  </div>
+
+                  {/* Proyección al Examen de Nivel */}
+                  <div className="card" style={{ padding: '0.85rem 1rem', background: 'var(--bg-surface-elevated)' }}>
+                    <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>
+                      Proyección Examen Nivel (Libro {resultadoH3.xp})
+                    </p>
+                    <p style={{ fontSize: '1.35rem', fontWeight: 900, color: resultadoH3.yp >= 71 ? 'var(--status-active)' : (resultadoH3.yp >= 51 ? '#fbbf24' : '#ef4444'), margin: '0.2rem 0 0' }}>
+                      &ycirc;<sub>{resultadoH3.xp}</sub> = {resultadoH3.yp} pts
+                    </p>
+                    <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', margin: '0.15rem 0 0' }}>
+                      Umbral Aprobación: 71 pts &bull; Umbral Crítico: 51 pts
+                    </p>
+                  </div>
+
+                  {/* Clasificación de Riesgo R(xp) */}
+                  <div
+                    className="card"
+                    style={{
+                      padding: '0.85rem 1rem',
+                      borderLeft: `4px solid ${
+                        resultadoH3.nivelRiesgo === 'ALTO' ? '#ef4444' : (resultadoH3.nivelRiesgo === 'MEDIO' ? '#fbbf24' : '#22c55e')
+                      }`,
+                    }}
+                  >
+                    <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>
+                      Riesgo Deserción R(x<sub>p</sub>)
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem' }}>
+                      {resultadoH3.nivelRiesgo === 'ALTO' && <AlertTriangle size={18} color="#ef4444" />}
+                      {resultadoH3.nivelRiesgo === 'MEDIO' && <AlertCircle size={18} color="#fbbf24" />}
+                      {resultadoH3.nivelRiesgo === 'BAJO' && <CheckCircle2 size={18} color="#22c55e" />}
+                      <span
+                        style={{
+                          fontSize: '1.25rem',
+                          fontWeight: 900,
+                          color: resultadoH3.nivelRiesgo === 'ALTO' ? '#ef4444' : (resultadoH3.nivelRiesgo === 'MEDIO' ? '#fbbf24' : '#22c55e'),
+                        }}
+                      >
+                        RIESGO {resultadoH3.nivelRiesgo}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', margin: '0.15rem 0 0' }}>
+                      Regla Ecuación 4.11 ({resultadoH3.n} libros evaluados)
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Mensaje de Alerta y Recomendación Pedagógica del Documento H3 */}
+              <div
+                style={{
+                  padding: '0.9rem 1.1rem',
+                  borderRadius: '6px',
+                  border: `1px solid ${
+                    resultadoH3.nivelRiesgo === 'ALTO'
+                      ? 'rgba(239, 68, 68, 0.4)'
+                      : (resultadoH3.nivelRiesgo === 'MEDIO' ? 'rgba(245, 158, 11, 0.4)' : 'rgba(34, 197, 94, 0.4)')
+                  }`,
+                  background:
+                    resultadoH3.nivelRiesgo === 'ALTO'
+                      ? 'rgba(239, 68, 68, 0.08)'
+                      : (resultadoH3.nivelRiesgo === 'MEDIO' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(34, 197, 94, 0.08)'),
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem' }}>
+                  {resultadoH3.nivelRiesgo === 'ALTO' ? (
+                    <AlertTriangle size={20} color="#ef4444" style={{ flexShrink: 0, marginTop: 2 }} />
+                  ) : resultadoH3.nivelRiesgo === 'MEDIO' ? (
+                    <AlertCircle size={20} color="#fbbf24" style={{ flexShrink: 0, marginTop: 2 }} />
+                  ) : (
+                    <CheckCircle2 size={20} color="#22c55e" style={{ flexShrink: 0, marginTop: 2 }} />
+                  )}
+                  <div>
+                    <h4 style={{ fontSize: '0.88rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
+                      Recomendación Oficial para el Jefe Académico (CEDMIL)
+                    </h4>
+                    <p style={{ fontSize: '0.8rem', margin: '0.25rem 0 0', color: 'var(--text-main)', lineHeight: 1.45 }}>
+                      {resultadoH3.mensajeAlerta}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* TABLA DE AJUSTE PASO A PASO (TABLA 5.3 DEL DOCUMENTO H3) */}
+              {!resultadoH3.datosInsuficientes && (
+                <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                  <div
+                    style={{
+                      padding: '0.85rem 1rem',
+                      background: 'var(--bg-surface-elevated)',
+                      borderBottom: '1px solid var(--border-subtle)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <div>
+                      <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
+                        Tabla 5.3: Dispersión, Residuos y Error Cuadrático del Ajuste Lineal
+                      </h3>
+                      <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.15rem 0 0' }}>
+                        Cálculo del residuo e<sub>i</sub> = y<sub>i</sub> - &ycirc;<sub>i</sub> y diferencias al cuadrado e<sub>i</sub>&sup2;
+                      </p>
+                    </div>
+                    <span className="badge badge-gold" style={{ fontSize: '0.72rem' }}>
+                      &Delta; = {resultadoH3.delta} &bull; n = {resultadoH3.n} libros
+                    </span>
+                  </div>
+
+                  <div className="table-responsive">
+                    <table className="table" style={{ margin: 0, fontSize: '0.78rem' }}>
+                      <thead>
+                        <tr>
+                          <th style={{ textAlign: 'center' }}>Libro (x<sub>i</sub>)</th>
+                          <th style={{ textAlign: 'center' }}>Nota Observada (y<sub>i</sub>)</th>
+                          <th style={{ textAlign: 'center' }}>Nota Ajustada (&ycirc;<sub>i</sub>)</th>
+                          <th style={{ textAlign: 'center' }}>Residuo (e<sub>i</sub> = y - &ycirc;)</th>
+                          <th style={{ textAlign: 'center', background: 'rgba(245, 158, 11, 0.08)' }}>
+                            Error Cuadrático (e<sub>i</sub>&sup2;)
+                          </th>
+                          <th style={{ textAlign: 'center' }}>x<sub>i</sub>&sup2;</th>
+                          <th style={{ textAlign: 'center' }}>x<sub>i</sub> &bull; y<sub>i</sub></th>
+                          <th style={{ textAlign: 'right' }}>Acción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {resultadoH3.tablaAjuste.map((fila) => (
+                          <tr key={fila.libro}>
+                            <td style={{ textAlign: 'center', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>
+                              Libro {fila.libro}
+                            </td>
+                            <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-main)' }}>
+                              {fila.nota}
+                            </td>
+                            <td style={{ textAlign: 'center', color: 'var(--military-gold-primary)' }}>
+                              {fila.notaAjustada}
+                            </td>
+                            <td style={{ textAlign: 'center', color: fila.residuo >= 0 ? 'var(--status-active)' : '#ef4444' }}>
+                              {fila.residuo >= 0 ? `+${fila.residuo}` : fila.residuo}
+                            </td>
+                            <td style={{ textAlign: 'center', fontWeight: 800, color: '#fbbf24', background: 'rgba(245, 158, 11, 0.04)' }}>
+                              {fila.residuoCuadrado}
+                            </td>
+                            <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                              {fila.xCuadrado}
+                            </td>
+                            <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                              {fila.xy}
+                            </td>
+                            <td style={{ textAlign: 'right' }}>
+                              <button
+                                onClick={() => handleEliminarLibroH3(fila.libro)}
+                                className="btn btn-secondary btn-icon"
+                                style={{ width: '24px', height: '24px', padding: 0, color: '#ef4444' }}
+                                title="Eliminar calificación de este libro"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+
+                        {/* Sumatorias de la Tabla */}
+                        <tr style={{ background: 'var(--bg-surface-elevated)', fontWeight: 800, borderTop: '2px solid var(--border-subtle)' }}>
+                          <td style={{ textAlign: 'center', color: 'var(--military-gold-primary)' }}>&Sigma; (SUMATORIAS)</td>
+                          <td style={{ textAlign: 'center' }}>&Sigma;y = {resultadoH3.sumY}</td>
+                          <td style={{ textAlign: 'center' }}>-</td>
+                          <td style={{ textAlign: 'center' }}>&Sigma;e &asymp; 0.00</td>
+                          <td style={{ textAlign: 'center', color: '#fbbf24', background: 'rgba(245, 158, 11, 0.15)' }}>
+                            SS<sub>res</sub> = {resultadoH3.ssRes}
+                          </td>
+                          <td style={{ textAlign: 'center' }}>&Sigma;x&sup2; = {resultadoH3.sumXX}</td>
+                          <td style={{ textAlign: 'center' }}>&Sigma;xy = {resultadoH3.sumXY}</td>
+                          <td></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* VISTA 2: RECÁLCULO POR LOTE AL CIERRE DE ROTACIÓN DOCENTE (FIGURA 5.4) */}
+          {vistaLote && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gap: '0.75rem',
+                }}
+              >
+                <div className="card" style={{ padding: '0.75rem 1rem' }}>
+                  <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>
+                    Total Cohorte
+                  </p>
+                  <p style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--text-main)', margin: '0.2rem 0 0' }}>
+                    {resultadoLote.total} Estudiantes
+                  </p>
+                </div>
+
+                <div className="card" style={{ padding: '0.75rem 1rem', borderLeft: '4px solid #ef4444' }}>
+                  <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>
+                    Riesgo Alto (Deserción)
+                  </p>
+                  <p style={{ fontSize: '1.35rem', fontWeight: 900, color: '#ef4444', margin: '0.2rem 0 0' }}>
+                    {resultadoLote.alto} Casos
+                  </p>
+                </div>
+
+                <div className="card" style={{ padding: '0.75rem 1rem', borderLeft: '4px solid #fbbf24' }}>
+                  <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>
+                    Riesgo Medio (Alerta)
+                  </p>
+                  <p style={{ fontSize: '1.35rem', fontWeight: 900, color: '#fbbf24', margin: '0.2rem 0 0' }}>
+                    {resultadoLote.medio} Casos
+                  </p>
+                </div>
+
+                <div className="card" style={{ padding: '0.75rem 1rem', borderLeft: '4px solid #22c55e' }}>
+                  <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>
+                    Riesgo Bajo (Óptimo)
+                  </p>
+                  <p style={{ fontSize: '1.35rem', fontWeight: 900, color: '#22c55e', margin: '0.2rem 0 0' }}>
+                    {resultadoLote.bajo} Casos
+                  </p>
+                </div>
+
+                <div className="card" style={{ padding: '0.75rem 1rem' }}>
+                  <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>
+                    Datos Insuficientes (n &lt; 3)
+                  </p>
+                  <p style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--text-muted)', margin: '0.2rem 0 0' }}>
+                    {resultadoLote.insuf} Casos
+                  </p>
+                </div>
+              </div>
+
+              {/* Tabla del Lote */}
+              <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                <div style={{ padding: '0.85rem 1rem', background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
+                    Figura 5.4: Matriz de Recálculo Consolidado al Cierre de Rotación Docente
+                  </h3>
+                  <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.15rem 0 0' }}>
+                    Detección temprana y priorización para asignación de tutores pedagógicos antes del examen de nivel
+                  </p>
+                </div>
+
+                <div className="table-responsive">
+                  <table className="table" style={{ margin: 0, fontSize: '0.78rem' }}>
+                    <thead>
+                      <tr>
+                        <th>Estudiante</th>
+                        <th>Programa</th>
+                        <th style={{ textAlign: 'center' }}>Libros Evaluados</th>
+                        <th style={{ textAlign: 'center' }}>Pendiente (a)</th>
+                        <th style={{ textAlign: 'center' }}>Próx. Examen Nivel</th>
+                        <th style={{ textAlign: 'center' }}>Nota Proyectada (&ycirc;<sub>p</sub>)</th>
+                        <th style={{ textAlign: 'center' }}>Nivel de Riesgo R(x<sub>p</sub>)</th>
+                        <th style={{ textAlign: 'right' }}>Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {resultadoLote.items.map((est) => (
+                        <tr key={est.id}>
+                          <td style={{ fontWeight: 700, color: 'var(--text-main)' }}>{est.nombre}</td>
+                          <td>{est.programa}</td>
+                          <td style={{ textAlign: 'center' }}>{est.calificaciones.length} libros</td>
+                          <td style={{ textAlign: 'center', fontFamily: "'JetBrains Mono', monospace" }}>
+                            {est.a !== '-' ? `${est.a} pts/l` : '-'}
+                          </td>
+                          <td style={{ textAlign: 'center' }}>Libro {est.objetivo}</td>
+                          <td style={{ textAlign: 'center', fontWeight: 800, color: 'var(--military-gold-primary)' }}>
+                            {est.yp !== '-' ? `${est.yp} pts` : '-'}
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <span
+                              className={`badge ${
+                                est.riesgo === 'ALTO'
+                                  ? 'badge-danger'
+                                  : (est.riesgo === 'MEDIO' ? 'badge-gold' : (est.riesgo === 'BAJO' ? 'badge-military' : ''))
+                              }`}
+                              style={{
+                                fontSize: '0.72rem',
+                                padding: '0.2rem 0.5rem',
+                                color: est.riesgo === 'ALTO' ? '#ef4444' : (est.riesgo === 'MEDIO' ? '#fbbf24' : '#22c55e'),
+                              }}
+                            >
+                              {est.riesgo}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <button
+                              onClick={() => {
+                                setCalifsH3(est.calificaciones);
+                                setNombreH3(est.nombre);
+                                setProgramaH3(est.programa);
+                                setObjetivoLvlH3(est.objetivo);
+                                setVistaLote(false);
+                              }}
+                              className="btn btn-secondary"
+                              style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}
+                            >
+                              Analizar Detalle
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

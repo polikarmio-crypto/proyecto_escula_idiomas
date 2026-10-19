@@ -30,17 +30,11 @@ import {
   KeyRound,
   ShieldAlert,
   UserCheck,
-  LineChart
+  LineChart,
+  Database,
+  FolderTree
 } from 'lucide-react';
-
-export type RolUsuario =
-  | 'ESTUDIANTE'
-  | 'DOCENTE'
-  | 'SECRETARIA'
-  | 'CAJERO'
-  | 'ALMACENERO'
-  | 'JEFE_ACADEMICO'
-  | 'ADMIN';
+import { useAuthRole, RolUsuario, ROLES_CONFIG } from '@/context/AuthRoleContext';
 
 export interface InfoRol {
   id: RolUsuario;
@@ -55,105 +49,17 @@ export interface InfoRol {
   rutasPermitidas: string[];
 }
 
-export const ROLES_CONFIG: Record<RolUsuario, InfoRol> = {
-  ESTUDIANTE: {
-    id: 'ESTUDIANTE',
-    titulo: 'Estudiante / Alumno Regular',
-    badge: 'Alumno Militar / Civil',
-    nombrePorDefecto: 'Cad. Carlos Fernando Mamani',
-    emailPorDefecto: 'c.mamani@ejercito.mil.bo',
-    pinSeguridad: '', // Acceso libre sin PIN
-    palabraClave: '',
-    descripcion: 'Consulta de calificaciones (fórmula 80/10/10), avance libro a libro y trámites en caja.',
-    color: '#3b82f6',
-    rutasPermitidas: ['/', '/calificaciones', '/inscripciones', '/cajas'],
-  },
-  DOCENTE: {
-    id: 'DOCENTE',
-    titulo: 'Docente / Instructor Militar',
-    badge: 'Catedrático de Idiomas',
-    nombrePorDefecto: 'Cap. Fernando Ríos Torrico',
-    emailPorDefecto: 'f.rios@ejercito.mil.bo',
-    pinSeguridad: '1010',
-    palabraClave: 'DOCENTE',
-    descripcion: 'Centralizador de notas, registro de evaluaciones y ciclo de rotación obligatoria de 15 días.',
-    color: '#10b981',
-    rutasPermitidas: ['/', '/docentes', '/calificaciones', '/paralelos', '/metodos-numericos'],
-  },
-  SECRETARIA: {
-    id: 'SECRETARIA',
-    titulo: 'Secretaría Académica',
-    badge: 'Registro y Matrículas',
-    nombrePorDefecto: 'Sgto. 1ro. Patricia Morales Guzmán',
-    emailPorDefecto: 'secretaria@ejercito.mil.bo',
-    pinSeguridad: '2020',
-    palabraClave: 'SECRETARIA',
-    descripcion: 'Gestión de estudiantes militares y civiles, apertura de paralelos y control de cupos.',
-    color: '#8b5cf6',
-    rutasPermitidas: ['/', '/estudiantes', '/paralelos', '/inscripciones'],
-  },
-  CAJERO: {
-    id: 'CAJERO',
-    titulo: 'Cajero / Ventanillas FIFO',
-    badge: 'Caja y Finanzas EIE',
-    nombrePorDefecto: 'Sof. My. David Choquehuanca',
-    emailPorDefecto: 'cajero@ejercito.mil.bo',
-    pinSeguridad: '3030',
-    palabraClave: 'CAJERO',
-    descripcion: 'Emisión y llamada de fichas FIFO en ventanilla, cobro de matrículas y métricas M/M/c.',
-    color: '#f59e0b',
-    rutasPermitidas: ['/', '/cajas'],
-  },
-  ALMACENERO: {
-    id: 'ALMACENERO',
-    titulo: 'Almacenero / Control ROP',
-    badge: 'Logística y Textos',
-    nombrePorDefecto: 'Sgto. 2do. Marcelo Justiniano',
-    emailPorDefecto: 'almacen@ejercito.mil.bo',
-    pinSeguridad: '4040',
-    palabraClave: 'ALMACEN',
-    descripcion: 'Inventario físico de libros, control de punto de reorden (ROP) y pedidos de reposición.',
-    color: '#ec4899',
-    rutasPermitidas: ['/', '/almacen', '/metodos-numericos'],
-  },
-  JEFE_ACADEMICO: {
-    id: 'JEFE_ACADEMICO',
-    titulo: 'Jefe Académico (CEDMIL)',
-    badge: 'Jefatura de Estudios',
-    nombrePorDefecto: 'Tcnl. DEM. Hugo Banzer Rivera',
-    emailPorDefecto: 'jefe.academico@ejercito.mil.bo',
-    pinSeguridad: '5050',
-    palabraClave: 'JEFE',
-    descripcion: 'Supervisión de planes de estudio, aprobación de relevos docentes y fiscalización militar.',
-    color: '#d97706',
-    rutasPermitidas: ['/', '/estudiantes', '/docentes', '/paralelos', '/inscripciones', '/calificaciones', '/cajas', '/almacen', '/metodos-numericos'],
-  },
-  ADMIN: {
-    id: 'ADMIN',
-    titulo: 'Administrador del Sistema',
-    badge: 'Comando General / Admin',
-    nombrePorDefecto: 'Cnl. DAEN. Roberto Méndez Silva',
-    emailPorDefecto: 'admin@ejercito.mil.bo',
-    pinSeguridad: '9999',
-    palabraClave: 'ADMIN',
-    descripcion: 'Control absoluto del sistema, catálogo institucional, auditoría 5FN y configuración global.',
-    color: '#eab308',
-    rutasPermitidas: ['/', '/estudiantes', '/docentes', '/paralelos', '/inscripciones', '/calificaciones', '/cajas', '/almacen', '/metodos-numericos'],
-  },
-};
-
 /* ── MAPEO DE PREFIJO DE EMAIL INSTITUCIONAL → ROL ── */
 const EMAIL_PREFIX_TO_ROLE: Record<string, RolUsuario> = {
   'admin': 'ADMIN',
   'jef':   'JEFE_ACADEMICO',
   'doc':   'DOCENTE',
-  'sec':   'SECRETARIA',
   'caj':   'CAJERO',
   'alm':   'ALMACENERO',
   'est':   'ESTUDIANTE',
 };
 
-/** Detecta el rol a partir del prefijo del email institucional (ej. admin., admin@, est., sec., etc.) */
+/** Detecta el rol a partir del prefijo del email institucional */
 function detectarRolPorEmail(email: string): RolUsuario | null {
   const emailLower = email.toLowerCase().trim();
   for (const [prefix, rol] of Object.entries(EMAIL_PREFIX_TO_ROLE)) {
@@ -179,14 +85,16 @@ interface NavItem {
 
 const ALL_NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/estudiantes', label: 'Estudiantes', icon: Users, badge: 'Activo' },
-  { href: '/docentes', label: 'Docentes', icon: GraduationCap },
-  { href: '/paralelos', label: 'Paralelos', icon: Layers },
-  { href: '/inscripciones', label: 'Inscripciones', icon: ClipboardEdit },
-  { href: '/calificaciones', label: 'Calificaciones', icon: Award },
-  { href: '/cajas', label: 'Cajas / Pagos', icon: Landmark },
-  { href: '/almacen', label: 'Almacén Libros', icon: Package },
-  { href: '/metodos-numericos', label: 'Métodos Numéricos & IO', icon: LineChart, badge: 'Quarkus' },
+  { href: '/catalogos', label: 'Catálogos Base', icon: Database, badge: 'Mód 1' },
+  { href: '/estructura', label: 'Estructura Académica', icon: FolderTree, badge: 'Mód 2' },
+  { href: '/docentes', label: 'Docentes', icon: GraduationCap, badge: 'Mód 3' },
+  { href: '/estudiantes', label: 'Estudiantes', icon: Users, badge: 'Mód 4' },
+  { href: '/paralelos', label: 'Paralelos', icon: Layers, badge: 'Mód 5' },
+  { href: '/inscripciones', label: 'Inscripciones', icon: ClipboardEdit, badge: 'Mód 6' },
+  { href: '/calificaciones', label: 'Calificaciones', icon: Award, badge: 'Mód 7' },
+  { href: '/cajas', label: 'Cajas / Pagos', icon: Landmark, badge: 'Mód 8' },
+  { href: '/almacen', label: 'Almacén Libros', icon: Package, badge: 'Mód 9' },
+  { href: '/metodos-numericos', label: 'Métodos Numéricos & IO', icon: LineChart, badge: 'Analítica' },
 ];
 
 export type ThemeMode = 'dark' | 'light' | 'high-contrast';
@@ -205,10 +113,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [loginEmail, setLoginEmail] = useState<string>(''); // email ingresado en demo
   const [loginEmailError, setLoginEmailError] = useState<string | null>(null);
 
-  // ROL ACTIVO EN EL SISTEMA (Por defecto: Estudiante para no asumir Admin directamente)
-  const [rolActivo, setRolActivo] = useState<RolUsuario>('ESTUDIANTE');
-  const esAdmin = rolActivo === 'ADMIN';
-  const rolConfig = ROLES_CONFIG[rolActivo];
+  // ROL ACTIVO EN EL SISTEMA (Sincronizado globalmente con AuthRoleContext)
+  const { rolActivo, rolConfig, esAdmin, cambiarRol } = useAuthRole();
 
   // Modal para cambio de rol institucional y verificación de PIN
   const [modalCambioRol, setModalCambioRol] = useState(false);
@@ -316,7 +222,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       if (savedAuth === 'true') {
         setDemoAuth(true);
         if (savedRole && ROLES_CONFIG[savedRole as RolUsuario]) {
-          setRolActivo(savedRole as RolUsuario);
+          cambiarRol(savedRole as RolUsuario);
         }
         if (savedEmail) {
           setLoginEmail(savedEmail);
@@ -347,7 +253,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     const rolDetectado = detectarRolPorEmail(loginEmail);
     if (!rolDetectado) {
       setLoginEmailError(
-        'El email no tiene un prefijo institucional válido. Use: admin, jef, doc, sec, caj, alm o est.'
+        'El email no tiene un prefijo institucional válido. Use: admin, jef, doc, caj, alm o est.'
       );
       return;
     }
@@ -355,7 +261,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
     const config = ROLES_CONFIG[rolDetectado];
     triggerCurtain(`Acceso Concedido: ${config.titulo}`, Shield, () => {
-      setRolActivo(rolDetectado);
+      cambiarRol(rolDetectado);
       setDemoAuth(true);
 
       try {
@@ -371,7 +277,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     if (status === 'authenticated' && session?.user?.email) {
       const rolDetectado = detectarRolPorEmail(session.user.email);
       if (rolDetectado) {
-        setRolActivo(rolDetectado);
+        cambiarRol(rolDetectado);
       }
     }
   }, [status, session]);
@@ -393,7 +299,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   // Validación y cambio de rol — SOLO ADMIN puede cambiar roles libremente
   const handleSeleccionarRol = (targetRol: RolUsuario) => {
     // Admin puede asumir cualquier rol sin PIN
-    setRolActivo(targetRol);
+    cambiarRol(targetRol);
     setModalCambioRol(false);
     setRolObjetivo(null);
     setPinError(null);
@@ -407,14 +313,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     const config = ROLES_CONFIG[rolObjetivo];
     const valorLimpio = pinIngresado.trim().toUpperCase();
 
-    if (valorLimpio === config.pinSeguridad || valorLimpio === config.palabraClave) {
-      setRolActivo(rolObjetivo);
+    if (valorLimpio === config.pinSeguridad) {
+      cambiarRol(rolObjetivo);
       setModalCambioRol(false);
       setRolObjetivo(null);
       setPinIngresado('');
       setPinError(null);
     } else {
-      setPinError(`PIN o palabra clave incorrecta para ${config.titulo}.`);
+      setPinError(`PIN de seguridad incorrecto para ${config.titulo}.`);
     }
   };
 

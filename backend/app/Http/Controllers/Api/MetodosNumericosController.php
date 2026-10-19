@@ -315,4 +315,250 @@ class MetodosNumericosController extends Controller
             'tablaFinal' => $tabla,
         ]);
     }
+
+    /**
+     * H3 PROYECTO SEMESTRAL MN: Servicio Predictivo de Rendimiento Académico
+     * Implementa el modelo de mínimos cuadrados con proyección a exámenes de nivel y
+     * clasificación de riesgo de deserción R(x_p) según Ecuación 4.11 y Figuras 5.1-5.3.
+     */
+    public function prediccionRendimiento(Request $request)
+    {
+        $validated = $request->validate([
+            'id_estudiante' => 'nullable|integer',
+            'nombre_estudiante' => 'nullable|string',
+            'programa' => 'nullable|string',
+            'calificaciones' => 'required|array',
+            'calificaciones.*.libro' => 'required|integer|min:1|max:36',
+            'calificaciones.*.nota' => 'required|numeric|min:0|max:100',
+            'libro_examen_nivel_objetivo' => 'nullable|integer|min:1|max:36',
+        ]);
+
+        return response()->json($this->calcularPrediccionH3($validated));
+    }
+
+    /**
+     * H3 Caso de Validación Oficial (Tabla 5.3): Libros 1-6 con notas {78, 74, 75, 68, 66, 61}
+     */
+    public function validacionH3()
+    {
+        $caso = [
+            'id_estudiante' => 0,
+            'nombre_estudiante' => 'Caso Hipotético H3 (Tabla 5.3)',
+            'programa' => 'Inglés',
+            'libro_examen_nivel_objetivo' => 12,
+            'calificaciones' => [
+                ['libro' => 1, 'nota' => 78],
+                ['libro' => 2, 'nota' => 74],
+                ['libro' => 3, 'nota' => 75],
+                ['libro' => 4, 'nota' => 68],
+                ['libro' => 5, 'nota' => 66],
+                ['libro' => 6, 'nota' => 61],
+            ],
+        ];
+
+        return response()->json($this->calcularPrediccionH3($caso));
+    }
+
+    /**
+     * H3 Recálculo por Lotes al cierre de rotación docente (Figura 5.4)
+     */
+    public function recalcularLote(Request $request)
+    {
+        $validated = $request->validate([
+            'estudiantes' => 'required|array|min:1',
+        ]);
+
+        $resultados = [];
+        $alertas = [];
+        $total = count($validated['estudiantes']);
+        $insuficientes = 0;
+        $alto = 0;
+        $medio = 0;
+        $bajo = 0;
+
+        foreach ($validated['estudiantes'] as $est) {
+            $res = $this->calcularPrediccionH3($est);
+            $resultados[] = $res;
+
+            if (!empty($res['datosInsuficientes'])) {
+                $insuficientes++;
+            } else {
+                switch ($res['nivelRiesgo']) {
+                    case 'ALTO':
+                        $alto++;
+                        $alertas[] = $res;
+                        break;
+                    case 'MEDIO':
+                        $medio++;
+                        $alertas[] = $res;
+                        break;
+                    case 'BAJO':
+                        $bajo++;
+                        break;
+                }
+            }
+        }
+
+        return response()->json([
+            'totalEstudiantes' => $total,
+            'datosInsuficientes' => $insuficientes,
+            'riesgoAlto' => $alto,
+            'riesgoMedio' => $medio,
+            'riesgoBajo' => $bajo,
+            'resultados' => $resultados,
+            'alertas' => $alertas,
+        ]);
+    }
+
+    /**
+     * Motor numérico H3 compartido
+     */
+    private function calcularPrediccionH3(array $data): array
+    {
+        $nMin = 3;
+        $examenesNivel = [6, 12, 18, 24, 30, 36];
+        $umbralAlto = 51.0;
+        $umbralMedio = 65.0;
+        $pendienteAlto = -3.0;
+
+        $califs = $data['calificaciones'] ?? [];
+        usort($califs, fn($a, $b) => $a['libro'] <=> $b['libro']);
+        $n = count($califs);
+
+        $res = [
+            'idEstudiante' => $data['id_estudiante'] ?? null,
+            'nombreEstudiante' => $data['nombre_estudiante'] ?? 'Estudiante',
+            'programa' => $data['programa'] ?? 'Inglés',
+            'librosEvaluados' => $n,
+        ];
+
+        // Paso 1: n >= N_MIN
+        if ($n < $nMin) {
+            $res['datosInsuficientes'] = true;
+            $res['nivelRiesgo'] = 'DATOS_INSUFICIENTES';
+            $res['mensajeAlerta'] = "Se requieren al menos {$nMin} libros evaluados para generar la predicción. Actualmente cuenta con {$n} libro(s).";
+            return $res;
+        }
+
+        $res['datosInsuficientes'] = false;
+
+        // Paso 2: Sumatorias y determinantes
+        $sumX = 0; $sumY = 0; $sumXX = 0; $sumXY = 0;
+        foreach ($califs as $c) {
+            $x = (float) $c['libro'];
+            $y = (float) $c['nota'];
+            $sumX += $x;
+            $sumY += $y;
+            $sumXX += ($x * $x);
+            $sumXY += ($x * $y);
+        }
+
+        $delta = ($n * $sumXX) - ($sumX * $sumX);
+        if (abs($delta) < 1e-9) {
+            $res['datosInsuficientes'] = true;
+            $res['nivelRiesgo'] = 'ERROR_CALCULO';
+            $res['mensajeAlerta'] = 'Abscisas sin variación: todos los libros tienen el mismo número.';
+            return $res;
+        }
+
+        // Coeficientes recta: y = a*x + b
+        $a = (($n * $sumXY) - ($sumX * $sumY)) / $delta;
+        $b = ($sumY - ($a * $sumX)) / $n;
+        $mediaY = $sumY / $n;
+
+        // Paso 3: Proyección al siguiente examen de nivel
+        $ultimoLibro = end($califs)['libro'];
+        $xp = $data['libro_examen_nivel_objetivo'] ?? null;
+        if (!$xp) {
+            $xp = 36;
+            foreach ($examenesNivel as $lvl) {
+                if ($lvl > $ultimoLibro) {
+                    $xp = $lvl;
+                    break;
+                }
+            }
+        }
+
+        $ypRaw = ($a * $xp) + $b;
+        $yp = max(0.0, min(100.0, $ypRaw));
+
+        // Paso 4: Tabla de ajuste y métricas de error
+        $ssRes = 0.0;
+        $ssTot = 0.0;
+        $tablaAjuste = [];
+
+        foreach ($califs as $c) {
+            $x = (float) $c['libro'];
+            $y = (float) $c['nota'];
+            $yHat = ($a * $x) + $b;
+            $e = $y - $yHat;
+            $e2 = $e * $e;
+
+            $ssRes += $e2;
+            $ssTot += pow($y - $mediaY, 2);
+
+            $tablaAjuste[] = [
+                'libro' => (int) $x,
+                'nota' => round($y, 2),
+                'notaAjustada' => round($yHat, 2),
+                'residuo' => round($e, 2),
+                'residuoCuadrado' => round($e2, 4),
+            ];
+        }
+
+        $r2 = $ssTot > 0 ? max(0.0, min(1.0, 1.0 - ($ssRes / $ssTot))) : 1.0;
+
+        // Paso 5: Clasificación del riesgo R(x_p)
+        $nivelRiesgo = 'BAJO';
+        $mensajeAlerta = '';
+
+        if ($yp < $umbralAlto || $a < $pendienteAlto) {
+            $nivelRiesgo = 'ALTO';
+            $razones = [];
+            if ($yp < $umbralAlto) {
+                $razones[] = sprintf('nota proyectada (%.2f) inferior a %d puntos', $yp, (int)$umbralAlto);
+            }
+            if ($a < $pendienteAlto) {
+                $razones[] = sprintf('pendiente (%.4f) indica pérdida mayor a %.1f puntos por libro', $a, abs($pendienteAlto));
+            }
+            $mensajeAlerta = '⚠️ RIESGO ALTO DE DESERCIÓN — ' . implode(' y ', $razones) .
+                ". Se requiere intervención pedagógica inmediata del Jefe Académico antes del examen de nivel del libro {$xp}.";
+        } elseif ($yp < $umbralMedio || $a < 0) {
+            $nivelRiesgo = 'MEDIO';
+            $razones = [];
+            if ($yp < $umbralMedio) {
+                $razones[] = sprintf('nota proyectada (%.2f) inferior a %d puntos', $yp, (int)$umbralMedio);
+            }
+            if ($a < 0) {
+                $razones[] = sprintf('tendencia descendente (pendiente %.4f)', $a);
+            }
+            $mensajeAlerta = '⚡ RIESGO MEDIO — ' . implode(' y ', $razones) .
+                '. Se sugiere seguimiento académico reforzado y tutoría complementaria.';
+        } else {
+            $nivelRiesgo = 'BAJO';
+            $mensajeAlerta = sprintf(
+                '✅ RIESGO BAJO — Trayectoria estable o ascendente (pendiente %.4f). Nota proyectada de %.2f puntos para el examen del libro %d.',
+                $a, $yp, $xp
+            );
+        }
+
+        $res['pendienteA'] = round($a, 4);
+        $res['interceptoB'] = round($b, 4);
+        $res['ecuacionRecta'] = sprintf("y = %.4fx %s %.4f", $a, ($b >= 0 ? '+' : '-'), abs($b));
+        $res['sumX'] = round($sumX, 2);
+        $res['sumY'] = round($sumY, 2);
+        $res['sumX2'] = round($sumXX, 2);
+        $res['sumXY'] = round($sumXY, 2);
+        $res['ssRes'] = round($ssRes, 4);
+        $res['ssTot'] = round($ssTot, 4);
+        $res['r2'] = round($r2, 4);
+        $res['libroExamenNivel'] = $xp;
+        $res['notaProyectada'] = round($yp, 2);
+        $res['nivelRiesgo'] = $nivelRiesgo;
+        $res['mensajeAlerta'] = $mensajeAlerta;
+        $res['tablaAjuste'] = $tablaAjuste;
+
+        return $res;
+    }
 }
+

@@ -8,6 +8,11 @@ import bo.mil.ejercito.idiomas.service.MetodosNumericosService.PuntoData;
 import bo.mil.ejercito.idiomas.service.MetodosNumericosService.MinimosCuadradosResultado;
 import bo.mil.ejercito.idiomas.service.MetodosNumericosService.NewtonResultado;
 import bo.mil.ejercito.idiomas.service.MetodosNumericosService.SimplexResultado;
+import bo.mil.ejercito.idiomas.service.PrediccionRendimientoService;
+import bo.mil.ejercito.idiomas.service.PrediccionRendimientoService.PrediccionRequest;
+import bo.mil.ejercito.idiomas.service.PrediccionRendimientoService.PrediccionResultado;
+import bo.mil.ejercito.idiomas.service.PrediccionRendimientoService.LoteRequest;
+import bo.mil.ejercito.idiomas.service.PrediccionRendimientoService.LoteResultado;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -24,6 +29,9 @@ public class AnalyticsResource {
 
     @Inject
     MetodosNumericosService metodosNumericosService;
+
+    @Inject
+    PrediccionRendimientoService prediccionRendimientoService;
 
     // DTOs para Request y Response de Asignación Óptima
     public static class AsignacionRequest {
@@ -77,19 +85,117 @@ public class AnalyticsResource {
     @Path("/status")
     public Response status() {
         Map<String, Object> status = new LinkedHashMap<>();
-        status.put("servicio", "Microservicio de Métodos Numéricos e Investigación Operativa");
+        status.put("servicio", "Microservicio de Métodos Numéricos, Investigación Operativa y Analítica Predictiva");
         status.put("institucion", "Escuela de Idiomas del Ejército (EIE) • CEDMIL");
         status.put("estado", "OPERATIVO");
-        status.put("version", "2.0.0-COMPLETO");
+        status.put("version", "3.0.0-H3");
+        status.put("documento_base", "H3 - Proyecto Semestral MN");
         status.put("modulos", List.of(
-            "Método de Mínimos Cuadrados (Regresión Lineal con Suma de Cuadrados de las Diferencias SSE, R2 y Pearson)",
+            "Predicción de Rendimiento Académico (H3: Mínimos Cuadrados + Riesgo de Deserción)",
+            "Método de Mínimos Cuadrados (Regresión Lineal con SSE, R² y Pearson)",
             "Interpolación por Diferencias Divididas de Newton",
             "Programación Lineal: Método Simplex (Maximización de Recursos Militares)",
             "Teoría de Colas M/M/c con disciplina FIFO para cajas",
             "Algoritmo de Rotación Docente Quincenal (<= 15 días)"
         ));
+        status.put("parametros_h3", Map.of(
+            "n_min", PrediccionRendimientoService.N_MIN,
+            "examenes_nivel", PrediccionRendimientoService.EXAMENES_NIVEL,
+            "umbral_alto", PrediccionRendimientoService.UMBRAL_ALTO,
+            "umbral_medio", PrediccionRendimientoService.UMBRAL_MEDIO,
+            "pendiente_critica", PrediccionRendimientoService.PENDIENTE_ALTO,
+            "nota_aprobacion", PrediccionRendimientoService.NOTA_APROBACION
+        ));
         return Response.ok(status).build();
     }
+
+    // =========================================================================
+    // H3: PREDICCIÓN DE RENDIMIENTO ACADÉMICO Y RIESGO DE DESERCIÓN
+    // =========================================================================
+
+    /**
+     * Predicción individual de rendimiento para un estudiante.
+     * Implementa el flujo completo de las Figuras 5.1, 5.2 y 5.3 del H3.
+     *
+     * Entrada: calificaciones por libro (x_i, y_i), programa, id del estudiante.
+     * Salida: recta ajustada y=ax+b, R², proyección ŷ_p al siguiente examen de
+     *         nivel, y clasificación de riesgo (ALTO/MEDIO/BAJO).
+     */
+    @POST
+    @Path("/prediccion-rendimiento")
+    public Response predecirRendimiento(PrediccionRequest req) {
+        if (req == null || req.calificaciones == null || req.calificaciones.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                .entity(Map.of("error", "Se requieren las calificaciones del estudiante (lista de {libro, nota})."))
+                .build();
+        }
+
+        try {
+            PrediccionResultado resultado = prediccionRendimientoService.predecir(req);
+            return Response.ok(resultado).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                .entity(Map.of("error", e.getMessage()))
+                .build();
+        }
+    }
+
+    /**
+     * Recálculo por lotes al cierre de cada rotación docente de 15 días (Figura 5.4).
+     * Recorre las inscripciones activas y genera el reporte de estudiantes en riesgo
+     * MEDIO y ALTO para el Jefe Académico.
+     */
+    @POST
+    @Path("/prediccion-rendimiento/lote")
+    public Response recalcularLote(LoteRequest req) {
+        if (req == null || req.estudiantes == null || req.estudiantes.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                .entity(Map.of("error", "Se requiere la lista de estudiantes con sus calificaciones para el recálculo por lotes."))
+                .build();
+        }
+
+        try {
+            LoteResultado resultado = prediccionRendimientoService.recalcularLote(req);
+            return Response.ok(resultado).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                .entity(Map.of("error", e.getMessage()))
+                .build();
+        }
+    }
+
+    /**
+     * Caso de validación con los datos hipotéticos del documento H3 (Tabla 5.3, §5.2.1).
+     * Permite verificar que el algoritmo reproduce exactamente los resultados esperados:
+     *   a ≈ -3.314, b ≈ 81.933, R² ≈ 0.936, ŷ_12 ≈ 42.16 → Riesgo ALTO
+     */
+    @GET
+    @Path("/prediccion-rendimiento/validacion-h3")
+    public Response casoValidacionH3() {
+        try {
+            PrediccionResultado resultado = prediccionRendimientoService.casoValidacionH3();
+            Map<String, Object> respuesta = new LinkedHashMap<>();
+            respuesta.put("descripcion", "Caso de validación H3 — Tabla 5.3, §5.2.1");
+            respuesta.put("datos_entrada", "Libros 1-6: notas {78, 74, 75, 68, 66, 61}");
+            respuesta.put("valores_esperados", Map.of(
+                "a", "≈ -3.314",
+                "b", "≈ 81.933",
+                "R2", "≈ 0.936",
+                "y_hat_12", "≈ 42.16",
+                "riesgo", "ALTO"
+            ));
+            respuesta.put("resultado_calculado", resultado);
+            return Response.ok(respuesta).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity(Map.of("error", e.getMessage()))
+                .build();
+        }
+    }
+
+    // =========================================================================
+    // MÉTODOS NUMÉRICOS GENERALES
+    // =========================================================================
 
     // 1. MÍNIMOS CUADRADOS (SUMA DE CUADRADOS DE LAS DIFERENCIAS)
     @POST

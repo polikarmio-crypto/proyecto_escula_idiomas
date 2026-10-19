@@ -68,16 +68,18 @@ class InscripcionController extends Controller
                 'estado_inscripcion' => 'Activa',
             ]);
 
-            // 4. Inicializar automáticamente el avance curricular del primer libro del nivel
-            $primerLibro = $paralelo->nivel->libros()->orderBy('numero_libro')->first();
-            if ($primerLibro) {
+            // 4. Inicializar automáticamente el avance curricular libro a libro (Historia de Usuario 14, Secuencia 12.6)
+            $librosNivel = $paralelo->nivel->libros()->orderBy('numero_libro')->get();
+            $esPrimero = true;
+            foreach ($librosNivel as $lib) {
                 InscripcionLibro::create([
-                    'id_inscripcion' => $inscripcion->id_inscripcion,
-                    'id_libro' => $primerLibro->id_libro,
-                    'fecha_inicio_libro' => Carbon::now()->toDateString(),
-                    'fecha_fin_libro' => null,
-                    'estado_libro' => 'En curso',
+                    'id_inscripcion'     => $inscripcion->id_inscripcion,
+                    'id_libro'           => $lib->id_libro,
+                    'fecha_inicio_libro' => $esPrimero ? Carbon::now()->toDateString() : null,
+                    'fecha_fin_libro'    => null,
+                    'estado_libro'       => $esPrimero ? 'En curso' : 'Pendiente',
                 ]);
+                $esPrimero = false;
             }
 
             return response()->json([

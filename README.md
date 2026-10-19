@@ -132,57 +132,38 @@ El microservicio estará disponible en: **http://localhost:8080**
 
 ---
 
-## 🔑 Cuentas de Prueba — Acceso por Roles
+## 🔑 Cuentas de Prueba — Acceso por Roles (Diagrama de Clases UML, pág. 24)
 
-El sistema implementa **7 roles institucionales**. Para acceder, usa la pantalla de login con las siguientes cuentas de prueba:
+El sistema implementa estrictamente los **6 roles de actores institucionales** del diseño UML:
 
 ### Login por Email Institucional (Modo Demo)
 
-En la pantalla de login, haz clic en **"Acceso Demo Institucional"** e ingresa uno de los siguientes emails. El sistema detecta el rol automáticamente por el prefijo del email:
+En la pantalla de login, haz clic en **"Ingreso con Email Institucional"** e ingresa uno de los siguientes correos. El sistema detecta el rol automáticamente por el prefijo:
 
-| Rol | Email de Acceso | PIN de Seguridad | Descripción |
+| Rol Institucional | Email de Prueba | PIN | Módulos del Sistema Habilitados |
 |---|---|---|---|
-| 🔴 **Administrador** | `admin@ejercito.mil.bo` | `9999` | Control total del sistema, auditoría, configuración global |
-| 🟠 **Jefe Académico** | `jefe.academico@ejercito.mil.bo` | `5050` | Supervisión académica, planes de estudio, fiscalización |
-| 🟢 **Docente** | `doc.rios@ejercito.mil.bo` | `1010` | Registro de notas, evaluaciones, rotación quincenal |
-| 🟣 **Secretaría** | `secretaria@ejercito.mil.bo` | `2020` | Gestión de estudiantes, matrículas, apertura de paralelos |
-| 🟡 **Cajero** | `cajero@ejercito.mil.bo` | `3030` | Cola FIFO, cobros, métricas M/M/c de ventanillas |
-| 🩷 **Almacenero** | `almacen@ejercito.mil.bo` | `4040` | Inventario de libros, control ROP, pedidos de reposición |
-| 🔵 **Estudiante** | `est.mamani@ejercito.mil.bo` | _(sin PIN)_ | Consulta de notas, inscripciones, trámites en caja |
+| 🔴 **Administrador del Sistema** | `admin@ejercito.mil.bo` | `9999` | **Módulo 1: Catálogos Base** (`/catalogos`), Dashboard y Auditoría general. |
+| 🔵 **Jefe Académico** | `jefe.academico@ejercito.mil.bo` | `5050` | **Módulo 2:** Estructura Académica (`/estructura`)<br>**Módulo 3:** Docentes (`/docentes`)<br>**Módulo 4:** Estudiantes (`/estudiantes`)<br>**Módulo 5:** Paralelos (`/paralelos`)<br>**Módulo 6:** Inscripciones (`/inscripciones`)<br>**Módulo 7:** Supervisión de Calificaciones (`/calificaciones`)<br>**IO:** Métodos Numéricos (`/metodos-numericos`) |
+| 🟢 **Docente / Catedrático** | `doc.rios@ejercito.mil.bo` | `1010` | **Módulo 5:** Consulta de paralelos asignados (`/paralelos`)<br>**Módulo 7:** Registro de notas por libro 80/10/10 (`/calificaciones`) |
+| 🟡 **Cajero / Ventanilla** | `cajero@ejercito.mil.bo` | `3030` | **Módulo 8:** Cajas y Recaudaciones (`/cajas` - llamada FIFO, cobro de matrículas/mensualidades/libros y emisión de comprobantes) |
+| 🩷 **Encargado de Almacén** | `almacen@ejercito.mil.bo` | `4040` | **Módulo 9:** Almacén e Inventario de Libros (`/almacen` - stock físico, movimientos de entrada/salida, control de ROP y pedidos de reposición) |
+| 🔷 **Estudiante (Civil / Militar)** | `est.mamani@ejercito.mil.bo` | _(sin PIN)_ | **Módulo 6:** Consulta de cursos matriculados (`/inscripciones`)<br>**Módulo 7:** Consulta de notas y avance libro a libro (`/calificaciones`)<br>**Módulo 8:** Solicitud de ficha de atención digital para caja (`/cajas`) |
 
-### Prefijos válidos para login demo
+### Matriz de Permisos por Rol — Módulos Accesibles (Casos de Uso 11.1 a 11.9)
 
-El sistema reconoce estos prefijos de email:
-
-| Prefijo | Rol Asignado |
-|---|---|
-| `admin` | Administrador |
-| `jef` | Jefe Académico |
-| `doc` | Docente |
-| `sec` | Secretaría |
-| `caj` | Cajero |
-| `alm` | Almacenero |
-| `est` | Estudiante |
-
-> **Ejemplo:** Cualquier email que empiece con `admin` → rol Administrador. Ej: `admin@test.com`, `admin.sistema@mil.bo`, etc.
-
-### Login con Google OAuth (Producción)
-
-También está disponible el login con **Google** vía NextAuth.js. El rol se detecta automáticamente por el prefijo del email de la cuenta Google.
-
-### Permisos por Rol — Módulos Accesibles
-
-| Módulo | Admin | Jefe Acad. | Docente | Secretaría | Cajero | Almacenero | Estudiante |
+| Módulo del Sistema | Caso de Uso | Administrador | Jefe Académico | Docente | Cajero | Encargado Almacén | Estudiante |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| Dashboard | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Estudiantes | ✅ | ✅ | — | ✅ | — | — | — |
-| Docentes | ✅ | ✅ | ✅ | — | — | — | — |
-| Paralelos | ✅ | ✅ | ✅ | ✅ | — | — | — |
-| Inscripciones | ✅ | ✅ | — | ✅ | — | — | ✅ |
-| Calificaciones | ✅ | ✅ | ✅ | — | — | — | ✅ |
-| Cajas / Pagos | ✅ | ✅ | — | — | ✅ | — | ✅ |
-| Almacén Libros | ✅ | ✅ | — | — | — | ✅ | — |
-| Métodos Numéricos & IO | ✅ | ✅ | ✅ | — | — | ✅ | — |
+| **Dashboard** | General | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **1. Catálogos Base** | CU 11.1 | ✅ (Exclusivo) | — | — | — | — | — |
+| **2. Estructura Académica** | CU 11.2 | — | ✅ (Exclusivo) | — | — | — | — |
+| **3. Docentes & Rotación** | CU 11.3 | — | ✅ | — | — | — | — |
+| **4. Estudiantes (Expedientes)** | CU 11.4 | — | ✅ | — | — | — | — |
+| **5. Paralelos & Asignación** | CU 11.5 | — | ✅ (Crea/Asigna) | 👁️ (Consulta) | — | — | — |
+| **6. Inscripciones & Avance** | CU 11.6 | — | ✅ (Inscribe) | — | — | — | 👁️ (Consulta) |
+| **7. Calificaciones (80/10/10)** | CU 11.7 | — | ✅ (Examen Nivel) | ✅ (Califica Libros) | — | — | 👁️ (Consulta) |
+| **8. Cajas & Recaudaciones** | CU 11.8 | — | — | — | ✅ (Cobra/Atiende) | — | 🎟️ (Saca Ficha) |
+| **9. Almacén & ROP** | CU 11.9 | — | — | — | — | ✅ (Exclusivo) | — |
+| **Métodos Numéricos & IO** | Analítica | — | ✅ | — | — | — | — |
 
 ---
 
@@ -221,16 +202,25 @@ Los docentes en aula no deben permanecer más de 15 días continuos en un mismo 
 
 ---
 
-## 📊 Módulo de Métodos Numéricos & Investigación Operativa
+## 📊 Módulo de Métodos Numéricos & Investigación Operativa (H3 MN)
 
-Disponible tanto en Laravel (`/api/v1/metodos-numericos/*`) como en Quarkus (`/api/analytics/*`):
+Implementa la suite matemática institucional tanto en el microservicio reactivo **Quarkus** (`/api/analytics/*`) como en el core **Laravel** (`/api/v1/metodos-numericos/*`), siguiendo las especificaciones del documento **H3 - Proyecto Semestral MN**:
 
-| Método | Descripción |
-|---|---|
-| **Mínimos Cuadrados** | Regresión lineal con cálculo de SSE (Suma de Cuadrados de las Diferencias), R², Pearson r y pronósticos |
-| **Interpolación de Newton** | Diferencias divididas para interpolación polinomial |
-| **Programación Lineal Simplex** | Optimización con restricciones lineales |
-| **Teoría de Colas M/M/c** | Modelo multiservidor con Erlang-C, probabilidades y tiempos de espera |
+| Método / Modelo | Base Matemática | Aplicación en la Escuela de Idiomas |
+|---|---|---|
+| **Predicción de Rendimiento & Deserción (H3)** | Mínimos Cuadrados $\hat{y} = ax + b$, proyección a exámenes de nivel $x_p \in \{6, 12, 18, 24, 30, 36\}$ y regla $R(x_p)$ (Eq. 4.11) | Alerta temprana al Jefe Académico: clasificación de riesgo **ALTO** ($\hat{y}_p < 51$ o $a < -3.0$), **MEDIO** ($51 \le \hat{y}_p < 65$ o $-3.0 \le a < 0$) y **BAJO** ($\hat{y}_p \ge 65$ y $a \ge 0$). Recálculo por lotes al cierre de rotación docente (Fig. 5.4). |
+| **Mínimos Cuadrados General** | Minimización de diferencias al cuadrado $SSE = \sum (y_i - \hat{y}_i)^2$, $R^2$, Pearson $r$ | Proyección de demanda de textos en Almacén y tendencia de matrículas anuales. |
+| **Interpolación de Newton** | Polinomio en Diferencias Divididas $P(x) = f[x_0] + \sum f[x_0,\dots,x_k] \prod (x - x_j)$ | Estimación de calificaciones intermedias sin presuponer linealidad estricta. |
+| **Programación Lineal Simplex** | Método Simplex estándar en forma canónica (maximización con holguras) | Asignación óptima de carga horaria en aulas y laboratorios de idiomas. |
+| **Teoría de Colas M/M/c (FIFO)** | Modelo multiservidor markoviano con fórmula Erlang-C | Optimización de ventanillas de Caja en periodo de matrículas para reducir tiempos de espera $W_q$. |
+
+### Caso de Validación Oficial H3 (Tabla 5.3 del Documento)
+
+El microservicio y el frontend integran la verificación exacta de la Tabla 5.3:
+- **Entrada:** Calificaciones de libros 1 al 6: `{78, 74, 75, 68, 66, 61}`
+- **Coeficientes obtenidos:** $a \approx -3.3143$ pts/libro, $b \approx 81.9333$, $R^2 \approx 0.9362$ (ajuste fuerte)
+- **Proyección al Examen de Nivel 2 ($x_p = 12$):** $\hat{y}_{12} = 42.16$ puntos
+- **Clasificación de Riesgo:** **ALTO** ($\hat{y}_{12} < 51$ y $a < -3.0$) $\to$ Requiere intervención pedagógica inmediata del Jefe Académico antes del examen.
 
 ---
 
@@ -296,12 +286,18 @@ Estructurada en **11 migraciones** cubriendo 28+ tablas con integridad referenci
 | **Métodos Num.** | `POST` | `/api/v1/metodos-numericos/minimos-cuadrados` | Regresión lineal + SSE |
 | **Métodos Num.** | `POST` | `/api/v1/metodos-numericos/interpolacion-newton` | Diferencias divididas |
 | **Métodos Num.** | `POST` | `/api/v1/metodos-numericos/simplex` | Programación lineal |
+| **H3 Predictivo** | `POST` | `/api/v1/metodos-numericos/prediccion-rendimiento` | Predicción individual H3 y riesgo de deserción |
+| **H3 Predictivo** | `GET` | `/api/v1/metodos-numericos/prediccion-rendimiento/validacion-h3` | Caso oficial Tabla 5.3 ($a=-3.314$, $R^2=0.936$) |
+| **H3 Predictivo** | `POST` | `/api/v1/metodos-numericos/prediccion-rendimiento/lote` | Recálculo por lotes al cierre de rotación |
 
 ### Quarkus (`/api/analytics`)
 
 | Método | Endpoint | Descripción |
 |---|---|---|
-| `GET` | `/api/analytics/status` | Estado del microservicio |
+| `GET` | `/api/analytics/status` | Estado del microservicio (versión 3.0.0-H3) |
+| `POST` | `/api/analytics/prediccion-rendimiento` | Predicción de rendimiento y clasificación de riesgo H3 |
+| `GET` | `/api/analytics/prediccion-rendimiento/validacion-h3` | Caso de validación Tabla 5.3 del H3 |
+| `POST` | `/api/analytics/prediccion-rendimiento/lote` | Recálculo masivo por lotes (Figura 5.4) |
 | `POST` | `/api/analytics/asignacion-optima` | Asignación óptima de docentes |
 | `POST` | `/api/analytics/teoria-colas/mmc` | Análisis M/M/c (Erlang-C) |
 | `POST` | `/api/analytics/minimos-cuadrados` | Mínimos cuadrados (SSE) |

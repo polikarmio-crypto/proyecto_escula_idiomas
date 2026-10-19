@@ -67,25 +67,32 @@ class CalificacionController extends Controller
     public function registrarNotaLibro(Request $request)
     {
         $validated = $request->validate([
-            'id_inscripcion_libro' => 'required|exists:inscripcion_libro,id_inscripcion_libro',
-            'nota_examen_libro' => 'required|numeric|min:0|max:100',
-            'nota_defensa_oral' => 'required|numeric|min:0|max:100',
-            'nota_participacion_libro' => 'required|numeric|min:0|max:100',
-            'fecha_evaluacion_libro' => 'nullable|date|before_or_equal:today',
-            'id_docente_calificador' => 'required|exists:docente,id_docente',
+            'id_inscripcion_libro'     => 'required|exists:inscripcion_libro,id_inscripcion_libro',
+            'nota_examen_libro'        => 'nullable|numeric|min:0|max:100',
+            'nota_defensa_oral'        => 'nullable|numeric|min:0|max:100',
+            'nota_participacion_libro' => 'nullable|numeric|min:0|max:100',
+            'nota_final_directa'       => 'nullable|numeric|min:0|max:100',
+            'fecha_evaluacion_libro'   => 'nullable|date|before_or_equal:today',
+            'id_docente_calificador'   => 'required|exists:docente,id_docente',
         ]);
 
         return DB::transaction(function () use ($validated) {
             $inscripcionLibro = InscripcionLibro::with(['libro', 'inscripcion.paralelo.nivel.libros'])
                 ->findOrFail($validated['id_inscripcion_libro']);
 
-            // Ponderación institucional: 80% Examen + 10% Oral + 10% Participación
-            $notaFinal = round(
-                ($validated['nota_examen_libro'] * 0.80) +
-                ($validated['nota_defensa_oral'] * 0.10) +
-                ($validated['nota_participacion_libro'] * 0.10),
-                2
-            );
+            if (isset($validated['nota_final_directa']) && $validated['nota_final_directa'] !== null) {
+                // Caso: Docente coloca directamente la nota promedio final
+                $notaFinal = round((float) $validated['nota_final_directa'], 2);
+                $notaExamen = $validated['nota_examen_libro'] ?? $notaFinal;
+                $notaOral = $validated['nota_defensa_oral'] ?? $notaFinal;
+                $notaPart = $validated['nota_participacion_libro'] ?? $notaFinal;
+            } else {
+                // Ponderación institucional oficial: 80% Examen + 10% Oral + 10% Participación
+                $notaExamen = (float) ($validated['nota_examen_libro'] ?? 0);
+                $notaOral   = (float) ($validated['nota_defensa_oral'] ?? 0);
+                $notaPart   = (float) ($validated['nota_participacion_libro'] ?? 0);
+                $notaFinal  = round(($notaExamen * 0.80) + ($notaOral * 0.10) + ($notaPart * 0.10), 2);
+            }
 
             $esAprobado = $notaFinal >= 71.0;
 
@@ -93,12 +100,12 @@ class CalificacionController extends Controller
             $evaluacion = EvaluacionLibro::updateOrCreate(
                 ['id_inscripcion_libro' => $validated['id_inscripcion_libro']],
                 [
-                    'nota_examen_libro' => $validated['nota_examen_libro'],
-                    'nota_defensa_oral' => $validated['nota_defensa_oral'],
-                    'nota_participacion_libro' => $validated['nota_participacion_libro'],
-                    'nota_final_libro' => $notaFinal,
-                    'id_docente_calificador' => $validated['id_docente_calificador'],
-                    'fecha_evaluacion_libro' => Carbon::now()->toDateString(),
+                    'nota_examen_libro'        => $notaExamen,
+                    'nota_defensa_oral'        => $notaOral,
+                    'nota_participacion_libro' => $notaPart,
+                    'nota_final_libro'         => $notaFinal,
+                    'id_docente_calificador'   => $validated['id_docente_calificador'],
+                    'fecha_evaluacion_libro'   => $validated['fecha_evaluacion_libro'] ?? Carbon::now()->toDateString(),
                 ]
             );
 

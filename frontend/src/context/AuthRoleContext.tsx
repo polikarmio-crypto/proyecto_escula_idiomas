@@ -44,7 +44,7 @@ export const ROLES_CONFIG: Record<RolUsuario, InfoRolConfig> = {
     pinSeguridad: '9999',
     descripcion: 'Administra los catálogos base del sistema: gestiones, idiomas, aulas y aforos, horarios, modalidades, tipos de programa y tipos de pago.',
     color: '#eab308',
-    rutasPermitidas: ['/', '/catalogos'],
+    rutasPermitidas: ['/', '/dashboard', '/catalogos', '/estructura', '/docentes', '/estudiantes', '/paralelos', '/inscripciones', '/calificaciones', '/cajas', '/almacen', '/metodos-numericos'],
   },
   JEFE_ACADEMICO: {
     id: 'JEFE_ACADEMICO',
@@ -56,7 +56,7 @@ export const ROLES_CONFIG: Record<RolUsuario, InfoRolConfig> = {
     pinSeguridad: '5050',
     descripcion: 'Planifica programas, niveles y libros; registra docentes e idiomas; inscribe alumnos validando cupos; apertura paralelos y supervisa actas y exámenes de nivel.',
     color: '#3b82f6',
-    rutasPermitidas: ['/', '/estructura', '/docentes', '/estudiantes', '/paralelos', '/inscripciones', '/calificaciones', '/metodos-numericos'],
+    rutasPermitidas: ['/', '/dashboard', '/estructura', '/docentes', '/estudiantes', '/paralelos', '/inscripciones', '/calificaciones', '/metodos-numericos'],
   },
   DOCENTE: {
     id: 'DOCENTE',
@@ -68,7 +68,7 @@ export const ROLES_CONFIG: Record<RolUsuario, InfoRolConfig> = {
     pinSeguridad: '1010',
     descripcion: 'Consulta sus paralelos y su cronograma de rotación de 15 días; registra calificaciones por libro con la fórmula oficial (Examen 80%, Oral 10%, Participación 10%).',
     color: '#10b981',
-    rutasPermitidas: ['/', '/paralelos', '/calificaciones'],
+    rutasPermitidas: ['/', '/dashboard', '/paralelos', '/calificaciones'],
   },
   CAJERO: {
     id: 'CAJERO',
@@ -80,7 +80,7 @@ export const ROLES_CONFIG: Record<RolUsuario, InfoRolConfig> = {
     pinSeguridad: '3030',
     descripcion: 'Controla la cola de atención FIFO, atiende turnos en ventanilla, cobra conceptos (matrícula, mensualidad, compra de libro) y emite comprobantes oficiales.',
     color: '#f59e0b',
-    rutasPermitidas: ['/', '/cajas'],
+    rutasPermitidas: ['/', '/dashboard', '/cajas'],
   },
   ALMACENERO: {
     id: 'ALMACENERO',
@@ -92,7 +92,7 @@ export const ROLES_CONFIG: Record<RolUsuario, InfoRolConfig> = {
     pinSeguridad: '4040',
     descripcion: 'Supervisa el stock físico de libros, registra salidas/entradas de kardex, gestiona el punto de reorden (ROP) y pedidos de reposición a proveedores.',
     color: '#ec4899',
-    rutasPermitidas: ['/', '/almacen'],
+    rutasPermitidas: ['/', '/dashboard', '/almacen'],
   },
   ESTUDIANTE: {
     id: 'ESTUDIANTE',
@@ -104,7 +104,7 @@ export const ROLES_CONFIG: Record<RolUsuario, InfoRolConfig> = {
     pinSeguridad: '', // Acceso directo sin PIN
     descripcion: 'Consulta su historial de avance libro a libro y calificaciones, sus cursos inscritos, y solicita fichas de turno digital para trámites en caja.',
     color: '#06b6d4',
-    rutasPermitidas: ['/', '/calificaciones', '/cajas', '/inscripciones'],
+    rutasPermitidas: ['/', '/dashboard', '/calificaciones', '/cajas', '/inscripciones'],
   },
 };
 

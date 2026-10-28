@@ -32,7 +32,8 @@ import {
   UserCheck,
   LineChart,
   Database,
-  FolderTree
+  FolderTree,
+  Globe
 } from 'lucide-react';
 import { useAuthRole, RolUsuario, ROLES_CONFIG } from '@/context/AuthRoleContext';
 
@@ -84,7 +85,8 @@ interface NavItem {
 }
 
 const ALL_NAV_ITEMS: NavItem[] = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/', label: 'Portal Institucional', icon: Globe },
+  { href: '/dashboard', label: 'Dashboard SACA', icon: LayoutDashboard },
   { href: '/catalogos', label: 'Catálogos Base', icon: Database, badge: 'Mód 1' },
   { href: '/estructura', label: 'Estructura Académica', icon: FolderTree, badge: 'Mód 2' },
   { href: '/docentes', label: 'Docentes', icon: GraduationCap, badge: 'Mód 3' },
@@ -341,9 +343,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           zIndex: 200,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
-          <Shield size={14} style={{ color: 'var(--military-gold-primary)' }} />
-          <span>Ejército de Bolivia &bull; Escuela de Idiomas (CEDMIL)</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--text-muted)' }}>
+          <img src="/logo-ejercito.png" alt="Escudo EIE" style={{ width: 20, height: 20, objectFit: 'contain' }} />
+          <span style={{ fontWeight: 600 }}>Ejército de Bolivia &bull; Escuela de Idiomas (CEDMIL)</span>
         </div>
 
         {/* Herramientas de Accesibilidad y Control de Sesión */}
@@ -468,16 +470,56 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          {/* Botón de alternar sesión */}
-          {isAuthenticated && (
-            <button
-              onClick={handleLogout}
-              className="btn btn-secondary"
-              style={{ padding: '0.25rem 0.65rem', fontSize: '0.72rem' }}
-              title="Salir y regresar a la pantalla de bienvenida / login militar"
-            >
-              <LogOut size={12} /> Salir
-            </button>
+          {/* Navegación entre Portal Institucional y SACA */}
+          {pathname === '/' ? (
+            isAuthenticated ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Link
+                  href="/dashboard"
+                  className="btn btn-primary"
+                  style={{ padding: '0.25rem 0.65rem', fontSize: '0.72rem', background: 'var(--military-green-primary)' }}
+                >
+                  <LayoutDashboard size={12} /> Panel SACA ({usuario.nombre.split(' ')[0]})
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="btn btn-secondary"
+                  style={{ padding: '0.25rem 0.65rem', fontSize: '0.72rem' }}
+                  title="Salir"
+                >
+                  <LogOut size={12} /> Salir
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/dashboard"
+                className="btn btn-primary"
+                style={{ padding: '0.25rem 0.75rem', fontSize: '0.72rem', background: 'var(--military-gold-primary)', color: '#000', fontWeight: 700 }}
+              >
+                <KeyRound size={12} /> Acceder a SACA
+              </Link>
+            )
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Link
+                href="/"
+                className="btn btn-secondary"
+                style={{ padding: '0.25rem 0.65rem', fontSize: '0.72rem' }}
+                title="Volver al Portal Público"
+              >
+                <Globe size={12} /> Portal Público
+              </Link>
+              {isAuthenticated && (
+                <button
+                  onClick={handleLogout}
+                  className="btn btn-secondary"
+                  style={{ padding: '0.25rem 0.65rem', fontSize: '0.72rem' }}
+                  title="Salir"
+                >
+                  <LogOut size={12} /> Salir
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>

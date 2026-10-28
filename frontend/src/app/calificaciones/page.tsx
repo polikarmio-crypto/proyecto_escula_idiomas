@@ -56,11 +56,9 @@ export default function CalificacionesPage() {
   const [alumnos, setAlumnos] = useState<AlumnoCalificacion[]>([]);
   const [infoParalelo, setInfoParalelo] = useState<any | null>(null);
 
-  // Filtros
   const [filtroIdioma, setFiltroIdioma] = useState('');
   const [busqueda, setBusqueda] = useState('');
 
-  // Modal para calificar libro
   const [modalCalificar, setModalCalificar] = useState(false);
   const [evaluando, setEvaluando] = useState<{
     id_inscripcion_libro: number;
@@ -68,7 +66,6 @@ export default function CalificacionesPage() {
     libroTitulo: string;
   } | null>(null);
 
-  // Modo de calificación: Ponderada (80/10/10) o Directa (Promedio directo)
   const [modoCalculo, setModoCalculo] = useState<'ponderada' | 'directa'>('ponderada');
   const [formNotas, setFormNotas] = useState({
     examen: 80,
@@ -84,7 +81,6 @@ export default function CalificacionesPage() {
     setTimeout(() => setAlerta(null), 5000);
   };
 
-  // Cargar lista de paralelos
   const cargarParalelos = async () => {
     try {
       const res = await fetch('http://localhost:8000/api/v1/paralelos');
@@ -100,7 +96,6 @@ export default function CalificacionesPage() {
     }
   };
 
-  // Cargar calificaciones del paralelo seleccionado
   const cargarNotasParalelo = async (id: string) => {
     if (!id) return;
     setLoading(true);
@@ -129,7 +124,6 @@ export default function CalificacionesPage() {
     }
   }, [idParaleloSeleccionado]);
 
-  // Lista de idiomas únicos en los paralelos para filtro
   const idiomasDisponibles = useMemo(() => {
     const set = new Set<string>();
     paralelos.forEach((p) => {
@@ -139,16 +133,13 @@ export default function CalificacionesPage() {
     return Array.from(set);
   }, [paralelos]);
 
-  // Paralelos filtrados por idioma
   const paralelosFiltrados = useMemo(() => {
     if (!filtroIdioma) return paralelos;
     return paralelos.filter((p) => p.nivel?.programa?.idioma?.nombre_idioma === filtroIdioma);
   }, [paralelos, filtroIdioma]);
 
-  // Alumnos filtrados por búsqueda
   const alumnosFiltrados = useMemo(() => {
     if (esEstudiante) {
-      // Estudiante solo ve su propio registro por CI o nombre
       return alumnos.filter((a) => a.estudiante.nombre_completo.toLowerCase().includes(usuario.nombre.toLowerCase()) || a.estudiante.ci.includes(usuario.ci.split(' ')[0]));
     }
     if (!busqueda.trim()) return alumnos;
@@ -159,7 +150,6 @@ export default function CalificacionesPage() {
     );
   }, [alumnos, busqueda, esEstudiante, usuario]);
 
-  // Cálculo en vivo de la nota final ponderada
   const notaCalculadaPonderada = useMemo(() => {
     const e = parseFloat(formNotas.examen.toString()) || 0;
     const o = parseFloat(formNotas.oral.toString()) || 0;
@@ -193,7 +183,7 @@ export default function CalificacionesPage() {
     try {
       const payload: any = {
         id_inscripcion_libro: evaluando.id_inscripcion_libro,
-        id_docente_calificador: 1, // En producción toma el ID del docente autenticado
+        id_docente_calificador: 1,
       };
 
       if (modoCalculo === 'directa') {
@@ -221,15 +211,14 @@ export default function CalificacionesPage() {
     }
   };
 
-  // CONTROL DE ACCESO
   if (!puedeCalificar && !esEstudiante) {
     return (
       <div className="max-w-4xl mx-auto p-8">
         <div className="bg-red-950/40 border border-red-500/40 rounded-xl p-8 text-center space-y-4">
           <ShieldAlert className="w-16 h-16 text-red-500 mx-auto" />
-          <h2 className="text-2xl font-bold text-white">Módulo 7: Calificaciones — Acceso Restringido</h2>
+          <h2 className="text-2xl font-bold text-white">Acceso Restringido</h2>
           <p className="text-neutral-300 max-w-xl mx-auto">
-            El registro de calificaciones por libro corresponde exclusivamente a los <strong className="text-emerald-400">Docentes</strong> y la supervisión a la <strong className="text-sky-400">Jefatura Académica</strong> (Caso de Uso 11.7, Secuencia 12.7).
+            El registro de calificaciones corresponde exclusivamente a los <strong className="text-emerald-400">Docentes</strong> y la supervisión a la <strong className="text-sky-400">Jefatura Académica</strong>.
           </p>
         </div>
       </div>
@@ -238,25 +227,26 @@ export default function CalificacionesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 tracking-wider uppercase mb-1">
-            <Award className="w-4 h-4" /> Módulo 7 — Evaluaciones y Calificaciones
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-neutral-800">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-sm shrink-0">
+            <Award className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white">
-            {esEstudiante ? 'Mi Historial de Calificaciones y Avance' : 'Centralizador de Calificaciones (Fórmula 80 / 10 / 10)'}
-          </h1>
-          <p className="text-sm text-neutral-400">
-            {esEstudiante
-              ? 'Consulta personal de notas por libro y avance curricular continuo.'
-              : 'Ponderación Oficial: Examen Escrito (80%) + Defensa Oral (10%) + Participación (10%). Nota mínima de aprobación: 71.0 pts.'}
-          </p>
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400">
+              <span>SACA</span>
+              <span>/</span>
+              <span className="text-emerald-400 font-semibold">Calificaciones</span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-extrabold text-white">
+              {esEstudiante ? 'Mi Historial de Calificaciones' : 'Registro de Calificaciones'}
+            </h1>
+          </div>
         </div>
         <button
           onClick={() => cargarNotasParalelo(idParaleloSeleccionado)}
           disabled={loading}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium transition"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800/80 hover:bg-neutral-700 text-neutral-200 text-xs font-medium border border-neutral-700 transition"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           Sincronizar Notas
@@ -276,11 +266,9 @@ export default function CalificacionesPage() {
         </div>
       )}
 
-      {/* Selectores de Paralelo e Idioma */}
       {!esEstudiante && (
         <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3 text-xs">
-            {/* Filtro por Idioma */}
             <div className="flex items-center gap-1.5">
               <span className="text-neutral-400 font-semibold">Idioma:</span>
               <select
@@ -295,7 +283,6 @@ export default function CalificacionesPage() {
               </select>
             </div>
 
-            {/* Selector de Paralelo */}
             <div className="flex items-center gap-1.5">
               <span className="text-neutral-400 font-semibold">Paralelo / Curso:</span>
               <select
@@ -312,7 +299,6 @@ export default function CalificacionesPage() {
             </div>
           </div>
 
-          {/* Búsqueda por estudiante */}
           <div className="relative w-full md:w-64">
             <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-2.5" />
             <input
@@ -326,7 +312,6 @@ export default function CalificacionesPage() {
         </div>
       )}
 
-      {/* Tabla del Centralizador */}
       <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
@@ -437,7 +422,6 @@ export default function CalificacionesPage() {
         </div>
       </div>
 
-      {/* Modal para ingresar calificación */}
       {modalCalificar && evaluando && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-neutral-900 border border-neutral-700 rounded-2xl w-full max-w-md p-6 space-y-4">
@@ -453,7 +437,6 @@ export default function CalificacionesPage() {
               </button>
             </div>
 
-            {/* Alternador de Modo de Calificación */}
             <div className="grid grid-cols-2 gap-2 bg-neutral-950 p-1 rounded-lg border border-neutral-800 text-xs font-semibold">
               <button
                 type="button"
@@ -526,7 +509,6 @@ export default function CalificacionesPage() {
                     />
                   </div>
 
-                  {/* Vista previa del promedio calculado */}
                   <div className="bg-neutral-950/80 border border-neutral-800 rounded-xl p-3 flex items-center justify-between">
                     <span className="text-neutral-400 font-medium">Nota Final Ponderada:</span>
                     <span className={`font-mono text-lg font-extrabold ${notaCalculadaPonderada >= 71 ? 'text-emerald-400' : 'text-red-400'}`}>

@@ -43,9 +43,6 @@ interface CalificacionH3 {
 export default function MetodosNumericosPage() {
   const [tabActiva, setTabActiva] = useState<'MINIMOS_CUADRADOS' | 'NEWTON' | 'SIMPLEX' | 'COLAS' | 'PREDICCION_H3'>('MINIMOS_CUADRADOS');
 
-  // =========================================================================
-  // 1. ESTADO PARA MÍNIMOS CUADRADOS (SUMA DE CUADRADOS DE LAS DIFERENCIAS)
-  // =========================================================================
   const PUNTOS_ALMACEN: Punto[] = [
     { id: 1, x: 1, y: 45, etiqueta: 'Enero (Mes 1)' },
     { id: 2, x: 2, y: 52, etiqueta: 'Febrero (Mes 2)' },
@@ -78,7 +75,6 @@ export default function MetodosNumericosPage() {
   const [nuevaEtiqueta, setNuevaEtiqueta] = useState<string>('Julio (Mes 7)');
   const [xPrediccion, setXPrediccion] = useState<number>(7);
 
-  // Cálculos analíticos de Mínimos Cuadrados
   const resultadoMinimosCuadrados = useMemo(() => {
     const n = puntos.length;
     if (n < 2) return null;
@@ -101,14 +97,13 @@ export default function MetodosNumericosPage() {
     const m = ((n * sumXY) - (sumX * sumY)) / denM;
     const b = mediaY - (m * mediaX);
 
-    // Tabla de diferencias al cuadrado (SSE)
-    let sse = 0; // Sum of Squared Errors (Diferencias de Cuadrados)
-    let sst = 0; // Total Sum of Squares
+    let sse = 0;
+    let sst = 0;
 
     const filas = puntos.map((p) => {
       const yEstimado = m * p.x + b;
-      const residuo = p.y - yEstimado; // Diferencia (y - y_hat)
-      const residuoCuadrado = residuo * residuo; // Diferencia al cuadrado
+      const residuo = p.y - yEstimado;
+      const residuoCuadrado = residuo * residuo;
       const xCuadrado = p.x * p.x;
       const yCuadrado = p.y * p.y;
       const xy = p.x * p.y;
@@ -131,7 +126,6 @@ export default function MetodosNumericosPage() {
     const r2 = sst > 0 ? Math.max(0, Math.min(1, ssr / sst)) : 1;
     const rPearson = (m >= 0 ? 1 : -1) * Math.sqrt(r2);
 
-    // Pronóstico del valor xPrediccion
     const pronosticoY = Math.round((m * xPrediccion + b) * 100) / 100;
 
     return {
@@ -145,7 +139,7 @@ export default function MetodosNumericosPage() {
       mediaY: Math.round(mediaY * 100) / 100,
       m: Math.round(m * 10000) / 10000,
       b: Math.round(b * 10000) / 10000,
-      sse: Math.round(sse * 10000) / 10000, // Suma de los Cuadrados de las Diferencias
+      sse: Math.round(sse * 10000) / 10000,
       sst: Math.round(sst * 10000) / 10000,
       ssr: Math.round(ssr * 10000) / 10000,
       r2: Math.round(r2 * 10000) / 10000,
@@ -184,9 +178,6 @@ export default function MetodosNumericosPage() {
     setPuntos((prev) => prev.filter((p) => p.id !== id));
   };
 
-  // =========================================================================
-  // 2. INTERPOLACIÓN POR DIFERENCIAS DIVIDIDAS DE NEWTON
-  // =========================================================================
   const PUNTOS_NEWTON_DEF = [
     { x: 10, y: 72 },
     { x: 20, y: 81 },
@@ -211,7 +202,6 @@ export default function MetodosNumericosPage() {
       }
     }
 
-    // Evaluar P(newtonXEval)
     let valorInterpolado = f[0][0];
     let producto = 1.0;
     for (let j = 1; j < n; j++) {
@@ -225,27 +215,16 @@ export default function MetodosNumericosPage() {
     };
   }, [newtonPuntos, newtonXEval]);
 
-  // =========================================================================
-  // 3. INVESTIGACIÓN OPERATIVA: PROGRAMACIÓN LINEAL (SIMPLEX)
-  // =========================================================================
-  // Max Z = 40 X1 + 30 X2 (Beneficio por Curso de Inglés vs Francés)
-  // s.a.
-  // 2 X1 + 1 X2 <= 100 (Horas de Aula disponibles)
-  // 1 X1 + 2 X2 <= 80  (Horas de Laboratorio disponibles)
   const [simplexC1, setSimplexC1] = useState<number>(40);
   const [simplexC2, setSimplexC2] = useState<number>(30);
   const [simplexR1Aula, setSimplexR1Aula] = useState<number>(100);
   const [simplexR2Lab, setSimplexR2Lab] = useState<number>(80);
 
   const resultadoSimplex = useMemo(() => {
-    // Solución analítica del sistema 2x2 para fines visuales interactivos
-    // 2 X1 + 1 X2 = 100 -> X2 = 100 - 2X1
-    // 1 X1 + 2(100 - 2X1) = 80 -> 1X1 + 200 - 4X1 = 80 -> 3X1 = 120 -> X1 = 40
-    // X2 = 100 - 2(40) = 20
     const A11 = 2, A12 = 1, B1 = simplexR1Aula;
     const A21 = 1, A22 = 2, B2 = simplexR2Lab;
 
-    const det = (A11 * A22) - (A12 * A21); // 4 - 1 = 3
+    const det = (A11 * A22) - (A12 * A21);
     let x1 = 0, x2 = 0;
     if (det !== 0) {
       x1 = Math.max(0, ((B1 * A22) - (A12 * B2)) / det);
@@ -260,16 +239,13 @@ export default function MetodosNumericosPage() {
     };
   }, [simplexC1, simplexC2, simplexR1Aula, simplexR2Lab]);
 
-  // =========================================================================
-  // 4. TEORÍA DE COLAS (M/M/c FIFO)
-  // =========================================================================
-  const [lambda, setLambda] = useState<number>(14); // 14 alumnos/hora
-  const [mu, setMu] = useState<number>(6);         // 6 alumnos/hora por ventanilla
-  const [cajas, setCajas] = useState<number>(3);    // 3 ventanillas activas
+  const [lambda, setLambda] = useState<number>(14);
+  const [mu, setMu] = useState<number>(6);
+  const [cajas, setCajas] = useState<number>(3);
 
   const resultadoColas = useMemo(() => {
-    const r = lambda / mu; // 14 / 6 = 2.33
-    const rho = r / cajas; // 2.33 / 3 = 0.77
+    const r = lambda / mu;
+    const rho = r / cajas;
     const esEstable = rho < 1.0;
 
     let p0 = 0.0;
@@ -303,9 +279,6 @@ export default function MetodosNumericosPage() {
     };
   }, [lambda, mu, cajas]);
 
-  // =========================================================================
-  // 5. MODELO PREDICTIVO DE RENDIMIENTO ACADÉMICO & DESERCIÓN (DOCUMENTO H3)
-  // =========================================================================
   const CASO_OFICIAL_H3: CalificacionH3[] = [
     { libro: 1, nota: 78 },
     { libro: 2, nota: 74 },
@@ -382,7 +355,6 @@ export default function MetodosNumericosPage() {
   const [cargandoApi, setCargandoApi] = useState<boolean>(false);
   const [servidorMsg, setServidorMsg] = useState<{ tipo: 'ok' | 'err'; fuente: string; ms: number; data?: any } | null>(null);
 
-  // Motor predictivo H3 interactivo en cliente
   const resultadoH3 = useMemo(() => {
     const ordenadas = [...califsH3].sort((a, b) => a.libro - b.libro);
     const n = ordenadas.length;
@@ -462,7 +434,6 @@ export default function MetodosNumericosPage() {
     const b = (sumY - (a * sumX)) / n;
     const mediaY = sumY / n;
 
-    // Próximo examen de nivel
     const ultimoLibro = ordenadas[ordenadas.length - 1].libro;
     let xp = typeof objetivoLvlH3 === 'number' ? objetivoLvlH3 : 36;
     if (objetivoLvlH3 === 'AUTO') {
@@ -543,7 +514,6 @@ export default function MetodosNumericosPage() {
     };
   }, [califsH3, objetivoLvlH3]);
 
-  // Recálculo por lotes (Figura 5.4)
   const resultadoLote = useMemo(() => {
     let alto = 0, medio = 0, bajo = 0, insuf = 0;
     const items = LOTE_ESTUDIANTES_DEMO.map((est) => {
@@ -655,7 +625,6 @@ export default function MetodosNumericosPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-      {/* Encabezado Militar Solemne */}
       <div
         style={{
           display: 'flex',
@@ -667,22 +636,23 @@ export default function MetodosNumericosPage() {
           paddingBottom: '1rem',
         }}
       >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-            <span className="badge badge-gold">
-              <Shield size={12} /> Estado Mayor Académico &bull; CEDMIL
-            </span>
-            <span className="badge badge-military">Investigación Operativa &amp; Métodos Numéricos</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(6, 182, 212, 0.1)', border: '1px solid rgba(6, 182, 212, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#06b6d4', flexShrink: 0 }}>
+            <LineChartIcon size={24} />
           </div>
-          <h1
-            className="font-solemn"
-            style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '0.02em', margin: 0 }}
-          >
-            Laboratorio de Métodos Numéricos &amp; Analítica Operativa
-          </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', margin: '0.2rem 0 0' }}>
-            Suite matemática institucional: Ajuste por Mínimos Cuadrados (Suma de Diferencias de Cuadrados), Interpolación de Newton, Programación Lineal Simplex y Teoría de Colas.
-          </p>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.72rem', fontFamily: 'monospace', color: 'var(--text-muted)' }}>
+              <span>SACA</span>
+              <span>/</span>
+              <span style={{ color: '#06b6d4', fontWeight: 600 }}>Investigación Operativa</span>
+            </div>
+            <h1
+              className="font-solemn"
+              style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '0.02em', margin: '0.15rem 0 0' }}
+            >
+              Laboratorio de Métodos Numéricos y Analítica
+            </h1>
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
@@ -692,7 +662,6 @@ export default function MetodosNumericosPage() {
         </div>
       </div>
 
-      {/* Selector de Pestañas de Métodos Numéricos */}
       <div className="filter-tabs" style={{ background: 'var(--bg-surface-elevated)', padding: '0.35rem', borderRadius: '6px' }}>
         <button
           onClick={() => setTabActiva('MINIMOS_CUADRADOS')}
@@ -733,12 +702,8 @@ export default function MetodosNumericosPage() {
         </button>
       </div>
 
-      {/* ===================================================================
-          PESTAÑA 1: MÍNIMOS CUADRADOS & DIFERENCIAS DE CUADRADOS
-      =================================================================== */}
       {tabActiva === 'MINIMOS_CUADRADOS' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {/* Selector de Casos Prácticos Militares */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Cargar Caso Militar de Estudio:</span>
             <button
@@ -773,7 +738,6 @@ export default function MetodosNumericosPage() {
             </button>
           </div>
 
-          {/* Tarjetas de Métricas Estadísticas y Ecuación */}
           {resultadoMinimosCuadrados && (
             <div
               style={{
@@ -839,7 +803,6 @@ export default function MetodosNumericosPage() {
             </div>
           )}
 
-          {/* TABLA DETALLADA PASO A PASO DE DIFERENCIAS DE CUADRADOS */}
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
             <div style={{ padding: '0.85rem 1rem', background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
               <div>
@@ -851,7 +814,6 @@ export default function MetodosNumericosPage() {
                 </p>
               </div>
 
-              {/* Formulario rápido para agregar un nuevo punto */}
               <form onSubmit={handleAgregarPunto} style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <input
                   type="number"
@@ -930,7 +892,6 @@ export default function MetodosNumericosPage() {
                     </tr>
                   ))}
 
-                  {/* Fila de Totales / Sumatorias */}
                   {resultadoMinimosCuadrados && (
                     <tr style={{ background: 'var(--bg-surface-elevated)', fontWeight: 800, borderTop: '2px solid var(--border-subtle)' }}>
                       <td style={{ color: 'var(--military-gold-primary)' }}>SUMATORIAS (&Sigma;)</td>
@@ -953,9 +914,6 @@ export default function MetodosNumericosPage() {
         </div>
       )}
 
-      {/* ===================================================================
-          PESTAÑA 2: INTERPOLACIÓN POR DIFERENCIAS DIVIDIDAS DE NEWTON
-      =================================================================== */}
       {tabActiva === 'NEWTON' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div className="card" style={{ padding: '1rem' }}>
@@ -987,7 +945,6 @@ export default function MetodosNumericosPage() {
               )}
             </div>
 
-            {/* Matriz Triangular de Diferencias Divididas */}
             <div className="table-responsive">
               <table className="table" style={{ margin: 0, fontSize: '0.78rem' }}>
                 <thead>
@@ -1020,9 +977,6 @@ export default function MetodosNumericosPage() {
         </div>
       )}
 
-      {/* ===================================================================
-          PESTAÑA 3: MÉTODO SIMPLEX (PROGRAMACIÓN LINEAL)
-      =================================================================== */}
       {tabActiva === 'SIMPLEX' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div className="card" style={{ padding: '1rem' }}>
@@ -1073,7 +1027,6 @@ export default function MetodosNumericosPage() {
               </div>
             </div>
 
-            {/* Solución Óptima Encontrada */}
             <div style={{ background: 'var(--military-green-subtle)', padding: '1rem', borderRadius: 6, border: '1px solid var(--border-accent)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
               <div>
                 <p style={{ fontSize: '0.72rem', color: 'var(--status-active)', fontWeight: 800, textTransform: 'uppercase', margin: 0 }}>
@@ -1098,9 +1051,6 @@ export default function MetodosNumericosPage() {
         </div>
       )}
 
-      {/* ===================================================================
-          PESTAÑA 4: TEORÍA DE COLAS (M/M/c FIFO)
-      =================================================================== */}
       {tabActiva === 'COLAS' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div className="card" style={{ padding: '1rem' }}>
@@ -1148,7 +1098,6 @@ export default function MetodosNumericosPage() {
               </div>
             </div>
 
-            {/* Resultados de Colas */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
               <div className="card" style={{ padding: '0.75rem 1rem' }}>
                 <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>
@@ -1190,12 +1139,8 @@ export default function MetodosNumericosPage() {
         </div>
       )}
 
-      {/* ===================================================================
-          PESTAÑA 5: MODELO PREDICTIVO DE RENDIMIENTO & DESERCIÓN (H3 MN)
-      =================================================================== */}
       {tabActiva === 'PREDICCION_H3' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {/* Barra de Herramientas y Casos Institucionales */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
               <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Cargar Escenario H3:</span>
@@ -1257,7 +1202,6 @@ export default function MetodosNumericosPage() {
             </div>
           </div>
 
-          {/* Notificación de Verificación de Servidor */}
           {servidorMsg && (
             <div
               style={{
@@ -1284,10 +1228,8 @@ export default function MetodosNumericosPage() {
             </div>
           )}
 
-          {/* VISTA 1: PREDICCIÓN INDIVIDUAL */}
           {!vistaLote && (
             <>
-              {/* Formulario de Parámetros del Estudiante y Examen Objetivo */}
               <div
                 className="card"
                 style={{
@@ -1338,7 +1280,6 @@ export default function MetodosNumericosPage() {
                   </select>
                 </div>
 
-                {/* Formulario para Registrar Nuevo Libro Evaluado */}
                 <form
                   onSubmit={handleAgregarLibroH3}
                   style={{ display: 'flex', gap: '0.35rem', alignItems: 'flex-end' }}
@@ -1376,7 +1317,6 @@ export default function MetodosNumericosPage() {
                 </form>
               </div>
 
-              {/* Tarjetas KPI de Resultados H3 */}
               {!resultadoH3.datosInsuficientes && (
                 <div
                   style={{
@@ -1385,7 +1325,6 @@ export default function MetodosNumericosPage() {
                     gap: '0.75rem',
                   }}
                 >
-                  {/* Coeficientes */}
                   <div className="card" style={{ padding: '0.85rem 1rem' }}>
                     <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>
                       Recta de Tendencia (&Ecirc; = ax + b)
@@ -1398,7 +1337,6 @@ export default function MetodosNumericosPage() {
                     </p>
                   </div>
 
-                  {/* Coeficiente R2 */}
                   <div className="card" style={{ padding: '0.85rem 1rem' }}>
                     <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>
                       Bondad de Ajuste (R&sup2;)
@@ -1411,7 +1349,6 @@ export default function MetodosNumericosPage() {
                     </p>
                   </div>
 
-                  {/* Proyección al Examen de Nivel */}
                   <div className="card" style={{ padding: '0.85rem 1rem', background: 'var(--bg-surface-elevated)' }}>
                     <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>
                       Proyección Examen Nivel (Libro {resultadoH3.xp})
@@ -1424,7 +1361,6 @@ export default function MetodosNumericosPage() {
                     </p>
                   </div>
 
-                  {/* Clasificación de Riesgo R(xp) */}
                   <div
                     className="card"
                     style={{
@@ -1458,7 +1394,6 @@ export default function MetodosNumericosPage() {
                 </div>
               )}
 
-              {/* Mensaje de Alerta y Recomendación Pedagógica del Documento H3 */}
               <div
                 style={{
                   padding: '0.9rem 1.1rem',
@@ -1493,7 +1428,6 @@ export default function MetodosNumericosPage() {
                 </div>
               </div>
 
-              {/* TABLA DE AJUSTE PASO A PASO (TABLA 5.3 DEL DOCUMENTO H3) */}
               {!resultadoH3.datosInsuficientes && (
                 <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                   <div
@@ -1572,7 +1506,6 @@ export default function MetodosNumericosPage() {
                           </tr>
                         ))}
 
-                        {/* Sumatorias de la Tabla */}
                         <tr style={{ background: 'var(--bg-surface-elevated)', fontWeight: 800, borderTop: '2px solid var(--border-subtle)' }}>
                           <td style={{ textAlign: 'center', color: 'var(--military-gold-primary)' }}>&Sigma; (SUMATORIAS)</td>
                           <td style={{ textAlign: 'center' }}>&Sigma;y = {resultadoH3.sumY}</td>
@@ -1593,7 +1526,6 @@ export default function MetodosNumericosPage() {
             </>
           )}
 
-          {/* VISTA 2: RECÁLCULO POR LOTE AL CIERRE DE ROTACIÓN DOCENTE (FIGURA 5.4) */}
           {vistaLote && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div
@@ -1649,7 +1581,6 @@ export default function MetodosNumericosPage() {
                 </div>
               </div>
 
-              {/* Tabla del Lote */}
               <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                 <div style={{ padding: '0.85rem 1rem', background: 'var(--bg-surface-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                   <h3 style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>

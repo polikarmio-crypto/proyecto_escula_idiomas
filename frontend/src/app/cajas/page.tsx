@@ -33,14 +33,11 @@ export default function CajasPage() {
   const [historialPagos, setHistorialPagos] = useState<any[]>([]);
   const [alerta, setAlerta] = useState<{ tipo: 'ok' | 'error'; mensaje: string } | null>(null);
 
-  // Turno actual del cajero
   const [cajaActivaId, setCajaActivaId] = useState<number>(1);
   const [turnoEnAtencion, setTurnoEnAtencion] = useState<any | null>(null);
 
-  // Ficha solicitada por el estudiante en esta sesión
   const [miFicha, setMiFicha] = useState<any | null>(null);
 
-  // Formulario de Cobro (Cajero)
   const [modalPago, setModalPago] = useState(false);
   const [formPago, setFormPago] = useState({
     id_tipo_pago: 1,
@@ -48,7 +45,6 @@ export default function CajasPage() {
     concepto: 'Matrícula Regular',
   });
 
-  // Comprobante emitido
   const [comprobanteEmitido, setComprobanteEmitido] = useState<any | null>(null);
 
   const mostrarMensaje = (tipo: 'ok' | 'error', mensaje: string) => {
@@ -92,11 +88,10 @@ export default function CajasPage() {
 
   useEffect(() => {
     cargarDatosCaja();
-    const interval = setInterval(cargarDatosCaja, 15000); // Actualiza cada 15 seg
+    const interval = setInterval(cargarDatosCaja, 15000);
     return () => clearInterval(interval);
   }, []);
 
-  // 1. ESTUDIANTE: Solicitar ficha de turno digital (Secuencia 12.8, Paso 1-4)
   const handleSolicitarFicha = async () => {
     try {
       const res = await fetch('http://localhost:8000/api/v1/cajas/ficha', {
@@ -114,7 +109,6 @@ export default function CajasPage() {
     }
   };
 
-  // 2. CAJERO: Llamar al siguiente turno en cola FIFO (Secuencia 12.8, Paso 5-7)
   const handleLlamarSiguiente = async () => {
     try {
       const res = await fetch('http://localhost:8000/api/v1/cajas/ficha/llamar', {
@@ -132,7 +126,6 @@ export default function CajasPage() {
     }
   };
 
-  // 3. CAJERO: Procesar Pago y Emitir Comprobante (Secuencia 12.8, Paso 12-17)
   const handleProcesarPago = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!turnoEnAtencion) return;
@@ -157,7 +150,6 @@ export default function CajasPage() {
       mostrarMensaje('ok', 'Pago procesado exitosamente. Comprobante emitido.');
       setModalPago(false);
 
-      // Finalizar automáticamente la ficha de atención
       await fetch('http://localhost:8000/api/v1/cajas/ficha/finalizar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -171,15 +163,14 @@ export default function CajasPage() {
     }
   };
 
-  // CONTROL DE ACCESO
   if (!puedeOperarCaja && !esEstudiante) {
     return (
       <div className="max-w-4xl mx-auto p-8">
         <div className="bg-red-950/40 border border-red-500/40 rounded-xl p-8 text-center space-y-4">
           <ShieldAlert className="w-16 h-16 text-red-500 mx-auto" />
-          <h2 className="text-2xl font-bold text-white">Módulo 8: Cajas y Recaudaciones — Acceso Restringido</h2>
+          <h2 className="text-2xl font-bold text-white">Acceso Restringido</h2>
           <p className="text-neutral-300 max-w-xl mx-auto">
-            La atención en ventanilla y el cobro de aranceles corresponde exclusivamente a los <strong className="text-amber-400">Cajeros</strong> (Caso de Uso 11.8, Secuencia 12.8).
+            La atención en ventanilla y el cobro de aranceles corresponde exclusivamente a los <strong className="text-amber-400">Cajeros</strong>.
             Los estudiantes pueden acceder únicamente a la solicitud de ficha de atención digital.
           </p>
         </div>
@@ -189,25 +180,26 @@ export default function CajasPage() {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 tracking-wider uppercase mb-1">
-            <Landmark className="w-4 h-4" /> Módulo 8 — Gestión de Cajas y Recaudaciones
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-neutral-800">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-sm shrink-0">
+            <Landmark className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white">
-            {esEstudiante ? 'Atención en Caja — Turno Digital' : 'Ventanillas de Caja y Disciplina FIFO'}
-          </h1>
-          <p className="text-sm text-neutral-400">
-            {esEstudiante
-              ? 'Solicite su ficha para pagos de matrícula, mensualidades o adquisición de libros.'
-              : 'Control estricto por antigüedad de llegada (FIFO) con cálculo analítico de tiempos de espera.'}
-          </p>
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400">
+              <span>SACA</span>
+              <span>/</span>
+              <span className="text-amber-400 font-semibold">Cajas</span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-extrabold text-white">
+              {esEstudiante ? 'Atención en Caja — Turno Digital' : 'Cajas y Recaudaciones'}
+            </h1>
+          </div>
         </div>
         <button
           onClick={cargarDatosCaja}
           disabled={loading}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium transition"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800/80 hover:bg-neutral-700 text-neutral-200 text-xs font-medium border border-neutral-700 transition"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           Actualizar Cola
@@ -227,7 +219,6 @@ export default function CajasPage() {
         </div>
       )}
 
-      {/* ── MODO ESTUDIANTE: Solo solicitud de turno y estado de espera ── */}
       {esEstudiante ? (
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 text-center space-y-4 shadow-xl">
@@ -260,7 +251,6 @@ export default function CajasPage() {
             )}
           </div>
 
-          {/* Estado de la cola */}
           <div className="bg-neutral-900/40 border border-neutral-800 rounded-xl p-4 text-xs">
             <div className="flex items-center justify-between text-neutral-400 mb-2">
               <span>Personas esperando en cola FIFO:</span>
@@ -272,9 +262,7 @@ export default function CajasPage() {
           </div>
         </div>
       ) : (
-        /* ── MODO CAJERO: Panel completo de ventanilla, cola FIFO, cobro y comprobantes ── */
         <div className="space-y-6">
-          {/* Métricas M/M/c del día */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-neutral-900/60 border border-neutral-800 p-4 rounded-xl">
               <span className="text-neutral-400 text-xs">En Cola FIFO (Lq)</span>
@@ -299,7 +287,6 @@ export default function CajasPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Panel de Control de la Ventanilla Activa */}
             <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -351,7 +338,6 @@ export default function CajasPage() {
               )}
             </div>
 
-            {/* Cola FIFO de Espera */}
             <div className="lg:col-span-2 bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 space-y-3">
               <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -403,7 +389,6 @@ export default function CajasPage() {
         </div>
       )}
 
-      {/* Modal de Cobro */}
       {modalPago && turnoEnAtencion && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-neutral-900 border border-neutral-700 rounded-2xl w-full max-w-md p-6 space-y-4">
@@ -476,7 +461,6 @@ export default function CajasPage() {
         </div>
       )}
 
-      {/* Comprobante emitido modal */}
       {comprobanteEmitido && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-neutral-900 border border-emerald-500/50 rounded-2xl w-full max-w-sm p-6 space-y-4 text-center">

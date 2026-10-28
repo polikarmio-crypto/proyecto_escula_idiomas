@@ -13,10 +13,6 @@ const handler = NextAuth({
   },
   callbacks: {
     async signIn({ account, profile }) {
-      // Aquí se puede añadir la lógica para restringir el acceso solo al dominio institucional
-      // if (account?.provider === "google") {
-      //   return profile?.email?.endsWith("@ejercito.mil.bo") || false;
-      // }
       return true;
     },
   }

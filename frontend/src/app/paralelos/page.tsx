@@ -36,7 +36,6 @@ export default function ParalelosPage() {
   const [busqueda, setBusqueda] = useState('');
   const [alerta, setAlerta] = useState<{ tipo: 'ok' | 'error'; mensaje: string } | null>(null);
 
-  // Modal apertura
   const [modalApertura, setModalApertura] = useState(false);
   const [formParalelo, setFormParalelo] = useState({
     codigo_paralelo: '',
@@ -102,7 +101,6 @@ export default function ParalelosPage() {
     cargarDatos();
   }, []);
 
-  // Apertura de Paralelo (Secuencia 12.5)
   const handleAperturarParalelo = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -134,7 +132,6 @@ export default function ParalelosPage() {
     }
   };
 
-  // Si es docente, solo ve los paralelos donde está asignado
   const paralelosVisibles = paralelos.filter((p) => {
     if (esDocente) {
       const nombreDocente = p.docente_actual?.nombre_docente || '';
@@ -149,15 +146,14 @@ export default function ParalelosPage() {
     );
   });
 
-  // CONTROL DE ACCESO
   if (!puedeCrear && !esDocente) {
     return (
       <div className="max-w-4xl mx-auto p-8">
         <div className="bg-red-950/40 border border-red-500/40 rounded-xl p-8 text-center space-y-4">
           <ShieldAlert className="w-16 h-16 text-red-500 mx-auto" />
-          <h2 className="text-2xl font-bold text-white">Módulo 5: Paralelos — Acceso Restringido</h2>
+          <h2 className="text-2xl font-bold text-white">Acceso Restringido</h2>
           <p className="text-neutral-300 max-w-xl mx-auto">
-            La apertura de paralelos y asignación docente corresponde a la <strong className="text-sky-400">Jefatura Académica</strong> (Caso de Uso 11.5, Secuencia 12.5).
+            La apertura de paralelos y asignación docente corresponde a la <strong className="text-sky-400">Jefatura Académica</strong>.
             Los docentes tienen acceso en modo consulta para verificar sus asignaciones.
           </p>
         </div>
@@ -167,26 +163,27 @@ export default function ParalelosPage() {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-sky-400 tracking-wider uppercase mb-1">
-            <Layers className="w-4 h-4" /> Módulo 5 — Paralelos y Asignación Docente
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-neutral-800">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shadow-sm shrink-0">
+            <Layers className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white">
-            {esDocente ? 'Mis Paralelos Asignados' : 'Apertura y Control de Paralelos'}
-          </h1>
-          <p className="text-sm text-neutral-400">
-            {esDocente
-              ? 'Consulte sus cursos asignados y el seguimiento del ciclo de rotación obligatoria de 15 días.'
-              : 'Validación de aforo sin cruces de horario en aula y asignación de docentes habilitados.'}
-          </p>
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400">
+              <span>SACA</span>
+              <span>/</span>
+              <span className="text-purple-400 font-semibold">Paralelos</span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-extrabold text-white">
+              {esDocente ? 'Mis Paralelos Asignados' : 'Apertura y Asignación de Paralelos'}
+            </h1>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={cargarDatos}
             disabled={loading}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium transition"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800/80 hover:bg-neutral-700 text-neutral-200 text-xs font-medium border border-neutral-700 transition"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             Sincronizar
@@ -194,7 +191,7 @@ export default function ParalelosPage() {
           {puedeCrear && (
             <button
               onClick={() => setModalApertura(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition shadow-md shadow-sky-600/20"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition shadow-md shadow-purple-600/20"
             >
               <Plus className="w-4 h-4" />
               + Aperturar Nuevo Paralelo
@@ -216,7 +213,6 @@ export default function ParalelosPage() {
         </div>
       )}
 
-      {/* Barra de Búsqueda */}
       <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 flex items-center justify-between">
         <div className="relative w-80">
           <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-2.5" />
@@ -233,7 +229,6 @@ export default function ParalelosPage() {
         </span>
       </div>
 
-      {/* Grid de Paralelos */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {paralelosVisibles.map((p) => {
           const cuposDisp = p.cupos_disponibles ?? (p.capacidad_maxima_paralelo - (p.inscripciones_count || 0));
@@ -278,7 +273,6 @@ export default function ParalelosPage() {
                 </div>
               </div>
 
-              {/* Indicador de Cupos */}
               <div className="bg-neutral-950 p-3 rounded-xl border border-neutral-800 flex items-center justify-between text-xs">
                 <div>
                   <span className="text-neutral-400 text-[11px]">Cupos Disponibles:</span>
@@ -294,7 +288,6 @@ export default function ParalelosPage() {
         })}
       </div>
 
-      {/* Modal de Apertura de Paralelo */}
       {modalApertura && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-neutral-900 border border-neutral-700 rounded-2xl w-full max-w-lg p-6 space-y-4">

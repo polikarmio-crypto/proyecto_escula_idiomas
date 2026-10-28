@@ -31,7 +31,6 @@ export default function EstructuraAcademicaPage() {
   const [programaSeleccionado, setProgramaSeleccionado] = useState<any | null>(null);
   const [nivelSeleccionado, setNivelSeleccionado] = useState<any | null>(null);
 
-  // Formularios
   const [formProg, setFormProg] = useState({
     nombre: '',
     id_idioma: '',
@@ -163,10 +162,10 @@ export default function EstructuraAcademicaPage() {
       <div className="max-w-4xl mx-auto p-8">
         <div className="bg-red-950/40 border border-red-500/40 rounded-xl p-8 text-center space-y-4">
           <ShieldAlert className="w-16 h-16 text-red-500 mx-auto" />
-          <h2 className="text-2xl font-bold text-white">Módulo 2: Estructura Académica — Acceso Restringido</h2>
+          <h2 className="text-2xl font-bold text-white">Acceso Restringido</h2>
           <p className="text-neutral-300 max-w-xl mx-auto">
             La creación de la malla curricular, niveles y asignación de libros corresponde exclusivamente al{' '}
-            <strong className="text-sky-400">Jefe Académico</strong> (Caso de Uso 11.2, Secuencia 12.2).
+            <strong className="text-sky-400">Jefe Académico</strong>.
             Tu rol activo es <span className="px-2 py-0.5 rounded bg-neutral-800 text-amber-400 font-semibold">{rolConfig.titulo}</span>.
           </p>
         </div>
@@ -176,23 +175,26 @@ export default function EstructuraAcademicaPage() {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-sky-400 tracking-wider uppercase mb-1">
-            <FolderTree className="w-4 h-4" /> Módulo 2 — Creación de la Estructura Académica
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-neutral-800">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 shadow-sm shrink-0">
+            <FolderTree className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white">
-            Malla Curricular: Programas, Niveles y Libros
-          </h1>
-          <p className="text-sm text-neutral-400">
-            Actor responsable: <strong>Jefe Académico</strong> (Diagrama UML 11.2, Secuencia 12.2).
-          </p>
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400">
+              <span>SACA</span>
+              <span>/</span>
+              <span className="text-sky-400 font-semibold">Estructura Académica</span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-extrabold text-white">
+              Malla Curricular y Contenidos
+            </h1>
+          </div>
         </div>
         <button
           onClick={cargarDatos}
           disabled={loading}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium transition"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800/80 hover:bg-neutral-700 text-neutral-200 text-xs font-medium border border-neutral-700 transition"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           Sincronizar Malla
@@ -212,9 +214,7 @@ export default function EstructuraAcademicaPage() {
         </div>
       )}
 
-      {/* Jerarquía en 3 Columnas: Programas -> Niveles -> Libros */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Columna 1: Programas Académicos */}
         <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -223,7 +223,6 @@ export default function EstructuraAcademicaPage() {
             </h3>
           </div>
 
-          {/* Formulario nuevo programa */}
           <form onSubmit={handleCrearPrograma} className="space-y-2 bg-neutral-950/60 p-3 rounded-lg border border-neutral-800 text-xs">
             <input
               type="text"
@@ -261,7 +260,6 @@ export default function EstructuraAcademicaPage() {
             </button>
           </form>
 
-          {/* Lista de programas */}
           <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
             {programas.map((p) => {
               const selected = programaSeleccionado?.id_programa === p.id_programa;
@@ -294,7 +292,6 @@ export default function EstructuraAcademicaPage() {
           </div>
         </div>
 
-        {/* Columna 2: Niveles Curriculares */}
         <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -305,7 +302,6 @@ export default function EstructuraAcademicaPage() {
 
           {programaSeleccionado ? (
             <>
-              {/* Formulario nuevo nivel */}
               <form onSubmit={handleCrearNivel} className="space-y-2 bg-neutral-950/60 p-3 rounded-lg border border-neutral-800 text-xs">
                 <div className="grid grid-cols-2 gap-2">
                   <input
@@ -343,7 +339,6 @@ export default function EstructuraAcademicaPage() {
                 </button>
               </form>
 
-              {/* Lista de niveles */}
               <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
                 {(programaSeleccionado.niveles || []).map((n: any) => {
                   const selected = nivelSeleccionado?.id_nivel === n.id_nivel;
@@ -376,7 +371,6 @@ export default function EstructuraAcademicaPage() {
           )}
         </div>
 
-        {/* Columna 3: Libros y Módulos Curriculares */}
         <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -387,7 +381,6 @@ export default function EstructuraAcademicaPage() {
 
           {nivelSeleccionado ? (
             <>
-              {/* Formulario nuevo libro */}
               <form onSubmit={handleCrearLibro} className="space-y-2 bg-neutral-950/60 p-3 rounded-lg border border-neutral-800 text-xs">
                 <div className="grid grid-cols-3 gap-2">
                   <input
@@ -416,7 +409,6 @@ export default function EstructuraAcademicaPage() {
                 </button>
               </form>
 
-              {/* Lista de libros asignados al nivel */}
               <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
                 {(nivelSeleccionado.libros || []).map((lib: any) => (
                   <div

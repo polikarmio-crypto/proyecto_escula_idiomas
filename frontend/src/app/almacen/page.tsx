@@ -34,11 +34,9 @@ export default function AlmacenPage() {
   const [tab, setTab] = useState<'stock' | 'movimientos' | 'alertas' | 'pedidos'>('stock');
   const [busqueda, setBusqueda] = useState('');
 
-  // Modales
   const [modalMovimiento, setModalMovimiento] = useState(false);
   const [modalPedido, setModalPedido] = useState(false);
 
-  // Formulario de movimiento (Entrada / Salida)
   const [formMov, setFormMov] = useState({
     id_almacen_libro: 1,
     tipo: 'Salida' as 'Entrada' | 'Salida',
@@ -46,7 +44,6 @@ export default function AlmacenPage() {
     motivo: 'Entrega por apertura de paralelo académico',
   });
 
-  // Formulario de pedido de reposición
   const [formPed, setFormPed] = useState({
     id_almacen_libro: 1,
     cantidad: 50,
@@ -94,7 +91,6 @@ export default function AlmacenPage() {
     cargarDatosAlmacen();
   }, []);
 
-  // Registrar movimiento (Secuencia 12.9)
   const handleRegistrarMovimiento = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -119,7 +115,6 @@ export default function AlmacenPage() {
     }
   };
 
-  // Crear pedido de reposición
   const handleCrearPedido = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -142,7 +137,6 @@ export default function AlmacenPage() {
     }
   };
 
-  // Recepcionar pedido de reposición
   const handleRecibirPedido = async (id: number) => {
     if (!confirm('¿Confirma la recepción física del pedido? El stock actual se incrementará automáticamente.')) return;
     try {
@@ -168,16 +162,15 @@ export default function AlmacenPage() {
     );
   });
 
-  // CONTROL DE ACCESO INSTITUCIONAL
   if (!puedeOperarAlmacen) {
     return (
       <div className="max-w-4xl mx-auto p-8">
         <div className="bg-red-950/40 border border-red-500/40 rounded-xl p-8 text-center space-y-4">
           <ShieldAlert className="w-16 h-16 text-red-500 mx-auto" />
-          <h2 className="text-2xl font-bold text-white">Módulo 9: Almacén de Libros — Acceso Restringido</h2>
+          <h2 className="text-2xl font-bold text-white">Acceso Restringido</h2>
           <p className="text-neutral-300 max-w-xl mx-auto">
-            La administración de existencias de material bibliográfico, salidas por apertura de paralelo y control de ROP corresponde exclusivamente al{' '}
-            <strong className="text-pink-400">Encargado de Almacén</strong> (Caso de Uso 11.9, Secuencia 12.9).
+            La administración de existencias de material bibliográfico y control de ROP corresponde exclusivamente al{' '}
+            <strong className="text-pink-400">Encargado de Almacén</strong>.
             Tu rol activo es <span className="px-2 py-0.5 rounded bg-neutral-800 text-amber-400 font-semibold">{rolConfig.titulo}</span>.
           </p>
         </div>
@@ -187,24 +180,27 @@ export default function AlmacenPage() {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-pink-400 tracking-wider uppercase mb-1">
-            <Package className="w-4 h-4" /> Módulo 9 — Almacén e Inventario de Libros
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-neutral-800">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-xl bg-pink-500/10 border border-pink-500/30 flex items-center justify-center text-pink-400 shadow-sm shrink-0">
+            <Package className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white">
-            Control Físico de Textos y Punto de Reorden (ROP)
-          </h1>
-          <p className="text-sm text-neutral-400">
-            Actor responsable: <strong>Encargado de Almacén</strong> (Diagrama UML 11.9, Secuencia 12.9).
-          </p>
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400">
+              <span>SACA</span>
+              <span>/</span>
+              <span className="text-pink-400 font-semibold">Almacén</span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-extrabold text-white">
+              Inventario de Textos y Control de Stock
+            </h1>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={cargarDatosAlmacen}
             disabled={loading}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium transition"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800/80 hover:bg-neutral-700 text-neutral-200 text-xs font-medium border border-neutral-700 transition"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             Sincronizar Stock
@@ -232,12 +228,11 @@ export default function AlmacenPage() {
         </div>
       )}
 
-      {/* Tarjetas resumen ROP */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-neutral-900/60 border border-neutral-800 p-4 rounded-xl">
           <span className="text-neutral-400 text-xs">Títulos en Catálogo</span>
           <p className="text-2xl font-bold font-mono text-white mt-1">{resumen?.total_titulos || 0}</p>
-          <span className="text-[10px] text-neutral-500">Módulos registrados</span>
+          <span className="text-[10px] text-neutral-500">Registrados</span>
         </div>
         <div className="bg-neutral-900/60 border border-neutral-800 p-4 rounded-xl">
           <span className="text-neutral-400 text-xs">Stock Total Físico</span>
@@ -256,7 +251,6 @@ export default function AlmacenPage() {
         </div>
       </div>
 
-      {/* Selector de pestañas */}
       <div className="flex items-center gap-2 border-b border-neutral-800 pb-3">
         <button
           onClick={() => setTab('stock')}
@@ -289,7 +283,6 @@ export default function AlmacenPage() {
         </button>
       </div>
 
-      {/* Contenido según pestaña */}
       {tab === 'stock' && (
         <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl overflow-hidden shadow-lg">
           <div className="p-3 border-b border-neutral-800 flex items-center justify-between">
@@ -303,8 +296,8 @@ export default function AlmacenPage() {
                 className="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white"
               />
             </div>
-            <span className="text-[11px] text-neutral-400">
-              Control según tabla <code className="text-pink-400">almacen_libro</code> (5FN)
+            <span className="text-xs text-neutral-400">
+              Inventario de textos
             </span>
           </div>
 
@@ -459,7 +452,6 @@ export default function AlmacenPage() {
         </div>
       )}
 
-      {/* Modal de Movimiento (Kardex) */}
       {modalMovimiento && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-neutral-900 border border-neutral-700 rounded-2xl w-full max-w-md p-6 space-y-4">
@@ -555,7 +547,6 @@ export default function AlmacenPage() {
         </div>
       )}
 
-      {/* Modal de Pedido */}
       {modalPedido && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-neutral-900 border border-neutral-700 rounded-2xl w-full max-w-md p-6 space-y-4">

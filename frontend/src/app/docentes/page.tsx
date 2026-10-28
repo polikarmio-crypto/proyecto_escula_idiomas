@@ -36,7 +36,6 @@ export default function DocentesPage() {
   const [busqueda, setBusqueda] = useState('');
   const [alerta, setAlerta] = useState<{ tipo: 'ok' | 'error'; mensaje: string } | null>(null);
 
-  // Modales
   const [modalDocente, setModalDocente] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [idDocenteSeleccionado, setIdDocenteSeleccionado] = useState<number | null>(null);
@@ -45,7 +44,6 @@ export default function DocentesPage() {
   const [paraleloARotar, setParaleloARotar] = useState<any | null>(null);
   const [docenteNuevoId, setDocenteNuevoId] = useState<string>('');
 
-  // Formulario de docente
   const [formDoc, setFormDoc] = useState({
     ci_docente: '',
     nombre_docente: '',
@@ -164,16 +162,15 @@ export default function DocentesPage() {
     );
   });
 
-  // CONTROL DE ACCESO
   if (!puedeAdministrar) {
     return (
       <div className="max-w-4xl mx-auto p-8">
         <div className="bg-red-950/40 border border-red-500/40 rounded-xl p-8 text-center space-y-4">
           <ShieldAlert className="w-16 h-16 text-red-500 mx-auto" />
-          <h2 className="text-2xl font-bold text-white">Módulo 3: Gestión de Docentes — Acceso Restringido</h2>
+          <h2 className="text-2xl font-bold text-white">Acceso Restringido</h2>
           <p className="text-neutral-300 max-w-xl mx-auto">
-            El registro de docentes, acreditación de competencias lingüísticas y programación del ciclo de rotación de 15 días corresponde a la{' '}
-            <strong className="text-sky-400">Jefatura Académica</strong> (Caso de Uso 11.3, Secuencia 12.3).
+            El registro de docentes y programación del ciclo de rotación corresponde a la{' '}
+            <strong className="text-sky-400">Jefatura Académica</strong>.
             Tu rol activo es <span className="px-2 py-0.5 rounded bg-neutral-800 text-amber-400 font-semibold">{rolConfig.titulo}</span>.
           </p>
         </div>
@@ -183,24 +180,27 @@ export default function DocentesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 tracking-wider uppercase mb-1">
-            <GraduationCap className="w-4 h-4" /> Módulo 3 — Gestión de Docentes y Rotación
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-neutral-800">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-sm shrink-0">
+            <GraduationCap className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white">
-            Cuerpo Docente y Ciclos de Rotación (15 Días)
-          </h1>
-          <p className="text-sm text-neutral-400">
-            Actor responsable: <strong>Jefe Académico</strong> (Diagrama UML 11.3, Secuencia 12.3).
-          </p>
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400">
+              <span>SACA</span>
+              <span>/</span>
+              <span className="text-emerald-400 font-semibold">Cuerpo Docente</span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-extrabold text-white">
+              Gestión y Rotación de Docentes
+            </h1>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={cargarDatos}
             disabled={loading}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium transition"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800/80 hover:bg-neutral-700 text-neutral-200 text-xs font-medium border border-neutral-700 transition"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             Sincronizar
@@ -228,7 +228,6 @@ export default function DocentesPage() {
         </div>
       )}
 
-      {/* Alertas de Rotación Quincenal Activas */}
       {alertasRotacion.length > 0 && (
         <div className="bg-amber-950/30 border border-amber-500/50 rounded-2xl p-5 space-y-3">
           <div className="flex items-center justify-between">
@@ -267,7 +266,6 @@ export default function DocentesPage() {
         </div>
       )}
 
-      {/* Barra de Búsqueda */}
       <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 flex items-center justify-between">
         <div className="relative w-80">
           <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-2.5" />
@@ -284,7 +282,6 @@ export default function DocentesPage() {
         </span>
       </div>
 
-      {/* Tabla de Docentes */}
       <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
@@ -351,7 +348,6 @@ export default function DocentesPage() {
         </div>
       </div>
 
-      {/* Modal Nuevo Docente */}
       {modalDocente && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-neutral-900 border border-neutral-700 rounded-2xl w-full max-w-lg p-6 space-y-4">
@@ -438,7 +434,6 @@ export default function DocentesPage() {
                 </div>
               </div>
 
-              {/* Competencias idiomáticas (tabla docente_idioma) */}
               <div>
                 <label className="text-neutral-300 block mb-1">Idiomas Habilitados para Enseñar</label>
                 <div className="grid grid-cols-2 gap-2 bg-neutral-950 p-3 rounded-lg border border-neutral-800 max-h-32 overflow-y-auto">
@@ -485,7 +480,6 @@ export default function DocentesPage() {
         </div>
       )}
 
-      {/* Modal Relevar Docente (Rotación 15 días) */}
       {modalRotar && paraleloARotar && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-neutral-900 border border-amber-500/50 rounded-2xl w-full max-w-md p-6 space-y-4">

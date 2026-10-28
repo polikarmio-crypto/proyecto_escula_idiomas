@@ -1,18 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Cinzel:wght@600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
-/* =====================================================================
-   SISTEMA DE DISEÑO INSTITUCIONAL MILITAR — ESCUELA DE IDIOMAS EIE
-   Temas: Oscuro / Claro / Alto Contraste
-   Texto: Normal / Medio / Grande
-===================================================================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* ── Escala de texto en 3 niveles ── */
 html { font-size: 15px; }
 html[data-font-size="normal"] { font-size: 15px; }
 html[data-font-size="medium"] { font-size: 17.5px; }
 html[data-font-size="large"]  { font-size: 20px; }
 
-/* ── TEMA OSCURO (Predeterminado) ── */
 :root,
 html[data-theme="dark"] {
   --bg-primary: #0c1117;
@@ -52,7 +48,6 @@ html[data-theme="dark"] {
   --shadow-focus: 0 0 0 3px rgba(45,95,66,.4);
 }
 
-/* ── TEMA CLARO ── */
 html[data-theme="light"] {
   --bg-primary: #f1f4f8;
   --bg-surface: #ffffff;
@@ -91,7 +86,6 @@ html[data-theme="light"] {
   --shadow-focus: 0 0 0 3px rgba(27,67,50,.25);
 }
 
-/* ── TEMA ALTO CONTRASTE ── */
 html[data-theme="high-contrast"] {
   --bg-primary: #000000;
   --bg-surface: #000000;
@@ -138,7 +132,6 @@ html[data-theme="high-contrast"] .input {
   border: 2px solid #ffffff !important;
 }
 
-/* ─── BASE ─── */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -157,13 +150,11 @@ body {
   letter-spacing: .05em;
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-primary); }
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--military-green-light); }
 
-/* ─── KEYFRAMES ─── */
 @keyframes solemnFadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -182,7 +173,6 @@ body {
   100% { background-position:  200% 0; }
 }
 
-/* ─── SKELETON LOADER ─── */
 .animate-solemn-fade { animation: solemnFadeIn .35s cubic-bezier(.16,1,.3,1) forwards; }
 
 .skeleton {
@@ -197,7 +187,6 @@ body {
   border-radius: 6px;
 }
 
-/* ─── MILITARY SPINNER ─── */
 .military-loader {
   display: flex;
   flex-direction: column;
@@ -231,7 +220,6 @@ body {
   animation: solemnPulse 1.5s ease-in-out infinite;
 }
 
-/* ─── LOGIN ─── */
 .login-screen-wrapper {
   min-height: 100vh;
   display: flex;
@@ -260,24 +248,24 @@ body {
   background: linear-gradient(90deg, var(--military-green-primary), var(--military-gold-primary), var(--military-green-primary));
 }
 
-/* ─── CARDS ─── */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  padding: 1.35rem;
-  box-shadow: var(--shadow-sm);
-  transition: border-color .2s, box-shadow .2s;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
 }
-.card:hover { border-color: var(--border-strong); }
+.card:hover { 
+  border-color: var(--border-strong); 
+}
 
-/* ─── BADGES ─── */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: .35rem;
   padding: .25rem .65rem;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: .72rem;
   font-weight: 700;
   letter-spacing: .04em;
@@ -288,14 +276,13 @@ body {
 .badge-civil    { background: var(--military-blue-subtle);  color: var(--text-main);             border: 1px solid var(--border-subtle); }
 .badge-danger   { background: rgba(163,59,59,.15);          color: var(--status-danger);         border: 1px solid var(--status-danger); }
 
-/* ─── BUTTONS ─── */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: .5rem;
   padding: .6rem 1.15rem;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: .85rem;
   font-weight: 600;
   cursor: pointer;
@@ -306,11 +293,11 @@ body {
 }
 .btn:active { transform: scale(.98); }
 
-.btn-primary   { background: var(--military-green-primary); color: #fff; border-color: var(--border-accent); }
-.btn-primary:hover { background: var(--military-green-hover); }
+.btn-primary   { background: var(--military-green-primary); color: #fff; border-color: var(--border-accent); box-shadow: 0 2px 8px rgba(35, 77, 53, 0.3); }
+.btn-primary:hover { background: var(--military-green-hover); box-shadow: 0 4px 14px rgba(35, 77, 53, 0.45); }
 
-.btn-gold      { background: var(--military-gold-primary);  color: #fff; border-color: var(--border-gold); }
-.btn-gold:hover   { background: var(--military-gold-hover); }
+.btn-gold      { background: var(--military-gold-primary);  color: #fff; border-color: var(--border-gold); box-shadow: 0 2px 8px rgba(168, 132, 44, 0.3); }
+.btn-gold:hover   { background: var(--military-gold-hover); box-shadow: 0 4px 14px rgba(168, 132, 44, 0.45); }
 
 .btn-secondary { background: var(--bg-surface-elevated); color: var(--text-main); border-color: var(--border-subtle); }
 .btn-secondary:hover { background: var(--bg-surface-hover); border-color: var(--border-strong); }
@@ -320,24 +307,40 @@ body {
 
 .btn-icon { width: 36px; height: 36px; padding: 0; }
 
-/* ─── INPUTS ─── */
-.input {
+.input,
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input[type="date"],
+select,
+textarea {
   width: 100%;
   padding: .65rem .9rem;
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-subtle);
-  border-radius: 6px;
+  border-radius: 8px;
   color: var(--text-main);
   font-size: .875rem;
   font-family: inherit;
   outline: none;
-  transition: border-color .15s;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  box-sizing: border-box;
 }
-.input:focus {
-  border-color: var(--military-green-light);
-  box-shadow: var(--shadow-focus);
+.input:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--military-green-light) !important;
+  box-shadow: 0 0 0 3px rgba(82, 140, 104, 0.3) !important;
 }
-.input::placeholder { color: var(--text-dim); }
+.input::placeholder,
+input::placeholder,
+textarea::placeholder { color: var(--text-dim); }
 
 label {
   display: block;
@@ -349,36 +352,47 @@ label {
   margin-bottom: .35rem;
 }
 
-/* ─── TABLES ─── */
 .table-responsive {
   width: 100%; overflow-x: auto;
   border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
 }
 
-.table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 720px; }
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
 
-.table th {
+thead th {
   background: var(--bg-surface-elevated);
   color: var(--text-muted);
-  font-size: .72rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .06em;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
   padding: .85rem 1rem;
   text-align: left;
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.table td {
+tbody td {
   padding: .85rem 1rem;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   font-size: .875rem;
   vertical-align: middle;
 }
 
-.table tbody tr:hover td { background: var(--bg-surface-hover); }
+tbody tr {
+  transition: background-color .15s ease;
+}
 
-/* ─── FILTER TABS ─── */
+tbody tr:hover td {
+  background: rgba(35, 77, 53, 0.12) !important;
+}
+
 .filter-tabs {
   display: flex;
   background: var(--bg-surface-elevated);
@@ -403,7 +417,6 @@ label {
 .filter-tab:hover   { background: var(--bg-surface-hover); color: var(--text-main); }
 .filter-tab.active  { background: var(--military-green-primary); color: #ffffff; }
 
-/* ─── MODAL ─── */
 .modal-overlay {
   position: fixed !important;
   top: 0 !important;
@@ -458,7 +471,6 @@ label {
   background: var(--bg-surface-elevated);
 }
 
-/* ─── LAYOUT ─── */
 .layout { display: flex; min-height: 100vh; }
 
 .sidebar {
@@ -516,7 +528,6 @@ label {
   background: rgba(0,0,0,.65); z-index: 90;
 }
 
-/* ─── RESPONSIVE ─── */
 @media (max-width: 860px) {
   .sidebar {
     position: fixed; top: 0; bottom: 0; left: 0;
@@ -529,10 +540,6 @@ label {
   .topbar                { padding: .75rem 1rem; }
 }
 
-/* =====================================================================
-   CORTINA DE TRANSICIÓN MILITAR — PANTALLA COMPLETA AL CAMBIAR SECCIÓN
-   Efecto: Barrido táctico militar con rejilla, radar y marco dorado
-===================================================================== */
 
 @keyframes curtainSlideIn {
   0% {
@@ -562,7 +569,6 @@ label {
   50%      { opacity: 1; transform: scale(1.04); }
 }
 
-/* Contenedor fijo de pantalla completa */
 .military-curtain-backdrop {
   position: fixed;
   inset: 0;
@@ -572,7 +578,6 @@ label {
   cursor: wait;
 }
 
-/* Panel de la cortina con degradado militar y bordes dorados */
 .military-curtain-panel {
   position: absolute;
   inset: 0;
@@ -586,7 +591,6 @@ label {
   will-change: transform;
 }
 
-/* Borde dorado luminoso en el frente de avance */
 .curtain-entering .military-curtain-panel {
   animation: curtainSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   border-right: 5px solid var(--military-gold-primary);
@@ -610,7 +614,6 @@ label {
   pointer-events: none !important;
 }
 
-/* Cuadrícula táctica de fondo */
 .curtain-tactical-grid {
   position: absolute;
   inset: 0;
@@ -621,7 +624,6 @@ label {
   pointer-events: none;
 }
 
-/* Esquinas tácticas militares tipo visor HUD */
 .curtain-hud-corner {
   position: absolute;
   width: 36px;
@@ -636,7 +638,6 @@ label {
 .curtain-hud-bottom-left  { bottom: 25px; left: 25px; border-width: 0 0 3px 3px; }
 .curtain-hud-bottom-right { bottom: 25px; right: 25px; border-width: 0 3px 3px 0; }
 
-/* Contenido central de la cortina */
 .curtain-core {
   position: relative;
   z-index: 10;
@@ -647,7 +648,6 @@ label {
   gap: 1.1rem;
 }
 
-/* Aro orbital con radar militar */
 .curtain-radar-ring {
   position: relative;
   width: 120px;
@@ -686,7 +686,6 @@ label {
   animation: tacticalPulse 2s ease-in-out infinite;
 }
 
-/* Textos de módulo y jerarquía militar */
 .curtain-module-tag {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.72rem;
@@ -744,7 +743,6 @@ label {
   animation: pulse 1s infinite alternate;
 }
 
-/* Fade de la nueva página al ser revelada */
 @keyframes pageFadeSlide {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }

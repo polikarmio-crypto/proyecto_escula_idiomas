@@ -33,12 +33,8 @@ import {
   Lock,
   Globe
 } from 'lucide-react';
-import { LocalStore, INITIAL_ESTUDIANTES, EstudianteItem } from '@/lib/mockData';
 
 export default function IndexPage() {
-  // =========================================================================
-  // 1. ESTADO DEL CARRUSEL INSTITUCIONAL COMERCIAL
-  // =========================================================================
   const slides = [
     {
       id: 1,
@@ -98,9 +94,6 @@ export default function IndexPage() {
   const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
   const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
 
-  // =========================================================================
-  // 2. FORMULARIO DE INSCRIPCIÓN / PRE-MATRÍCULA ONLINE
-  // =========================================================================
   const [formInscripcion, setFormInscripcion] = useState({
     tipo_estudiante: 'Civil' as 'Civil' | 'Militar',
     grado_militar: '',
@@ -132,7 +125,7 @@ export default function IndexPage() {
 
   const [errorInscripcion, setErrorInscripcion] = useState<string | null>(null);
 
-  const handleInscripcionSubmit = (e: React.FormEvent) => {
+  const handleInscripcionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorInscripcion(null);
 
@@ -145,59 +138,54 @@ export default function IndexPage() {
       return;
     }
 
-    const estudiantes = LocalStore.get('estudiantes', INITIAL_ESTUDIANTES);
     const ciCompleto = `${formInscripcion.ci_estudiante.trim()} ${formInscripcion.expedido}`;
 
-    // Generar código correlativo de pre-matrícula
-    const rndNum = Math.floor(1000 + Math.random() * 9000);
-    const codigoGenerado = `EIE-2026-${rndNum}`;
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/estudiantes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          ci_estudiante: ciCompleto,
+          nombre_estudiante: formInscripcion.nombre_estudiante.trim(),
+          apellido_estudiante: formInscripcion.apellido_estudiante.trim(),
+          fecha_nacimiento_estudiante: formInscripcion.fecha_nacimiento || '2000-01-01',
+          telefono_estudiante: formInscripcion.telefono_estudiante.trim() || '70000000',
+          email_estudiante: formInscripcion.email_estudiante.trim(),
+          direccion_estudiante: formInscripcion.direccion_estudiante.trim() || 'Dirección registrada en preinscripción',
+          tipo_estudiante: formInscripcion.tipo_estudiante,
+          grado_militar: formInscripcion.tipo_estudiante === 'Militar' ? formInscripcion.grado_militar : null,
+          unidad_militar: formInscripcion.tipo_estudiante === 'Militar' ? formInscripcion.unidad_militar : null,
+          id_militar_estudiante: formInscripcion.tipo_estudiante === 'Militar' ? formInscripcion.id_militar_estudiante : null,
+        }),
+      });
 
-    const nuevoEstudiante: EstudianteItem = {
-      id: Date.now(),
-      id_estudiante: Date.now(),
-      ci_estudiante: ciCompleto,
-      expedido: formInscripcion.expedido,
-      nombre_estudiante: formInscripcion.nombre_estudiante.trim(),
-      apellido_estudiante: formInscripcion.apellido_estudiante.trim(),
-      fecha_nacimiento_estudiante: formInscripcion.fecha_nacimiento,
-      telefono_estudiante: formInscripcion.telefono_estudiante.trim() || '70000000',
-      email_estudiante: formInscripcion.email_estudiante.trim(),
-      direccion_estudiante: formInscripcion.direccion_estudiante.trim() || 'Dirección registrada en inscripción',
-      tipo_estudiante: formInscripcion.tipo_estudiante,
-      grado_militar: formInscripcion.tipo_estudiante === 'Militar' ? formInscripcion.grado_militar : undefined,
-      unidad_militar: formInscripcion.tipo_estudiante === 'Militar' ? formInscripcion.unidad_militar : undefined,
-      id_militar_estudiante: formInscripcion.tipo_estudiante === 'Militar' ? formInscripcion.id_militar_estudiante : undefined,
-      estado_estudiante: 'Pre-Inscrito',
-      idioma_actual: formInscripcion.idioma,
-      nivel_actual: formInscripcion.nivel,
-      paralelo_actual: 'Pendiente de asignación',
-      codigo_matricula: codigoGenerado,
-      fecha_registro: new Date().toISOString().split('T')[0],
-    };
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Error al procesar la inscripción en la base de datos');
+      }
 
-    const actualizados = [nuevoEstudiante, ...estudiantes];
-    LocalStore.set('estudiantes', actualizados);
+      const estudianteCreado = data.data || data;
+      const codigoMat = estudianteCreado.codigoMatricula || `EIE-2026-${estudianteCreado.id_estudiante || Math.floor(1000 + Math.random() * 9000)}`;
 
-    setComprobanteInscripcion({
-      codigo: codigoGenerado,
-      nombre: `${formInscripcion.nombre_estudiante} ${formInscripcion.apellido_estudiante}`,
-      ci: ciCompleto,
-      idioma: formInscripcion.idioma,
-      sede: formInscripcion.sede,
-      fecha: new Date().toLocaleDateString('es-BO', { day: '2-digit', month: 'long', year: 'numeric' }),
-      tipo: formInscripcion.tipo_estudiante,
-    });
+      setComprobanteInscripcion({
+        codigo: codigoMat,
+        nombre: `${formInscripcion.nombre_estudiante} ${formInscripcion.apellido_estudiante}`,
+        ci: ciCompleto,
+        idioma: formInscripcion.idioma,
+        sede: formInscripcion.sede,
+        fecha: new Date().toLocaleDateString('es-BO', { day: '2-digit', month: 'long', year: 'numeric' }),
+        tipo: formInscripcion.tipo_estudiante,
+      });
 
-    // Auto-completar el buscador de correo institucional para facilitar el siguiente paso
-    setCiBusquedaCorreo(ciCompleto);
+      setCiBusquedaCorreo(ciCompleto);
+    } catch (err: any) {
+      setErrorInscripcion(err.message || 'Error de conexión con el servidor institucional');
+    }
   };
 
-  // =========================================================================
-  // 3. APARTADO: SOLICITUD DE CORREO INSTITUCIONAL
-  // =========================================================================
   const [ciBusquedaCorreo, setCiBusquedaCorreo] = useState('');
   const [resultadoCorreo, setResultadoCorreo] = useState<{
-    estudiante: EstudianteItem;
+    estudiante: any;
     emailGenerado: string;
     passwordTemporal: string;
     fechaEmision: string;
@@ -206,52 +194,51 @@ export default function IndexPage() {
   const [errorCorreo, setErrorCorreo] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
 
-  const handleSolicitarCorreo = (e: React.FormEvent) => {
+  const handleSolicitarCorreo = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorCorreo(null);
     setResultadoCorreo(null);
     setCopiado(false);
 
-    const q = ciBusquedaCorreo.trim().toLowerCase();
+    const q = ciBusquedaCorreo.trim();
     if (!q) {
       setErrorCorreo('Por favor ingrese su número de C.I. o Código de Inscripción.');
       return;
     }
 
-    const estudiantes = LocalStore.get('estudiantes', INITIAL_ESTUDIANTES);
+    try {
+      const res = await fetch(`http://localhost:8000/api/v1/estudiantes?q=${encodeURIComponent(q)}`);
+      if (!res.ok) throw new Error('No se pudo verificar la inscripción');
+      const json = await res.json();
+      const lista = json.data || [];
+      const coincidencia = lista.length > 0 ? lista[0] : null;
 
-    const coincidencia = estudiantes.find((est) => {
-      const ciClean = est.ci_estudiante.toLowerCase();
-      const codClean = (est.codigo_matricula || '').toLowerCase();
-      return ciClean.includes(q) || codClean.includes(q);
-    });
+      if (!coincidencia) {
+        setErrorCorreo('No se encontró ninguna inscripción activa con ese documento o código en la base de datos.');
+        return;
+      }
 
-    if (!coincidencia) {
-      setErrorCorreo('No se encontró ninguna inscripción activa con ese documento o código. Verifique sus datos o complete su inscripción previa.');
-      return;
+      const nombres = coincidencia.nombre_estudiante || coincidencia.nombres || '';
+      const apellidos = coincidencia.apellido_estudiante || coincidencia.apellidos || '';
+      const ci = coincidencia.ci_estudiante || coincidencia.ci || '';
+
+      const primerNombre = (nombres.split(' ')[0] || 'est').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const primerApellido = (apellidos.split(' ')[0] || 'militar').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const emailOficial = `est.${primerNombre}.${primerApellido}@idiomas.ejercito.mil.bo`;
+
+      const ciNumerico = ci.replace(/\D/g, '').slice(-4) || '2026';
+      const passTemporal = `Eie.${ciNumerico}*!`;
+
+      setResultadoCorreo({
+        estudiante: coincidencia,
+        emailGenerado: emailOficial,
+        passwordTemporal: passTemporal,
+        fechaEmision: new Date().toLocaleDateString('es-BO', { day: '2-digit', month: 'long', year: 'numeric' }),
+        yaExistia: false,
+      });
+    } catch (err: any) {
+      setErrorCorreo(err.message || 'Error al conectar con la base de datos');
     }
-
-    // Normalizar nombre para correo institucional militar
-    const primerNombre = coincidencia.nombre_estudiante.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-    const primerApellido = coincidencia.apellido_estudiante.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-    const emailOficial = `est.${primerNombre}.${primerApellido}@idiomas.ejercito.mil.bo`;
-
-    // Generar contraseña temporal segura
-    const ciNumerico = coincidencia.ci_estudiante.replace(/\D/g, '').slice(-4) || '2026';
-    const passTemporal = `Eie.${ciNumerico}*!`;
-
-    // Guardar en el expediente del estudiante
-    const yaTenia = !!coincidencia.email_institucional;
-    coincidencia.email_institucional = emailOficial;
-    LocalStore.set('estudiantes', estudiantes);
-
-    setResultadoCorreo({
-      estudiante: coincidencia,
-      emailGenerado: emailOficial,
-      passwordTemporal: passTemporal,
-      fechaEmision: new Date().toLocaleDateString('es-BO', { day: '2-digit', month: 'long', year: 'numeric' }),
-      yaExistia: yaTenia,
-    });
   };
 
   const handleCopiarCredenciales = () => {
@@ -262,25 +249,19 @@ export default function IndexPage() {
     setTimeout(() => setCopiado(false), 3000);
   };
 
-  // Pestaña activa del explorador de idiomas
   const [tabIdioma, setTabIdioma] = useState<'INGLES' | 'NATIVOS' | 'EXTRANJEROS'>('INGLES');
 
   return (
     <div className="space-y-16 pb-16">
-      {/* =====================================================================
-          1. HERO COMERCIAL CON CARRUSEL INSTITUCIONAL Y LOGO OFICIAL
-      ===================================================================== */}
       <section className="relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 shadow-2xl">
-        {/* Fondo táctico militar con rejilla tenue */}
         <div className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(#2d5f42_1px,transparent_1px)] [background-size:24px_24px]" />
 
         <div className="relative z-10 p-6 md:p-12 lg:p-14">
-          {/* Cabecera del Hero con Escudo Oficial y Lema */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-neutral-800/80">
             <div className="flex items-center gap-5">
-              <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-b from-neutral-900 to-neutral-950 border-2 border-amber-500/50 p-2 shadow-xl flex items-center justify-center shrink-0">
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-neutral-900/80 border-2 border-amber-500/40 p-2 shadow-xl flex items-center justify-center shrink-0">
                 <img
-                  src="/logo-ejercito.png"
+                  src="/logo-eie.png"
                   alt="Escudo de la Escuela de Idiomas del Ejército de Bolivia"
                   className="w-full h-full object-contain filter drop-shadow-[0_0_12px_rgba(234,179,8,0.4)]"
                 />
@@ -298,21 +279,19 @@ export default function IndexPage() {
               </div>
             </div>
 
-            {/* Accesos rápidos al Portal SACA */}
             <div className="flex items-center gap-3">
               <Link
                 href="/dashboard"
-                className="btn btn-primary flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold shadow-lg shadow-emerald-900/30 hover:scale-[1.02] transition"
+                className="btn btn-primary flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold shadow-lg shadow-emerald-900/30 hover:scale-[1.02] transition"
                 style={{ background: 'var(--military-green-primary)', border: '1px solid var(--border-accent)' }}
               >
-                <Shield className="w-4 h-4 text-amber-400" />
+                <img src="/logo-eie.png" alt="" className="w-4 h-4 object-contain" />
                 <span>Ingresar al Sistema SACA</span>
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
 
-          {/* Diapositiva Activa del Carrusel */}
           <div className="mt-8 transition-all duration-500">
             {slides.map((s, idx) => {
               if (idx !== currentSlide) return null;
@@ -366,7 +345,6 @@ export default function IndexPage() {
                     </div>
                   </div>
 
-                  {/* Icono de marca de agua en esquina */}
                   <div className="absolute -bottom-6 -right-6 opacity-10 pointer-events-none text-white">
                     <IconComp size={220} />
                   </div>
@@ -375,7 +353,6 @@ export default function IndexPage() {
             })}
           </div>
 
-          {/* Controles de Navegación del Carrusel */}
           <div className="flex items-center justify-between mt-6 pt-4 border-t border-neutral-800/60">
             <div className="flex items-center gap-2">
               {slides.map((_, i) => (
@@ -410,9 +387,6 @@ export default function IndexPage() {
         </div>
       </section>
 
-      {/* =====================================================================
-          2. MISIÓN Y VISIÓN OFICIALES (TEXTO EXACTO DE LA INSTITUCIÓN)
-      ===================================================================== */}
       <section id="mision-vision" className="space-y-6">
         <div className="text-center max-w-2xl mx-auto space-y-2">
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full inline-block">
@@ -427,12 +401,11 @@ export default function IndexPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Tarjeta de MISIÓN */}
           <div className="relative rounded-2xl border border-emerald-500/30 bg-neutral-900/60 p-7 shadow-xl hover:border-emerald-500/50 transition group overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full pointer-events-none" />
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                <Shield className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center p-1.5">
+                <img src="/logo-eie.png" alt="EIE" className="w-full h-full object-contain" />
               </div>
               <div>
                 <span className="text-[10px] font-mono font-semibold text-emerald-400 uppercase tracking-widest">
@@ -450,7 +423,6 @@ export default function IndexPage() {
             </div>
           </div>
 
-          {/* Tarjeta de VISIÓN */}
           <div className="relative rounded-2xl border border-amber-500/30 bg-neutral-900/60 p-7 shadow-xl hover:border-amber-500/50 transition group overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-bl-full pointer-events-none" />
             <div className="flex items-center gap-3 mb-4">
@@ -475,9 +447,6 @@ export default function IndexPage() {
         </div>
       </section>
 
-      {/* =====================================================================
-          3. PRESENTACIÓN INSTITUCIONAL Y VALORES
-      ===================================================================== */}
       <section className="bg-neutral-900/40 border border-neutral-800 rounded-3xl p-6 md:p-10 space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           <div className="lg:col-span-7 space-y-4">
@@ -534,9 +503,6 @@ export default function IndexPage() {
         </div>
       </section>
 
-      {/* =====================================================================
-          4. OFERTA ACADÉMICA / IDIOMAS OFICIALES
-      ===================================================================== */}
       <section id="oferta-academica" className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
@@ -548,7 +514,6 @@ export default function IndexPage() {
             </h2>
           </div>
 
-          {/* Selector de tipo de idiomas */}
           <div className="inline-flex bg-neutral-900 border border-neutral-800 p-1 rounded-xl text-xs font-semibold">
             <button
               onClick={() => setTabIdioma('INGLES')}
@@ -577,7 +542,6 @@ export default function IndexPage() {
           </div>
         </div>
 
-        {/* Contenido según pestaña */}
         {tabIdioma === 'INGLES' && (
           <div className="bg-neutral-900/50 border border-amber-500/20 rounded-2xl p-6 md:p-8 space-y-6">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-neutral-800">
@@ -684,9 +648,6 @@ export default function IndexPage() {
         )}
       </section>
 
-      {/* =====================================================================
-          5. SEDES Y FILIALES EN TODO EL PAÍS
-      ===================================================================== */}
       <section className="space-y-6">
         <div className="text-center max-w-2xl mx-auto space-y-1">
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-purple-400 bg-purple-500/10 border border-purple-500/20 px-3 py-1 rounded-full inline-block">
@@ -724,9 +685,6 @@ export default function IndexPage() {
         </div>
       </section>
 
-      {/* =====================================================================
-          6. APARTADO: INSCRIPCIÓN EN LÍNEA / PRE-MATRÍCULA (REQUERIMIENTO CLAVE)
-      ===================================================================== */}
       <section id="inscripciones" className="space-y-6">
         <div className="bg-neutral-900/70 border border-neutral-800 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
           <div className="max-w-2xl space-y-2 mb-8">
@@ -752,7 +710,6 @@ export default function IndexPage() {
                 </div>
               </div>
 
-              {/* Boleta o Credencial emitida */}
               <div className="bg-neutral-900/80 border border-neutral-800 rounded-xl p-5 space-y-4">
                 <div className="flex items-center justify-between border-b border-neutral-800 pb-3 flex-wrap gap-2">
                   <div className="flex items-center gap-3">
@@ -796,7 +753,6 @@ export default function IndexPage() {
                 </div>
               </div>
 
-              {/* Acciones subsecuentes */}
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <a
                   href="#correo-institucional"
@@ -826,7 +782,6 @@ export default function IndexPage() {
                 </div>
               )}
 
-              {/* Selector Tipo Estudiante */}
               <div>
                 <label className="block text-xs font-semibold text-neutral-300 mb-2">
                   Tipo de Postulante:
@@ -857,7 +812,6 @@ export default function IndexPage() {
                 </div>
               </div>
 
-              {/* Campos específicos si es Militar */}
               {formInscripcion.tipo_estudiante === 'Militar' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-neutral-950 border border-emerald-500/30">
                   <div>
@@ -901,7 +855,6 @@ export default function IndexPage() {
                 </div>
               )}
 
-              {/* Datos Personales */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-neutral-300 mb-1">
@@ -968,7 +921,6 @@ export default function IndexPage() {
                 </div>
               </div>
 
-              {/* Datos de contacto y domicilio */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-neutral-300 mb-1">
@@ -997,7 +949,6 @@ export default function IndexPage() {
                 </div>
               </div>
 
-              {/* Selección Académica */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-xl bg-neutral-950/70 border border-neutral-800">
                 <div>
                   <label className="block text-[11px] font-semibold text-neutral-400 mb-1">
@@ -1090,9 +1041,6 @@ export default function IndexPage() {
         </div>
       </section>
 
-      {/* =====================================================================
-          7. APARTADO: SOLICITAR CORREO INSTITUCIONAL LUEGO DE INSCRIPCIÓN (REQUERIMIENTO CLAVE)
-      ===================================================================== */}
       <section id="correo-institucional" className="space-y-6">
         <div className="bg-gradient-to-r from-neutral-900 via-neutral-900/95 to-neutral-950 border border-neutral-800 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
           <div className="max-w-2xl space-y-2 mb-6">
@@ -1144,7 +1092,6 @@ export default function IndexPage() {
             )}
           </form>
 
-          {/* Tarjeta de Cuenta Emitida */}
           {resultadoCorreo && (
             <div className="mt-8 bg-neutral-950 border border-amber-500/40 rounded-2xl p-6 md:p-8 space-y-6 max-w-2xl animate-solemn-fade shadow-2xl">
               <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
@@ -1215,9 +1162,6 @@ export default function IndexPage() {
         </div>
       </section>
 
-      {/* =====================================================================
-          8. CONTACTO, HORARIOS Y ATENCIÓN INSTITUCIONAL
-      ===================================================================== */}
       <section id="contacto" className="space-y-6">
         <div className="text-center max-w-2xl mx-auto space-y-1">
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full inline-block">
@@ -1263,9 +1207,6 @@ export default function IndexPage() {
         </div>
       </section>
 
-      {/* =====================================================================
-          9. PIE DE PÁGINA (FOOTER) INSTITUCIONAL COMPLETO
-      ===================================================================== */}
       <footer className="border-t border-neutral-800/80 pt-10 text-xs text-neutral-400 space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-3 md:col-span-2">

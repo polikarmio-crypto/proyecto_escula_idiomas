@@ -28,14 +28,6 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
-import {
-  LocalStore,
-  INITIAL_ESTUDIANTES,
-  INITIAL_DOCENTES,
-  INITIAL_PARALELOS,
-  INITIAL_ALMACEN,
-  INITIAL_FICHAS
-} from '@/lib/mockData';
 
 export default function DashboardSacaPage() {
   const { rolActivo, rolConfig, usuario, esAdmin } = useAuthRole();
@@ -45,54 +37,14 @@ export default function DashboardSacaPage() {
   const cargarDashboard = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/api/v1/dashboard');
+      const res = await fetch('/api/v1/dashboard');
       if (res.ok) {
         const d = await res.json();
         setData(d);
-        return;
       }
     } catch (e) {
-      // Backend desconectado - Usar store local resiliente
+      setData(null);
     } finally {
-      // Fallback a los datos locales
-      const estudiantes = LocalStore.get('estudiantes', INITIAL_ESTUDIANTES);
-      const docentes = LocalStore.get('docentes', INITIAL_DOCENTES);
-      const paralelos = LocalStore.get('paralelos', INITIAL_PARALELOS);
-      const almacen = LocalStore.get('almacen', INITIAL_ALMACEN);
-      const fichas = LocalStore.get('fichas', INITIAL_FICHAS);
-
-      const militaresCount = estudiantes.filter((e) => e.tipo_estudiante === 'Militar').length;
-      const civilesCount = estudiantes.filter((e) => e.tipo_estudiante === 'Civil').length;
-      const totalStock = almacen.reduce((acc, a) => acc + (a.stock_actual || 0), 0);
-      const alertasRop = almacen.filter((a) => a.stock_actual <= a.punto_reorden).length;
-      const enEsperaFifo = fichas.filter((f) => f.estado === 'En espera').length;
-
-      setData({
-        gestion_activa: 2026,
-        kpis: {
-          estudiantes: {
-            total: estudiantes.length,
-            militares: militaresCount,
-            civiles: civilesCount,
-          },
-          docentes: {
-            activos: docentes.filter((d) => d.estado_docente === 'Activo').length,
-          },
-          paralelos: {
-            activos: paralelos.length,
-          },
-          inscripciones: {
-            activas: estudiantes.length,
-          },
-          cajas_fifo: {
-            en_espera: enEsperaFifo,
-          },
-          almacen: {
-            total_unidades: totalStock,
-            alertas_rop: alertasRop,
-          },
-        },
-      });
       setLoading(false);
     }
   };
@@ -105,10 +57,9 @@ export default function DashboardSacaPage() {
 
   return (
     <div className="space-y-6">
-      {/* Barra de acceso rápido entre Portal Público y Dashboard */}
       <div className="flex items-center justify-between bg-neutral-900/60 border border-neutral-800 rounded-xl px-4 py-2.5 text-xs">
-        <div className="flex items-center gap-2 text-neutral-400">
-          <Shield className="w-4 h-4 text-amber-400" />
+        <div className="flex items-center gap-2.5 text-neutral-400">
+          <img src="/logo-eie.png" alt="EIE" className="w-4 h-4 object-contain" />
           <span>SISTEMA DE GESTIÓN ACADÉMICA (SACA) &bull; CEDMIL</span>
         </div>
         <Link
@@ -121,12 +72,11 @@ export default function DashboardSacaPage() {
         </Link>
       </div>
 
-      {/* Bienvenida Institucional */}
       <div className="bg-gradient-to-r from-neutral-900 via-neutral-900/90 to-neutral-950 border border-neutral-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-start gap-4">
-          <div className="w-14 h-14 rounded-xl bg-neutral-800 border border-amber-500/30 flex items-center justify-center p-1.5 shrink-0 shadow-lg">
+          <div className="w-14 h-14 rounded-xl bg-neutral-800/80 border border-amber-500/30 flex items-center justify-center p-1.5 shrink-0 shadow-lg">
             <img
-              src="/logo-ejercito.png"
+              src="/logo-eie.png"
               alt="Logo Escuela de Idiomas del Ejército"
               className="w-full h-full object-contain"
             />
@@ -166,7 +116,6 @@ export default function DashboardSacaPage() {
         </button>
       </div>
 
-      {/* Tarjetas de Indicadores Principales */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <div className="bg-neutral-900/60 border border-neutral-800 p-4 rounded-xl">
           <div className="flex items-center justify-between text-neutral-400 mb-1">
@@ -225,12 +174,11 @@ export default function DashboardSacaPage() {
         </div>
       </div>
 
-      {/* Módulos Institucionales según Casos de Uso (Módulos 1 al 9 + Analítica) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-neutral-300 uppercase tracking-wider flex items-center gap-2">
             <FolderTree className="w-4 h-4 text-sky-400" />
-            Módulos del Sistema según Diagrama de Casos de Uso
+            Acceso Rápido a Secciones del Sistema
           </h2>
           <span className="text-xs text-neutral-500">
             Rol actual: <strong style={{ color: rolConfig.color }}>{rolConfig.titulo}</strong>
@@ -241,7 +189,7 @@ export default function DashboardSacaPage() {
           {[
             {
               href: '/catalogos',
-              titulo: 'Módulo 1: Catálogos Base',
+              titulo: 'Catálogos Base',
               desc: 'Gestiones anuales, idiomas ofertados, horarios, aulas y tipos de pago.',
               actor: 'Administrador del Sistema',
               icon: Database,
@@ -250,7 +198,7 @@ export default function DashboardSacaPage() {
             },
             {
               href: '/estructura',
-              titulo: 'Módulo 2: Estructura Académica',
+              titulo: 'Estructura Académica',
               desc: 'Malla curricular: Programas, niveles secuenciales y libros de texto asignados.',
               actor: 'Jefe Académico',
               icon: FolderTree,
@@ -259,8 +207,8 @@ export default function DashboardSacaPage() {
             },
             {
               href: '/docentes',
-              titulo: 'Módulo 3: Gestión de Docentes',
-              desc: 'Datos personales, competencias de idioma y ciclo de rotación obligatoria de 15 días.',
+              titulo: 'Gestión de Docentes',
+              desc: 'Datos personales, competencias de idioma y ciclo de rotación pedagógica de 15 días.',
               actor: 'Jefe Académico',
               icon: GraduationCap,
               color: 'text-emerald-400',
@@ -268,7 +216,7 @@ export default function DashboardSacaPage() {
             },
             {
               href: '/estudiantes',
-              titulo: 'Módulo 4: Gestión de Estudiantes',
+              titulo: 'Gestión de Estudiantes',
               desc: 'Expedientes de estudiantes civiles y militares con filtro por curso e idioma.',
               actor: 'Jefe Académico',
               icon: Users,
@@ -277,7 +225,7 @@ export default function DashboardSacaPage() {
             },
             {
               href: '/paralelos',
-              titulo: 'Módulo 5: Paralelos y Asignación',
+              titulo: 'Paralelos y Asignación',
               desc: 'Apertura de paralelos sin cruces de horario/aula y asignación de docentes.',
               actor: 'Jefe Académico / Docente',
               icon: Layers,
@@ -286,7 +234,7 @@ export default function DashboardSacaPage() {
             },
             {
               href: '/inscripciones',
-              titulo: 'Módulo 6: Inscripciones y Avance',
+              titulo: 'Inscripciones y Avance',
               desc: 'Matriculación formal e inicialización automática del avance libro a libro.',
               actor: 'Jefe Académico / Estudiante',
               icon: ClipboardEdit,
@@ -295,7 +243,7 @@ export default function DashboardSacaPage() {
             },
             {
               href: '/calificaciones',
-              titulo: 'Módulo 7: Calificaciones',
+              titulo: 'Calificaciones',
               desc: 'Fórmula oficial 80/10/10 (Examen 80%, Oral 10%, Participación 10%) o promedio directo.',
               actor: 'Docente / Jefe Académico',
               icon: Award,
@@ -304,7 +252,7 @@ export default function DashboardSacaPage() {
             },
             {
               href: '/cajas',
-              titulo: 'Módulo 8: Cajas y Recaudaciones',
+              titulo: 'Cajas y Recaudaciones',
               desc: 'Cola FIFO, llamada a ventanilla, cobro de matrículas/libros y comprobantes.',
               actor: 'Cajero / Estudiante',
               icon: Landmark,
@@ -313,7 +261,7 @@ export default function DashboardSacaPage() {
             },
             {
               href: '/almacen',
-              titulo: 'Módulo 9: Almacén de Libros',
+              titulo: 'Almacén de Libros',
               desc: 'Kardex físico, salidas por paralelo, punto de reorden (ROP) y reposición.',
               actor: 'Encargado de Almacén',
               icon: Package,

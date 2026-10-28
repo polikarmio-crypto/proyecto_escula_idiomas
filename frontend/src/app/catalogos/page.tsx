@@ -29,7 +29,6 @@ export default function CatalogosPage() {
   const [loading, setLoading] = useState(false);
   const [alerta, setAlerta] = useState<{ tipo: 'ok' | 'error'; mensaje: string } | null>(null);
 
-  // Estados de datos
   const [gestiones, setGestiones] = useState<any[]>([]);
   const [idiomas, setIdiomas] = useState<any[]>([]);
   const [aulas, setAulas] = useState<any[]>([]);
@@ -38,7 +37,6 @@ export default function CatalogosPage() {
   const [modalidades, setModalidades] = useState<any[]>([]);
   const [tiposPago, setTiposPago] = useState<any[]>([]);
 
-  // Formularios de nuevo registro
   const [formGestion, setFormGestion] = useState({ anio: new Date().getFullYear(), estado: 'Activa' });
   const [formIdioma, setFormIdioma] = useState({ nombre: '' });
   const [formAula, setFormAula] = useState({ nombre: '', capacidad: 30 });
@@ -77,7 +75,6 @@ export default function CatalogosPage() {
     setTimeout(() => setAlerta(null), 6000);
   };
 
-  // Creación de parámetros según Secuencia 12.1
   const handleCrearGestion = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -206,15 +203,14 @@ export default function CatalogosPage() {
     }
   };
 
-  // CONTROL DE ACCESO ESTRICTO: Solo Administrador del Sistema
   if (!esAdmin) {
     return (
       <div className="max-w-4xl mx-auto p-8">
         <div className="bg-red-950/40 border border-red-500/40 rounded-xl p-8 text-center space-y-4">
           <ShieldAlert className="w-16 h-16 text-red-500 mx-auto" />
-          <h2 className="text-2xl font-bold text-white">Módulo 1: Catálogos Base — Acceso Restringido</h2>
+          <h2 className="text-2xl font-bold text-white">Acceso Restringido</h2>
           <p className="text-neutral-300 max-w-xl mx-auto">
-            Este módulo corresponde exclusivamente al <strong className="text-amber-400">Administrador del Sistema</strong> (Caso de Uso 11.1).
+            Este apartado corresponde exclusivamente al <strong className="text-amber-400">Administrador del Sistema</strong>.
             Tu rol activo es <span className="px-2 py-0.5 rounded bg-neutral-800 text-sky-400 font-semibold">{rolConfig.titulo}</span>.
           </p>
           <p className="text-xs text-neutral-400">
@@ -227,30 +223,32 @@ export default function CatalogosPage() {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 tracking-wider uppercase mb-1">
-            <Database className="w-4 h-4" /> Módulo 1 — Gestión de Catálogos Base
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-neutral-800">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-sm shrink-0">
+            <Database className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white">
-            Parametrizaciones Generales del Sistema
-          </h1>
-          <p className="text-sm text-neutral-400">
-            Actor exclusivo: <strong>Administrador del Sistema</strong> (Diagrama UML 11.1, Secuencia 12.1).
-          </p>
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400">
+              <span>SACA</span>
+              <span>/</span>
+              <span className="text-amber-400 font-semibold">Catálogos</span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-extrabold text-white">
+              Parametrizaciones Generales
+            </h1>
+          </div>
         </div>
         <button
           onClick={cargarCatalogos}
           disabled={loading}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium transition"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800/80 hover:bg-neutral-700 text-neutral-200 text-xs font-medium border border-neutral-700 transition"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           Sincronizar Catálogos
         </button>
       </div>
 
-      {/* Alerta de notificación */}
       {alerta && (
         <div
           className={`flex items-center gap-3 p-4 rounded-xl border text-sm font-medium ${
@@ -264,7 +262,6 @@ export default function CatalogosPage() {
         </div>
       )}
 
-      {/* Selector de pestañas */}
       <div className="flex flex-wrap gap-2 border-b border-neutral-800 pb-3">
         {[
           { id: 'gestiones', label: 'Gestiones Anuales', icon: Calendar, count: gestiones.length },
@@ -296,9 +293,7 @@ export default function CatalogosPage() {
         })}
       </div>
 
-      {/* Contenido de la pestaña */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Formulario de creación según Secuencia 12.1 */}
         <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 space-y-4">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
             <Plus className="w-4 h-4 text-amber-400" />
@@ -309,9 +304,7 @@ export default function CatalogosPage() {
             {tab === 'tipos_programa' && 'Añadir Tipo de Programa'}
             {tab === 'tipos_pago' && 'Añadir Concepto de Pago'}
           </h3>
-          <p className="text-xs text-neutral-400">
-            Valida automáticamente duplicidad antes de registrar (Secuencia 12.1).
-          </p>
+
 
           {tab === 'gestiones' && (
             <form onSubmit={handleCrearGestion} className="space-y-3">
@@ -481,11 +474,10 @@ export default function CatalogosPage() {
           )}
         </div>
 
-        {/* Tabla de registros existentes */}
         <div className="lg:col-span-2 bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 overflow-x-auto">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold text-white">Registros en Base de Datos</h3>
-            <span className="text-xs text-neutral-500">Normalización 5FN</span>
+
           </div>
 
           {tab === 'gestiones' && (

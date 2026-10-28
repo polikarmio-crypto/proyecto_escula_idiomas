@@ -37,7 +37,7 @@ export const ROLES_CONFIG: Record<RolUsuario, InfoRolConfig> = {
   ADMIN: {
     id: 'ADMIN',
     titulo: 'Administrador del Sistema',
-    badge: 'Módulo 1: Catálogos Base & Auditoría',
+    badge: 'Administrador del Sistema',
     nombrePorDefecto: 'Cnl. DAEN. Roberto Méndez Silva',
     emailPorDefecto: 'admin@ejercito.mil.bo',
     ciPorDefecto: '3490218 LP',
@@ -49,7 +49,7 @@ export const ROLES_CONFIG: Record<RolUsuario, InfoRolConfig> = {
   JEFE_ACADEMICO: {
     id: 'JEFE_ACADEMICO',
     titulo: 'Jefe Académico',
-    badge: 'Módulos 2 al 7: Gestión Curricular y Académica',
+    badge: 'Jefatura Académica y Curricular',
     nombrePorDefecto: 'Tcnl. DEM. Hugo Banzer Rivera',
     emailPorDefecto: 'jefe.academico@ejercito.mil.bo',
     ciPorDefecto: '2948102 LP',
@@ -61,7 +61,7 @@ export const ROLES_CONFIG: Record<RolUsuario, InfoRolConfig> = {
   DOCENTE: {
     id: 'DOCENTE',
     titulo: 'Docente / Catedrático',
-    badge: 'Módulo 5 & 7: Evaluación y Consulta de Paralelos',
+    badge: 'Cuerpo Docente y Evaluación',
     nombrePorDefecto: 'Prof. Fernando Ríos Torrico',
     emailPorDefecto: 'doc.rios@ejercito.mil.bo',
     ciPorDefecto: '4820194 CB',
@@ -73,7 +73,7 @@ export const ROLES_CONFIG: Record<RolUsuario, InfoRolConfig> = {
   CAJERO: {
     id: 'CAJERO',
     titulo: 'Cajero / Ventanilla',
-    badge: 'Módulo 8: Gestión de Cajas y Recaudaciones',
+    badge: 'Gestión de Cajas y Recaudaciones',
     nombrePorDefecto: 'Sof. My. David Choquehuanca',
     emailPorDefecto: 'cajero@ejercito.mil.bo',
     ciPorDefecto: '5920148 LP',
@@ -85,7 +85,7 @@ export const ROLES_CONFIG: Record<RolUsuario, InfoRolConfig> = {
   ALMACENERO: {
     id: 'ALMACENERO',
     titulo: 'Encargado de Almacén',
-    badge: 'Módulo 9: Almacén e Inventario de Libros',
+    badge: 'Almacén e Inventario de Textos',
     nombrePorDefecto: 'Sgto. 2do. Marcelo Justiniano',
     emailPorDefecto: 'almacen@ejercito.mil.bo',
     ciPorDefecto: '6019284 SC',
@@ -101,7 +101,7 @@ export const ROLES_CONFIG: Record<RolUsuario, InfoRolConfig> = {
     nombrePorDefecto: 'Cad. Carlos Fernando Mamani',
     emailPorDefecto: 'est.mamani@ejercito.mil.bo',
     ciPorDefecto: '6849201 LP',
-    pinSeguridad: '', // Acceso directo sin PIN
+    pinSeguridad: '',
     descripcion: 'Consulta su historial de avance libro a libro y calificaciones, sus cursos inscritos, y solicita fichas de turno digital para trámites en caja.',
     color: '#06b6d4',
     rutasPermitidas: ['/', '/dashboard', '/calificaciones', '/cajas', '/inscripciones'],
@@ -135,7 +135,6 @@ export function AuthRoleProvider({ children }: { children: React.ReactNode }) {
         setRolActivo(savedRole);
       }
     } catch (e) {
-      // Ignorar en SSR
     }
   }, []);
 

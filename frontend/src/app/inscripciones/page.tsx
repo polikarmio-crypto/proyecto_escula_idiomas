@@ -30,7 +30,6 @@ export default function InscripcionesPage() {
   const [busqueda, setBusqueda] = useState('');
   const [alerta, setAlerta] = useState<{ tipo: 'ok' | 'error'; mensaje: string } | null>(null);
 
-  // Modal nueva inscripción
   const [modalInscribir, setModalInscribir] = useState(false);
   const [formIns, setFormIns] = useState({
     id_estudiante: '',
@@ -80,7 +79,6 @@ export default function InscripcionesPage() {
     cargarDatos();
   }, []);
 
-  // Formalización de inscripción (Secuencia 12.6)
   const handleFormalizarInscripcion = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -117,15 +115,14 @@ export default function InscripcionesPage() {
     return nom.includes(q) || ci.includes(q) || par.includes(q);
   });
 
-  // CONTROL DE ACCESO
   if (!puedeInscribir && !esEstudiante) {
     return (
       <div className="max-w-4xl mx-auto p-8">
         <div className="bg-red-950/40 border border-red-500/40 rounded-xl p-8 text-center space-y-4">
           <ShieldAlert className="w-16 h-16 text-red-500 mx-auto" />
-          <h2 className="text-2xl font-bold text-white">Módulo 6: Inscripciones — Acceso Restringido</h2>
+          <h2 className="text-2xl font-bold text-white">Acceso Restringido</h2>
           <p className="text-neutral-300 max-w-xl mx-auto">
-            La formalización de matrículas y control de avance corresponde a la <strong className="text-sky-400">Jefatura Académica</strong> (Caso de Uso 11.6, Secuencia 12.6).
+            La formalización de matrículas y control de avance corresponde a la <strong className="text-sky-400">Jefatura Académica</strong>.
             Los estudiantes tienen acceso exclusivo en modo consulta de sus cursos inscritos.
           </p>
         </div>
@@ -135,26 +132,27 @@ export default function InscripcionesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-purple-400 tracking-wider uppercase mb-1">
-            <ClipboardEdit className="w-4 h-4" /> Módulo 6 — Inscripciones y Avance Curricular
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-neutral-800">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-sm shrink-0">
+            <ClipboardEdit className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white">
-            {esEstudiante ? 'Mis Matrículas y Cursos Inscritos' : 'Formalización de Inscripciones y Matrículas'}
-          </h1>
-          <p className="text-sm text-neutral-400">
-            {esEstudiante
-              ? 'Consulte sus cursos formalizados y el plan de avance de textos del nivel.'
-              : 'Verificación de cupos e inicialización automática del avance libro a libro (Secuencia 12.6).'}
-          </p>
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400">
+              <span>SACA</span>
+              <span>/</span>
+              <span className="text-indigo-400 font-semibold">Inscripciones</span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-extrabold text-white">
+              {esEstudiante ? 'Mis Matrículas y Cursos Inscritos' : 'Matriculación y Avance Académico'}
+            </h1>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={cargarDatos}
             disabled={loading}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium transition"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-800/80 hover:bg-neutral-700 text-neutral-200 text-xs font-medium border border-neutral-700 transition"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             Sincronizar
@@ -162,7 +160,7 @@ export default function InscripcionesPage() {
           {puedeInscribir && (
             <button
               onClick={() => setModalInscribir(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition shadow-md shadow-purple-600/20"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition shadow-md shadow-indigo-600/20"
             >
               <Plus className="w-4 h-4" />
               + Inscribir Estudiante
@@ -184,7 +182,6 @@ export default function InscripcionesPage() {
         </div>
       )}
 
-      {/* Barra de Búsqueda */}
       {!esEstudiante && (
         <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 flex items-center justify-between">
           <div className="relative w-80">
@@ -203,7 +200,6 @@ export default function InscripcionesPage() {
         </div>
       )}
 
-      {/* Tabla de Inscripciones */}
       <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
@@ -263,7 +259,7 @@ export default function InscripcionesPage() {
                         </span>
                       ))}
                       {(ins.libros_avance || []).length === 0 && (
-                        <span className="text-[10px] text-neutral-500">Módulos en curso</span>
+                        <span className="text-[10px] text-neutral-500">Sin avance registrado</span>
                       )}
                     </div>
                   </td>
@@ -286,7 +282,6 @@ export default function InscripcionesPage() {
         </div>
       </div>
 
-      {/* Modal Inscribir */}
       {modalInscribir && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-neutral-900 border border-neutral-700 rounded-2xl w-full max-w-md p-6 space-y-4">
@@ -331,8 +326,8 @@ export default function InscripcionesPage() {
               </div>
 
               <div className="p-3 bg-neutral-950 border border-neutral-800 rounded-lg text-neutral-400 text-[11px] space-y-1">
-                <p className="font-semibold text-white">Regla de Negocio (Secuencia 12.6):</p>
-                <p>Al matricular, el sistema genera automáticamente el avance curricular libro a libro para el estudiante con estado inicial &lsquo;En curso&rsquo;.</p>
+                <p className="font-semibold text-white">Nota:</p>
+                <p>Al matricular, el sistema genera automáticamente el avance curricular libro a libro con estado inicial &lsquo;En curso&rsquo;.</p>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-800">

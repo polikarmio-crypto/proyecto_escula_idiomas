@@ -55,22 +55,18 @@ export default function EstudiantesPage() {
   const [page, setPage] = useState(1);
   const [alerta, setAlerta] = useState<{ tipo: 'ok' | 'error'; mensaje: string } | null>(null);
 
-  // Filtros
   const [filtroTipo, setFiltroTipo] = useState<'TODOS' | 'MILITAR' | 'CIVIL'>('TODOS');
   const [filtroIdioma, setFiltroIdioma] = useState('');
   const [filtroParalelo, setFiltroParalelo] = useState('');
   const [busqueda, setBusqueda] = useState('');
 
-  // Catálogos auxiliares
   const [idiomasDisponibles, setIdiomasDisponibles] = useState<string[]>([]);
   const [paralelosDisponibles, setParalelosDisponibles] = useState<string[]>([]);
 
-  // Modales
   const [modalAbierto, setModalAbierto] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [idSeleccionado, setIdSeleccionado] = useState<number | null>(null);
 
-  // Formulario de registro/edición (solo datos personales y de filiación, SIN NOTAS de entrada)
   const [formData, setFormData] = useState({
     ci_estudiante: '',
     nombre_estudiante: '',
@@ -80,7 +76,6 @@ export default function EstudiantesPage() {
     email_estudiante: '',
     direccion_estudiante: '',
     tipo_estudiante: 'Civil' as 'Civil' | 'Militar',
-    // Campos exclusivos si es militar
     grado_militar: '',
     unidad_militar: '',
     id_militar_estudiante: '',
@@ -108,7 +103,6 @@ export default function EstudiantesPage() {
         setEstudiantes(data.data || []);
         setTotal(data.total || 0);
 
-        // Extraer idiomas y paralelos únicos para los selectores de filtro
         const idSet = new Set<string>();
         const parSet = new Set<string>();
         (data.data || []).forEach((e: EstudianteItem) => {
@@ -231,16 +225,15 @@ export default function EstudiantesPage() {
     }
   };
 
-  // CONTROL DE ACCESO INSTITUCIONAL
   if (!puedeAdministrar) {
     return (
       <div className="max-w-4xl mx-auto p-8">
         <div className="bg-red-950/40 border border-red-500/40 rounded-xl p-8 text-center space-y-4">
           <ShieldAlert className="w-16 h-16 text-red-500 mx-auto" />
-          <h2 className="text-2xl font-bold text-white">Módulo 4: Gestión de Estudiantes — Acceso Restringido</h2>
+          <h2 className="text-2xl font-bold text-white">Acceso Restringido</h2>
           <p className="text-neutral-300 max-w-xl mx-auto">
-            El registro y administración de expedientes de estudiantes civiles y militares corresponde a la{' '}
-            <strong className="text-sky-400">Jefatura Académica</strong> (Caso de Uso 11.4, Secuencia 12.4).
+            El registro y administración de expedientes de estudiantes corresponde a la{' '}
+            <strong className="text-sky-400">Jefatura Académica</strong>.
             Tu rol actual es <span className="px-2 py-0.5 rounded bg-neutral-800 text-amber-400 font-semibold">{rolConfig.titulo}</span>.
           </p>
         </div>
@@ -250,24 +243,27 @@ export default function EstudiantesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-sky-400 tracking-wider uppercase mb-1">
-            <Users className="w-4 h-4" /> Módulo 4 — Gestión de Estudiantes
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-neutral-800">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 shadow-sm shrink-0">
+            <Users className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white">
-            Expedientes de Estudiantes Civiles y Militares
-          </h1>
-          <p className="text-sm text-neutral-400">
-            Actor responsable: <strong>Jefe Académico</strong> (Diagrama UML 11.4, Secuencia 12.4).
-          </p>
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400">
+              <span>SACA</span>
+              <span>/</span>
+              <span className="text-sky-400 font-semibold">Estudiantes</span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-extrabold text-white">
+              Expedientes de Estudiantes
+            </h1>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={cargarEstudiantes}
             disabled={loading}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium transition"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800/80 hover:bg-neutral-700 text-neutral-200 text-xs font-medium border border-neutral-700 transition"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             Actualizar
@@ -282,7 +278,6 @@ export default function EstudiantesPage() {
         </div>
       </div>
 
-      {/* Alerta */}
       {alerta && (
         <div
           className={`flex items-center gap-3 p-4 rounded-xl border text-sm font-medium ${
@@ -296,10 +291,8 @@ export default function EstudiantesPage() {
         </div>
       )}
 
-      {/* Barra de Filtros y Búsqueda */}
       <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 space-y-3">
         <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-          {/* Selector de categoría */}
           <div className="flex items-center gap-2 w-full md:w-auto">
             {(['TODOS', 'MILITAR', 'CIVIL'] as const).map((t) => (
               <button
@@ -316,7 +309,6 @@ export default function EstudiantesPage() {
             ))}
           </div>
 
-          {/* Búsqueda por CI o Nombre */}
           <form onSubmit={handleBuscar} className="flex items-center gap-2 w-full md:w-80">
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-2.5" />
@@ -337,7 +329,6 @@ export default function EstudiantesPage() {
           </form>
         </div>
 
-        {/* Filtros por curso e idioma (requerimiento expreso) */}
         <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-neutral-800/60 text-xs">
           <span className="text-neutral-400 flex items-center gap-1 font-medium">
             <Filter className="w-3.5 h-3.5" /> Filtrar por:
@@ -376,7 +367,6 @@ export default function EstudiantesPage() {
         </div>
       </div>
 
-      {/* Tabla de Estudiantes */}
       <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
@@ -462,7 +452,6 @@ export default function EstudiantesPage() {
           </table>
         </div>
 
-        {/* Paginación */}
         <div className="flex items-center justify-between p-3 border-t border-neutral-800 text-xs text-neutral-400">
           <span>Página {page} de {Math.max(1, Math.ceil(total / 15))}</span>
           <div className="flex items-center gap-2">
@@ -484,7 +473,6 @@ export default function EstudiantesPage() {
         </div>
       </div>
 
-      {/* Modal de Registro / Edición */}
       {modalAbierto && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-neutral-900 border border-neutral-700 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 space-y-4">
@@ -494,7 +482,7 @@ export default function EstudiantesPage() {
                   {modoEdicion ? 'Editar Expediente de Estudiante' : 'Registro de Nuevo Estudiante'}
                 </h3>
                 <p className="text-xs text-neutral-400">
-                  Filiación y datos personales (Secuencia 12.4). Las notas se cargan posteriormente en el módulo de calificaciones.
+                  Filiación y datos personales. Las notas se cargan en Calificaciones.
                 </p>
               </div>
               <button
@@ -506,7 +494,6 @@ export default function EstudiantesPage() {
             </div>
 
             <form onSubmit={handleGuardar} className="space-y-4 text-xs">
-              {/* Selector de Tipo */}
               <div>
                 <label className="text-neutral-300 font-semibold block mb-1">Clasificación de Estudiante</label>
                 <div className="grid grid-cols-2 gap-3">
@@ -536,7 +523,6 @@ export default function EstudiantesPage() {
                 </div>
               </div>
 
-              {/* Datos de filiación básica */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="text-neutral-300 block mb-1">Cédula de Identidad (CI)</label>
@@ -622,7 +608,6 @@ export default function EstudiantesPage() {
                 />
               </div>
 
-              {/* Extensión militar (tabla estudiante_militar) */}
               {formData.tipo_estudiante === 'Militar' && (
                 <div className="bg-amber-950/30 border border-amber-600/40 rounded-xl p-3.5 space-y-3">
                   <h4 className="text-xs font-bold text-amber-300 flex items-center gap-1.5 uppercase">

@@ -182,10 +182,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const navItems = ALL_NAV_ITEMS.filter((item) => rolConfig.rutasPermitidas.includes(item.href));
 
   useEffect(() => {
-    if (transPhase !== 'idle') {
+    if (transPhase === 'entering' || transPhase === 'holding') {
       const failsafe = setTimeout(() => {
-        setTransPhase('idle');
-      }, 700);
+        setTransPhase('leaving');
+        setTimeout(() => setTransPhase('idle'), 180);
+      }, 1200);
       return () => clearTimeout(failsafe);
     }
   }, [transPhase]);
@@ -204,38 +205,21 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setTransPhase('entering');
     expectedPathname.current = item.href;
 
-    setTimeout(() => {
-      setTransPhase('leaving');
-      router.push(item.href);
-    }, 200);
-
-    setTimeout(() => {
-      setTransPhase('idle');
-    }, 500);
+    router.push(item.href);
   };
 
   useEffect(() => {
     if (prevPathRef.current === pathname) return;
     prevPathRef.current = pathname;
 
-    if (expectedPathname.current === pathname) {
-      expectedPathname.current = null;
-      return;
+    if (transPhase !== 'idle') {
+      setTransPhase('leaving');
+      const timer = setTimeout(() => {
+        setTransPhase('idle');
+        expectedPathname.current = null;
+      }, 180);
+      return () => clearTimeout(timer);
     }
-
-    const match = ALL_NAV_ITEMS.find((n) => n.href === pathname);
-    setTransLabel(match?.label ?? 'Sistema Académico');
-    setTransIcon(() => match?.icon ?? Shield);
-    setTransPhase('entering');
-
-    const t1 = setTimeout(() => setTransPhase('leaving'), 200);
-    const t2 = setTimeout(() => setTransPhase('idle'), 500);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      setTransPhase('idle');
-    };
   }, [pathname]);
 
   useEffect(() => {
@@ -1219,29 +1203,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div className="curtain-hud-corner curtain-hud-top-right" />
             <div className="curtain-hud-corner curtain-hud-bottom-left" />
             <div className="curtain-hud-corner curtain-hud-bottom-right" />
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setTransPhase('idle');
-              }}
-              style={{
-                position: 'absolute',
-                top: '1.25rem',
-                right: '1.5rem',
-                background: 'rgba(0,0,0,0.5)',
-                border: '1px solid var(--military-gold-primary)',
-                color: 'var(--military-gold-primary)',
-                padding: '0.35rem 0.75rem',
-                borderRadius: '4px',
-                fontSize: '0.72rem',
-                cursor: 'pointer',
-                zIndex: 1000,
-                fontWeight: 600,
-              }}
-            >
-              Omitir [✕]
-            </button>
 
             <div className="curtain-core">
               <div className="curtain-radar-ring">

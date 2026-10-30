@@ -263,26 +263,26 @@ export default function CajasPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-neutral-900/60 border border-neutral-800 p-4 rounded-xl">
-              <span className="text-neutral-400 text-xs">En Cola FIFO (Lq)</span>
-              <p className="text-2xl font-bold font-mono text-amber-400 mt-1">{colaFifo.length}</p>
-              <span className="text-[10px] text-neutral-500">Estudiantes esperando</span>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <div className="bg-neutral-900/60 border border-neutral-800 p-2.5 rounded-lg">
+              <span className="text-neutral-400 text-[11px] block truncate">En Cola FIFO (Lq)</span>
+              <p className="text-xl font-bold font-mono text-amber-400 mt-0.5">{colaFifo.length}</p>
+              <span className="text-[10px] text-neutral-500">Estudiantes en espera</span>
             </div>
-            <div className="bg-neutral-900/60 border border-neutral-800 p-4 rounded-xl">
-              <span className="text-neutral-400 text-xs">Tiempo Espera (Wq)</span>
-              <p className="text-2xl font-bold font-mono text-sky-400 mt-1">{metricas?.tiempo_promedio_espera_minutos || 0} min</p>
+            <div className="bg-neutral-900/60 border border-neutral-800 p-2.5 rounded-lg">
+              <span className="text-neutral-400 text-[11px] block truncate">Tiempo Espera (Wq)</span>
+              <p className="text-xl font-bold font-mono text-sky-400 mt-0.5">{metricas?.tiempo_promedio_espera_minutos || 0} min</p>
               <span className="text-[10px] text-neutral-500">Promedio de espera</span>
             </div>
-            <div className="bg-neutral-900/60 border border-neutral-800 p-4 rounded-xl">
-              <span className="text-neutral-400 text-xs">Atendidos Hoy</span>
-              <p className="text-2xl font-bold font-mono text-emerald-400 mt-1">{metricas?.fichas_atendidas_hoy || 0}</p>
+            <div className="bg-neutral-900/60 border border-neutral-800 p-2.5 rounded-lg">
+              <span className="text-neutral-400 text-[11px] block truncate">Atendidos Hoy</span>
+              <p className="text-xl font-bold font-mono text-emerald-400 mt-0.5">{metricas?.fichas_atendidas_hoy || 0}</p>
               <span className="text-[10px] text-neutral-500">Turnos completados</span>
             </div>
-            <div className="bg-neutral-900/60 border border-neutral-800 p-4 rounded-xl">
-              <span className="text-neutral-400 text-xs">Ventanillas Activas (c)</span>
-              <p className="text-2xl font-bold font-mono text-purple-400 mt-1">{cajas.length}</p>
-              <span className="text-[10px] text-neutral-500">Servidores en servicio</span>
+            <div className="bg-neutral-900/60 border border-neutral-800 p-2.5 rounded-lg">
+              <span className="text-neutral-400 text-[11px] block truncate">Ventanillas Activas</span>
+              <p className="text-xl font-bold font-mono text-purple-400 mt-0.5">{cajas.length}</p>
+              <span className="text-[10px] text-neutral-500">Cajas operativas</span>
             </div>
           </div>
 

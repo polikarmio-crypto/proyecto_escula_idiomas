@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Layers,
   Plus,
@@ -16,9 +16,13 @@ import {
   GraduationCap,
   ShieldAlert,
   RefreshCw,
-  DoorOpen
+  DoorOpen,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
+
+const PER_PAGE = 9;
 
 export default function ParalelosPage() {
   const { esJefeAcademico, esDocente, esAdmin, rolConfig, usuario } = useAuthRole();
@@ -34,6 +38,7 @@ export default function ParalelosPage() {
   const [niveles, setNiveles] = useState<any[]>([]);
 
   const [busqueda, setBusqueda] = useState('');
+  const [page, setPage] = useState(1);
   const [alerta, setAlerta] = useState<{ tipo: 'ok' | 'error'; mensaje: string } | null>(null);
 
   const [modalApertura, setModalApertura] = useState(false);
@@ -132,19 +137,31 @@ export default function ParalelosPage() {
     }
   };
 
-  const paralelosVisibles = paralelos.filter((p) => {
-    if (esDocente) {
-      const nombreDocente = p.docente_actual?.nombre_docente || '';
-      return nombreDocente.toLowerCase().includes(usuario.nombre.toLowerCase().split(' ')[1] || '');
-    }
-    if (!busqueda.trim()) return true;
-    const q = busqueda.toLowerCase().trim();
-    return (
-      p.codigo_paralelo?.toLowerCase().includes(q) ||
-      p.nivel?.programa?.idioma?.nombre_idioma?.toLowerCase().includes(q) ||
-      p.aula?.nombre_aula?.toLowerCase().includes(q)
-    );
-  });
+  useEffect(() => {
+    setPage(1);
+  }, [busqueda]);
+
+  const paralelosVisibles = useMemo(() => {
+    return paralelos.filter((p) => {
+      if (esDocente) {
+        const nombreDocente = p.docente_actual?.nombre_docente || '';
+        return nombreDocente.toLowerCase().includes(usuario.nombre.toLowerCase().split(' ')[1] || '');
+      }
+      if (!busqueda.trim()) return true;
+      const q = busqueda.toLowerCase().trim();
+      return (
+        p.codigo_paralelo?.toLowerCase().includes(q) ||
+        p.nivel?.programa?.idioma?.nombre_idioma?.toLowerCase().includes(q) ||
+        p.aula?.nombre_aula?.toLowerCase().includes(q)
+      );
+    });
+  }, [paralelos, esDocente, usuario.nombre, busqueda]);
+
+  const totalPages = Math.max(1, Math.ceil(paralelosVisibles.length / PER_PAGE));
+  const paralelosPaginados = useMemo(() => {
+    const start = (page - 1) * PER_PAGE;
+    return paralelosVisibles.slice(start, start + PER_PAGE);
+  }, [paralelosVisibles, page]);
 
   if (!puedeCrear && !esDocente) {
     return (
@@ -213,80 +230,122 @@ export default function ParalelosPage() {
         </div>
       )}
 
-      <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 flex items-center justify-between">
-        <div className="relative w-80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-1">
+        <div className="relative w-full sm:w-80">
           <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-2.5" />
           <input
             type="text"
             placeholder="Buscar por código de paralelo, idioma o aula..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white"
+            className="w-full bg-neutral-900 border border-neutral-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white"
           />
         </div>
         <span className="text-xs text-neutral-500">
-          Total paralelos ofertados: <strong className="text-white">{paralelosVisibles.length}</strong>
+          Mostrando <strong className="text-white">{paralelosVisibles.length === 0 ? 0 : (page - 1) * PER_PAGE + 1}-{Math.min(page * PER_PAGE, paralelosVisibles.length)}</strong> de <strong className="text-white">{paralelosVisibles.length}</strong> paralelos
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {paralelosVisibles.map((p) => {
-          const cuposDisp = p.cupos_disponibles ?? (p.capacidad_maxima_paralelo - (p.inscripciones_count || 0));
-          return (
-            <div
-              key={p.id_paralelo}
-              className="bg-neutral-900/50 border border-neutral-800 hover:border-neutral-700 rounded-2xl p-5 space-y-4 transition shadow-md"
+      {paralelosPaginados.length === 0 ? (
+        <div className="p-12 text-center text-neutral-500 border border-neutral-800/80 rounded-2xl bg-neutral-900/30">
+          No se encontraron paralelos registrados o que coincidan con la búsqueda.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {paralelosPaginados.map((p) => {
+            const inscritos = p.inscripciones_count || 0;
+            const capMax = p.capacidad_maxima_paralelo || 30;
+            const cuposDisp = p.cupos_disponibles ?? Math.max(0, capMax - inscritos);
+            const porcentaje = Math.min(100, Math.round((inscritos / capMax) * 100));
+
+            return (
+              <div
+                key={p.id_paralelo}
+                className="bg-neutral-900/50 border border-neutral-800 hover:border-neutral-700 rounded-2xl p-5 space-y-4 transition shadow-md flex flex-col justify-between"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between border-b border-neutral-800/70 pb-3">
+                    <span className="text-base font-extrabold font-mono text-sky-400">
+                      {p.codigo_paralelo}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                      p.estado_paralelo === 'Abierto' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-neutral-800 text-neutral-400'
+                    }`}>
+                      {p.estado_paralelo}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 text-xs">
+                    <p className="font-bold text-white text-sm">
+                      {p.nivel?.programa?.idioma?.nombre_idioma}
+                    </p>
+                    <p className="text-neutral-400">
+                      {p.nivel?.programa?.nombre_programa} &bull; <span className="text-sky-300 font-semibold">{p.nivel?.nombre_nivel}</span>
+                    </p>
+                    <div className="pt-2 border-t border-neutral-800/60 space-y-1 text-neutral-300">
+                      <p className="flex items-center gap-2">
+                        <DoorOpen className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                        Aula: <strong className="text-white">{p.aula?.nombre_aula}</strong>
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                        Horario: <span className="font-mono text-neutral-200">{p.horario?.hora_inicio_horario} - {p.horario?.hora_fin_horario}</span>
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <GraduationCap className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        Docente: <strong className="text-emerald-300 truncate">
+                          {p.docente_actual ? `${p.docente_actual.nombre_docente} ${p.docente_actual.apellido_docente}` : 'Sin asignar'}
+                        </strong>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-neutral-800/70 space-y-2 text-xs">
+                  <div className="flex items-center justify-between text-neutral-400 text-[11px]">
+                    <span>Ocupación: <strong className="text-white font-mono">{inscritos}/{capMax}</strong></span>
+                    <span>Disponibles: <strong className="text-emerald-400 font-mono font-bold">{cuposDisp}</strong></span>
+                  </div>
+                  <div className="w-full bg-neutral-800 rounded-full h-1.5 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        porcentaje >= 90 ? 'bg-red-500' : porcentaje >= 70 ? 'bg-amber-400' : 'bg-emerald-500'
+                      }`}
+                      style={{ width: `${porcentaje}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-neutral-500">
+                    <span>Mín. apertura: {p.capacidad_minima_apertura} alumnos</span>
+                    <span>{porcentaje}% cubierto</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {paralelosVisibles.length > PER_PAGE && (
+        <div className="flex items-center justify-between px-4 py-3 bg-neutral-900/40 border border-neutral-800 rounded-xl text-xs text-neutral-400">
+          <span>Página {page} de {totalPages}</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="p-1.5 rounded-lg border border-neutral-800 hover:bg-neutral-800 text-neutral-300 disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
-              <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
-                <span className="text-base font-extrabold font-mono text-sky-400">
-                  {p.codigo_paralelo}
-                </span>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                  p.estado_paralelo === 'Abierto' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-neutral-800 text-neutral-400'
-                }`}>
-                  {p.estado_paralelo}
-                </span>
-              </div>
-
-              <div className="space-y-1.5 text-xs">
-                <p className="font-bold text-white text-sm">
-                  {p.nivel?.programa?.idioma?.nombre_idioma}
-                </p>
-                <p className="text-neutral-400">
-                  {p.nivel?.programa?.nombre_programa} &bull; <span className="text-sky-300 font-semibold">{p.nivel?.nombre_nivel}</span>
-                </p>
-                <div className="pt-2 border-t border-neutral-800/60 space-y-1 text-neutral-300">
-                  <p className="flex items-center gap-2">
-                    <DoorOpen className="w-3.5 h-3.5 text-neutral-500" />
-                    Aula: <strong className="text-white">{p.aula?.nombre_aula}</strong>
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <Clock className="w-3.5 h-3.5 text-neutral-500" />
-                    Horario: <span className="font-mono text-neutral-200">{p.horario?.hora_inicio_horario} - {p.horario?.hora_fin_horario}</span>
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
-                    Docente Asignado: <strong className="text-emerald-300">
-                      {p.docente_actual ? `${p.docente_actual.nombre_docente} ${p.docente_actual.apellido_docente}` : 'Sin asignar'}
-                    </strong>
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-neutral-950 p-3 rounded-xl border border-neutral-800 flex items-center justify-between text-xs">
-                <div>
-                  <span className="text-neutral-400 text-[11px]">Cupos Disponibles:</span>
-                  <p className="font-mono font-bold text-base text-white">{cuposDisp} / {p.capacidad_maxima_paralelo}</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] text-neutral-500">Mínimo apertura:</span>
-                  <p className="font-mono text-xs text-neutral-400">{p.capacidad_minima_apertura} alumnos</p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+              className="p-1.5 rounded-lg border border-neutral-800 hover:bg-neutral-800 text-neutral-300 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {modalApertura && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">

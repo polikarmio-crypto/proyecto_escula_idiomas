@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ClipboardEdit,
   Search,
@@ -14,9 +14,13 @@ import {
   Layers,
   GraduationCap,
   BookOpen,
-  Calendar
+  Calendar,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
+
+const PER_PAGE = 10;
 
 export default function InscripcionesPage() {
   const { esJefeAcademico, esEstudiante, esAdmin, rolConfig, usuario } = useAuthRole();
@@ -28,6 +32,7 @@ export default function InscripcionesPage() {
   const [paralelos, setParalelos] = useState<any[]>([]);
 
   const [busqueda, setBusqueda] = useState('');
+  const [page, setPage] = useState(1);
   const [alerta, setAlerta] = useState<{ tipo: 'ok' | 'error'; mensaje: string } | null>(null);
 
   const [modalInscribir, setModalInscribir] = useState(false);
@@ -102,18 +107,30 @@ export default function InscripcionesPage() {
     }
   };
 
-  const inscripcionesFiltradas = inscripciones.filter((ins) => {
-    if (esEstudiante) {
-      const nombreEst = `${ins.estudiante?.nombre_estudiante} ${ins.estudiante?.apellido_estudiante}`.toLowerCase();
-      return nombreEst.includes(usuario.nombre.toLowerCase().split(' ')[1] || '');
-    }
-    if (!busqueda.trim()) return true;
-    const q = busqueda.toLowerCase().trim();
-    const nom = `${ins.estudiante?.nombre_estudiante} ${ins.estudiante?.apellido_estudiante}`.toLowerCase();
-    const ci = ins.estudiante?.ci_estudiante?.toLowerCase() || '';
-    const par = ins.paralelo?.codigo_paralelo?.toLowerCase() || '';
-    return nom.includes(q) || ci.includes(q) || par.includes(q);
-  });
+  useEffect(() => {
+    setPage(1);
+  }, [busqueda]);
+
+  const inscripcionesFiltradas = useMemo(() => {
+    return inscripciones.filter((ins) => {
+      if (esEstudiante) {
+        const nombreEst = `${ins.estudiante?.nombre_estudiante} ${ins.estudiante?.apellido_estudiante}`.toLowerCase();
+        return nombreEst.includes(usuario.nombre.toLowerCase().split(' ')[1] || '');
+      }
+      if (!busqueda.trim()) return true;
+      const q = busqueda.toLowerCase().trim();
+      const nom = `${ins.estudiante?.nombre_estudiante} ${ins.estudiante?.apellido_estudiante}`.toLowerCase();
+      const ci = ins.estudiante?.ci_estudiante?.toLowerCase() || '';
+      const par = ins.paralelo?.codigo_paralelo?.toLowerCase() || '';
+      return nom.includes(q) || ci.includes(q) || par.includes(q);
+    });
+  }, [inscripciones, esEstudiante, usuario.nombre, busqueda]);
+
+  const totalPages = Math.max(1, Math.ceil(inscripcionesFiltradas.length / PER_PAGE));
+  const inscripcionesPaginadas = useMemo(() => {
+    const start = (page - 1) * PER_PAGE;
+    return inscripcionesFiltradas.slice(start, start + PER_PAGE);
+  }, [inscripcionesFiltradas, page]);
 
   if (!puedeInscribir && !esEstudiante) {
     return (
@@ -183,19 +200,19 @@ export default function InscripcionesPage() {
       )}
 
       {!esEstudiante && (
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 flex items-center justify-between">
-          <div className="relative w-80">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-1">
+          <div className="relative w-full sm:w-80">
             <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-2.5" />
             <input
               type="text"
               placeholder="Buscar por estudiante, CI o código de paralelo..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white"
+              className="w-full bg-neutral-900 border border-neutral-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white"
             />
           </div>
           <span className="text-xs text-neutral-500">
-            Total matriculados: <strong className="text-white">{inscripcionesFiltradas.length}</strong>
+            Mostrando <strong className="text-white">{inscripcionesFiltradas.length === 0 ? 0 : (page - 1) * PER_PAGE + 1}-{Math.min(page * PER_PAGE, inscripcionesFiltradas.length)}</strong> de <strong className="text-white">{inscripcionesFiltradas.length}</strong> matriculados
           </span>
         </div>
       )}
@@ -215,7 +232,7 @@ export default function InscripcionesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800 text-neutral-300">
-              {inscripcionesFiltradas.map((ins) => (
+              {inscripcionesPaginadas.map((ins) => (
                 <tr key={ins.id_inscripcion} className="hover:bg-neutral-800/30 transition">
                   <td className="p-3 font-mono font-bold text-purple-400">
                     #{ins.id_inscripcion}
@@ -280,6 +297,28 @@ export default function InscripcionesPage() {
             </tbody>
           </table>
         </div>
+
+        {inscripcionesFiltradas.length > PER_PAGE && (
+          <div className="flex items-center justify-between p-3 border-t border-neutral-800 text-xs text-neutral-400 bg-neutral-950/40">
+            <span>Página {page} de {totalPages}</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="p-1.5 rounded-lg border border-neutral-800 hover:bg-neutral-800 text-neutral-300 disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                className="p-1.5 rounded-lg border border-neutral-800 hover:bg-neutral-800 text-neutral-300 disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {modalInscribir && (

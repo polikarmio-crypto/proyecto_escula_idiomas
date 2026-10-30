@@ -19,6 +19,7 @@ import {
   ClipboardEdit,
   LineChart,
   Home,
+  ChevronLeft,
   ChevronRight,
   Calendar,
   FileText,
@@ -159,6 +160,7 @@ export default function DashboardSacaPage() {
   const { rolActivo, rolConfig, usuario } = useAuthRole();
   const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [paginaModulos, setPaginaModulos] = useState(1);
 
   const cargarDashboard = async () => {
     setLoading(true);
@@ -180,13 +182,15 @@ export default function DashboardSacaPage() {
   }, []);
 
   const config = getDashboardConfig(rolActivo, data);
+  const MODULOS_POR_PAGINA = 6;
+  const totalPaginas = Math.max(1, Math.ceil(config.modulos.length / MODULOS_POR_PAGINA));
+  const modulosPaginados = config.modulos.slice((paginaModulos - 1) * MODULOS_POR_PAGINA, paginaModulos * MODULOS_POR_PAGINA);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-10">
-      <div className="rounded-2xl border p-6 shadow-sm transition-all bg-white dark:bg-[#121d2b] border-slate-200 dark:border-[#24354a] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden">
-        <div className="tricolor-stripe absolute top-0 left-0 right-0" />
-        <div className="flex items-start gap-4 pt-1">
-          <div className="w-14 h-14 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-amber-400/50 flex items-center justify-center p-2 shrink-0 shadow-sm">
+    <div className="space-y-4 max-w-7xl mx-auto pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-neutral-800">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-amber-400/40 flex items-center justify-center p-1.5 shrink-0 shadow-sm">
             <img
               src="/images/logos/logo-eie.png"
               alt="Logo Escuela de Idiomas del Ejército"
@@ -194,7 +198,7 @@ export default function DashboardSacaPage() {
             />
           </div>
           <div>
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
               <span className="badge-bolivia-tricolor shadow-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#dc2626]" />
                 <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
@@ -202,13 +206,13 @@ export default function DashboardSacaPage() {
                 <span className="text-slate-800 dark:text-slate-200">SACA &bull; CEDMIL</span>
               </span>
               <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 font-mono">
-                Gestión Académica {data?.gestion_activa || '2026'} • Escuela de Idiomas del Ejército
+                Gestión {data?.gestion_activa || '2026'} • Escuela de Idiomas del Ejército
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Bienvenido, {usuario.nombre}
             </h1>
-            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-2xl truncate">
               {config.subtitulo}
             </p>
           </div>
@@ -217,14 +221,14 @@ export default function DashboardSacaPage() {
         <button
           onClick={cargarDashboard}
           disabled={loading}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl btn-bolivia-green text-white text-xs font-semibold transition shadow-sm shrink-0"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg btn-bolivia-green text-white text-xs font-semibold transition shadow-sm shrink-0"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           <span>Actualizar</span>
         </button>
       </div>
 
-      <div className={`grid gap-4 ${
+      <div className={`grid gap-2.5 ${
         config.kpiCards.length <= 3
           ? 'grid-cols-1 sm:grid-cols-3'
           : config.kpiCards.length === 4
@@ -236,17 +240,17 @@ export default function DashboardSacaPage() {
           return (
             <div
               key={i}
-              className="bg-white dark:bg-[#121d2b] border border-slate-200 dark:border-[#24354a] p-4 rounded-xl shadow-sm transition hover:shadow-md"
+              className="bg-neutral-900/60 border border-neutral-800 p-2.5 rounded-xl shadow-xs transition hover:border-neutral-700"
             >
-              <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
-                <span className="text-xs font-semibold">{kpi.label}</span>
-                <Icon className="w-4 h-4" style={{ color: kpi.color }} />
+              <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-0.5">
+                <span className="text-[11px] font-semibold truncate">{kpi.label}</span>
+                <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: kpi.color }} />
               </div>
-              <p className="text-2xl font-bold font-mono text-slate-900 dark:text-white">
+              <p className="text-xl font-bold font-mono text-slate-900 dark:text-white">
                 {kpi.value}
               </p>
               {kpi.sub && (
-                <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate block">
                   {kpi.sub}
                 </span>
               )}
@@ -255,50 +259,72 @@ export default function DashboardSacaPage() {
         })}
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
-          <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
-            <FolderTree className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-            Accesos Rápidos
-          </h2>
-          <span className="text-xs text-slate-500 dark:text-slate-400">
-            SACA • {rolConfig.titulo}
-          </span>
+      <div className="space-y-3 pt-1">
+        <div className="flex items-center justify-between pb-1.5 border-b border-neutral-800">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+              <FolderTree className="w-3.5 h-3.5 text-amber-500" />
+              Módulos del Sistema
+            </h2>
+            <span className="text-[10px] px-2 py-0.5 rounded bg-neutral-900 text-neutral-400 border border-neutral-800 font-mono">
+              {config.modulos.length} disponibles
+            </span>
+          </div>
+
+          {totalPaginas > 1 && (
+            <div className="flex items-center gap-2 text-xs text-neutral-400">
+              <span className="text-[11px]">
+                Página <strong className="text-white">{paginaModulos}</strong> de <strong className="text-white">{totalPaginas}</strong>
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPaginaModulos((p) => Math.max(1, p - 1))}
+                  disabled={paginaModulos <= 1}
+                  className="p-1 rounded border border-neutral-800 hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed text-neutral-300 transition"
+                  title="Página anterior"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setPaginaModulos((p) => Math.min(totalPaginas, p + 1))}
+                  disabled={paginaModulos >= totalPaginas}
+                  className="p-1 rounded border border-neutral-800 hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed text-neutral-300 transition"
+                  title="Página siguiente"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className={`grid gap-4 ${
-          config.modulos.length <= 2
-            ? 'grid-cols-1 md:grid-cols-2'
-            : config.modulos.length <= 4
-            ? 'grid-cols-1 md:grid-cols-2'
-            : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-        }`}>
-          {config.modulos.map((m) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {modulosPaginados.map((m) => {
             const Icon = m.icon;
             return (
               <Link
                 key={m.href}
                 href={m.href}
-                className="p-5 rounded-2xl border bg-white dark:bg-[#121d2b] border-slate-200 dark:border-[#24354a] hover:border-amber-500/50 hover:shadow-md transition flex flex-col justify-between space-y-3 group shadow-sm"
+                className="p-3.5 rounded-xl border bg-neutral-900/50 border-neutral-800 hover:border-amber-500/50 hover:bg-neutral-900 transition flex flex-col justify-between space-y-2 group shadow-xs"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-slate-800 border border-amber-200/50 dark:border-slate-700 flex items-center justify-center text-amber-700 dark:text-amber-400">
-                      <Icon className="w-4 h-4" />
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className="w-7 h-7 rounded-lg bg-neutral-950 border border-neutral-800 flex items-center justify-center text-amber-400 shrink-0">
+                      <Icon className="w-3.5 h-3.5" />
                     </div>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-amber-400 transition truncate">
+                      {m.titulo}
+                    </h3>
                   </div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-amber-600 dark:group-hover:text-amber-400 transition">
-                    {m.titulo}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
                     {m.desc}
                   </p>
                 </div>
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80 text-xs">
-                  <span className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Ingresar
+                <div className="flex items-center justify-between pt-1.5 border-t border-neutral-800/60 text-[11px]">
+                  <span className="text-emerald-500 font-semibold flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> Ingresar
                   </span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-1 transition group-hover:text-amber-600 dark:group-hover:text-amber-400" />
+                  <ArrowRight className="w-3 h-3 text-neutral-500 group-hover:translate-x-1 transition group-hover:text-amber-400" />
                 </div>
               </Link>
             );

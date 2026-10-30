@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Package,
   Shield,
@@ -16,9 +16,13 @@ import {
   Truck,
   RefreshCw,
   ShieldAlert,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
+
+const PER_PAGE = 10;
 
 export default function AlmacenPage() {
   const { esAlmacenero, esAdmin, rolConfig } = useAuthRole();
@@ -33,6 +37,8 @@ export default function AlmacenPage() {
 
   const [tab, setTab] = useState<'stock' | 'movimientos' | 'alertas' | 'pedidos'>('stock');
   const [busqueda, setBusqueda] = useState('');
+  const [pageStock, setPageStock] = useState(1);
+  const [pagePedidos, setPagePedidos] = useState(1);
 
   const [modalMovimiento, setModalMovimiento] = useState(false);
   const [modalPedido, setModalPedido] = useState(false);
@@ -152,15 +158,33 @@ export default function AlmacenPage() {
     }
   };
 
-  const inventarioFiltrado = inventario.filter((item) => {
-    if (!busqueda.trim()) return true;
-    const q = busqueda.toLowerCase().trim();
-    return (
-      item.libro.toLowerCase().includes(q) ||
-      item.idioma.toLowerCase().includes(q) ||
-      item.nivel.toLowerCase().includes(q)
-    );
-  });
+  useEffect(() => {
+    setPageStock(1);
+  }, [busqueda]);
+
+  const inventarioFiltrado = useMemo(() => {
+    return inventario.filter((item) => {
+      if (!busqueda.trim()) return true;
+      const q = busqueda.toLowerCase().trim();
+      return (
+        item.libro?.toLowerCase().includes(q) ||
+        item.idioma?.toLowerCase().includes(q) ||
+        item.nivel?.toLowerCase().includes(q)
+      );
+    });
+  }, [inventario, busqueda]);
+
+  const totalPagesStock = Math.max(1, Math.ceil(inventarioFiltrado.length / PER_PAGE));
+  const inventarioPaginado = useMemo(() => {
+    const start = (pageStock - 1) * PER_PAGE;
+    return inventarioFiltrado.slice(start, start + PER_PAGE);
+  }, [inventarioFiltrado, pageStock]);
+
+  const totalPagesPedidos = Math.max(1, Math.ceil(pedidos.length / PER_PAGE));
+  const pedidosPaginados = useMemo(() => {
+    const start = (pagePedidos - 1) * PER_PAGE;
+    return pedidos.slice(start, start + PER_PAGE);
+  }, [pedidos, pagePedidos]);
 
   if (!puedeOperarAlmacen) {
     return (
@@ -228,26 +252,26 @@ export default function AlmacenPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-neutral-900/60 border border-neutral-800 p-4 rounded-xl">
-          <span className="text-neutral-400 text-xs">Títulos en Catálogo</span>
-          <p className="text-2xl font-bold font-mono text-white mt-1">{resumen?.total_titulos || 0}</p>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+        <div className="bg-neutral-900/60 border border-neutral-800 p-2.5 rounded-lg">
+          <span className="text-neutral-400 text-[11px] block truncate">Títulos en Catálogo</span>
+          <p className="text-xl font-bold font-mono text-white mt-0.5">{resumen?.total_titulos || 0}</p>
           <span className="text-[10px] text-neutral-500">Registrados</span>
         </div>
-        <div className="bg-neutral-900/60 border border-neutral-800 p-4 rounded-xl">
-          <span className="text-neutral-400 text-xs">Stock Total Físico</span>
-          <p className="text-2xl font-bold font-mono text-sky-400 mt-1">{resumen?.total_unidades || 0}</p>
+        <div className="bg-neutral-900/60 border border-neutral-800 p-2.5 rounded-lg">
+          <span className="text-neutral-400 text-[11px] block truncate">Stock Total Físico</span>
+          <p className="text-xl font-bold font-mono text-sky-400 mt-0.5">{resumen?.total_unidades || 0}</p>
           <span className="text-[10px] text-neutral-500">Libros disponibles</span>
         </div>
-        <div className="bg-neutral-900/60 border border-amber-500/30 p-4 rounded-xl">
-          <span className="text-amber-400 text-xs font-semibold">Bajo Punto de Reorden (ROP)</span>
-          <p className="text-2xl font-bold font-mono text-amber-400 mt-1">{resumen?.bajo_rop || 0}</p>
-          <span className="text-[10px] text-neutral-400">Requiere pedido reposición</span>
+        <div className="bg-neutral-900/60 border border-amber-500/30 p-2.5 rounded-lg">
+          <span className="text-amber-400 text-[11px] font-semibold block truncate">Bajo Punto ROP</span>
+          <p className="text-xl font-bold font-mono text-amber-400 mt-0.5">{resumen?.bajo_rop || 0}</p>
+          <span className="text-[10px] text-neutral-400">Requiere reposición</span>
         </div>
-        <div className="bg-neutral-900/60 border border-red-500/30 p-4 rounded-xl">
-          <span className="text-red-400 text-xs font-semibold">Stock Crítico (Mínimo)</span>
-          <p className="text-2xl font-bold font-mono text-red-400 mt-1">{resumen?.alerta_critica || 0}</p>
-          <span className="text-[10px] text-neutral-400">Por debajo del stock mín.</span>
+        <div className="bg-neutral-900/60 border border-red-500/30 p-2.5 rounded-lg">
+          <span className="text-red-400 text-[11px] font-semibold block truncate">Stock Crítico (Mín.)</span>
+          <p className="text-xl font-bold font-mono text-red-400 mt-0.5">{resumen?.alerta_critica || 0}</p>
+          <span className="text-[10px] text-neutral-400">Bajo stock mínimo</span>
         </div>
       </div>
 
@@ -315,7 +339,7 @@ export default function AlmacenPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-800 text-neutral-300">
-                {inventarioFiltrado.map((item) => (
+                {inventarioPaginado.map((item) => (
                   <tr key={item.id_almacen_libro} className="hover:bg-neutral-800/30">
                     <td className="p-3 font-bold text-white">
                       {item.libro}
@@ -363,47 +387,94 @@ export default function AlmacenPage() {
                     </td>
                   </tr>
                 ))}
+                {inventarioFiltrado.length === 0 && !loading && (
+                  <tr>
+                    <td colSpan={7} className="p-8 text-center text-neutral-500">
+                      No se encontraron libros en inventario.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
+
+          {inventarioFiltrado.length > PER_PAGE && (
+            <div className="flex items-center justify-between p-3 border-t border-neutral-800 text-xs text-neutral-400 bg-neutral-950/40">
+              <span>Página {pageStock} de {totalPagesStock} ({inventarioFiltrado.length} títulos)</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPageStock((p) => Math.max(1, p - 1))}
+                  disabled={pageStock <= 1}
+                  className="p-1.5 rounded-lg border border-neutral-800 hover:bg-neutral-800 text-neutral-300 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setPageStock((p) => Math.min(totalPagesStock, p + 1))}
+                  disabled={pageStock >= totalPagesStock}
+                  className="p-1.5 rounded-lg border border-neutral-800 hover:bg-neutral-800 text-neutral-300 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {tab === 'alertas' && (
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 space-y-4">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
-            Alertas de Reorden Generadas Automáticamente
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {alertasRop.map((a) => (
-              <div key={a.id_almacen_libro} className="p-4 rounded-xl border border-amber-500/40 bg-amber-950/20 flex items-center justify-between">
-                <div>
-                  <h4 className="font-bold text-white text-sm">{a.libro}</h4>
-                  <p className="text-xs text-neutral-400">{a.idioma}</p>
-                  <p className="text-xs text-amber-300 font-mono mt-1">
-                    Stock actual: <strong>{a.stock_actual}</strong> | Umbral ROP: <strong>{a.punto_reorden}</strong>
-                  </p>
-                  <p className="text-[11px] text-neutral-400">
-                    Déficit: {a.deficit_unidades} unidades &bull; Sugerencia de compra: {a.sugerencia_pedido} unids.
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    setFormPed({ id_almacen_libro: a.id_almacen_libro, cantidad: a.sugerencia_pedido || 50 });
-                    setModalPedido(true);
-                  }}
-                  className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs"
-                >
-                  Solicitar
-                </button>
-              </div>
-            ))}
-            {alertasRop.length === 0 && (
-              <p className="text-xs text-neutral-500 col-span-2 p-6 text-center">
-                Todos los títulos se encuentran dentro del rango de stock óptimo.
-              </p>
-            )}
+        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl overflow-hidden shadow-lg">
+          <div className="p-3.5 border-b border-neutral-800 bg-neutral-950 flex items-center justify-between">
+            <h3 className="text-xs font-bold text-white flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-400" />
+              Alertas de Reorden Generadas Automáticamente
+            </h3>
+            <span className="text-xs text-neutral-400">{alertasRop.length} alertas activas</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-neutral-950/80 text-neutral-400 uppercase tracking-wider border-b border-neutral-800">
+                <tr>
+                  <th className="p-3">Texto Guía</th>
+                  <th className="p-3">Idioma</th>
+                  <th className="p-3 text-center">Stock Actual</th>
+                  <th className="p-3 text-center">Umbral ROP</th>
+                  <th className="p-3 text-center">Déficit</th>
+                  <th className="p-3 text-center">Sugerencia Compra</th>
+                  <th className="p-3 text-right">Acción</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-800 text-neutral-300">
+                {alertasRop.map((a) => (
+                  <tr key={a.id_almacen_libro} className="hover:bg-neutral-800/30">
+                    <td className="p-3 font-bold text-white">{a.libro}</td>
+                    <td className="p-3 text-neutral-300">{a.idioma}</td>
+                    <td className="p-3 text-center font-mono font-bold text-red-400">{a.stock_actual}</td>
+                    <td className="p-3 text-center font-mono text-amber-400">{a.punto_reorden}</td>
+                    <td className="p-3 text-center font-mono text-neutral-300">{a.deficit_unidades} unids.</td>
+                    <td className="p-3 text-center font-mono font-bold text-sky-400">{a.sugerencia_pedido} unids.</td>
+                    <td className="p-3 text-right">
+                      <button
+                        onClick={() => {
+                          setFormPed({ id_almacen_libro: a.id_almacen_libro, cantidad: a.sugerencia_pedido || 50 });
+                          setModalPedido(true);
+                        }}
+                        className="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs"
+                      >
+                        Solicitar Pedido
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {alertasRop.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="p-8 text-center text-neutral-500">
+                      Todos los títulos se encuentran dentro del rango de stock óptimo.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
@@ -422,7 +493,7 @@ export default function AlmacenPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800 text-neutral-300">
-              {pedidos.map((p) => (
+              {pedidosPaginados.map((p) => (
                 <tr key={p.id_pedido} className="hover:bg-neutral-800/30">
                   <td className="p-3 font-mono font-bold text-white">#{p.id_pedido}</td>
                   <td className="p-3 font-semibold text-white">
@@ -447,8 +518,37 @@ export default function AlmacenPage() {
                   </td>
                 </tr>
               ))}
+              {pedidos.length === 0 && !loading && (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-neutral-500">
+                    No se han registrado pedidos de reposición.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
+
+          {pedidos.length > PER_PAGE && (
+            <div className="flex items-center justify-between p-3 border-t border-neutral-800 text-xs text-neutral-400 bg-neutral-950/40">
+              <span>Página {pagePedidos} de {totalPagesPedidos} ({pedidos.length} pedidos)</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPagePedidos((p) => Math.max(1, p - 1))}
+                  disabled={pagePedidos <= 1}
+                  className="p-1.5 rounded-lg border border-neutral-800 hover:bg-neutral-800 text-neutral-300 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setPagePedidos((p) => Math.min(totalPagesPedidos, p + 1))}
+                  disabled={pagePedidos >= totalPagesPedidos}
+                  className="p-1.5 rounded-lg border border-neutral-800 hover:bg-neutral-800 text-neutral-300 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

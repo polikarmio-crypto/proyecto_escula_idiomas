@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   GraduationCap,
   Shield,
@@ -19,9 +19,13 @@ import {
   X,
   Languages,
   ShieldAlert,
-  ArrowRightLeft
+  ArrowRightLeft,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
+
+const PER_PAGE = 10;
 
 export default function DocentesPage() {
   const { esJefeAcademico, esAdmin, rolConfig } = useAuthRole();
@@ -34,6 +38,7 @@ export default function DocentesPage() {
   const [paralelos, setParalelos] = useState<any[]>([]);
 
   const [busqueda, setBusqueda] = useState('');
+  const [page, setPage] = useState(1);
   const [alerta, setAlerta] = useState<{ tipo: 'ok' | 'error'; mensaje: string } | null>(null);
 
   const [modalDocente, setModalDocente] = useState(false);
@@ -152,15 +157,25 @@ export default function DocentesPage() {
     }
   };
 
-  const docentesFiltrados = docentes.filter((d) => {
-    if (!busqueda.trim()) return true;
+  const docentesFiltrados = useMemo(() => {
+    if (!busqueda.trim()) return docentes;
     const q = busqueda.toLowerCase().trim();
-    return (
+    return docentes.filter((d) =>
       d.nombre_completo?.toLowerCase().includes(q) ||
       d.ci_docente?.toLowerCase().includes(q) ||
       d.email?.toLowerCase().includes(q)
     );
-  });
+  }, [docentes, busqueda]);
+
+  const totalPages = Math.max(1, Math.ceil(docentesFiltrados.length / PER_PAGE));
+  const docentesPaginados = useMemo(() => {
+    const start = (page - 1) * PER_PAGE;
+    return docentesFiltrados.slice(start, start + PER_PAGE);
+  }, [docentesFiltrados, page]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [busqueda]);
 
   if (!puedeAdministrar) {
     return (
@@ -229,56 +244,51 @@ export default function DocentesPage() {
       )}
 
       {alertasRotacion.length > 0 && (
-        <div className="bg-amber-950/30 border border-amber-500/50 rounded-2xl p-5 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-amber-300 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-amber-400 animate-pulse" />
-              Alertas de Rotación Docente Quincenal (≥ 14 Días en Aula)
-            </h3>
-            <span className="text-xs font-mono text-amber-400 font-bold bg-amber-500/20 px-2.5 py-0.5 rounded-full">
-              {alertasRotacion.length} relevos pendientes
+        <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-500/50 bg-amber-950/30 text-sm">
+          <Clock className="w-5 h-5 text-amber-400 animate-pulse shrink-0" />
+          <div className="flex-1">
+            <span className="font-bold text-amber-300">
+              {alertasRotacion.length} relevo(s) pendiente(s)
+            </span>
+            <span className="text-neutral-400 ml-2 text-xs">
+              Docentes con ≥14 días continuos en aula
             </span>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {alertasRotacion.map((a, idx) => (
-              <div key={idx} className="bg-neutral-950/70 border border-amber-500/30 p-3.5 rounded-xl flex items-center justify-between text-xs">
-                <div>
-                  <span className="font-mono font-bold text-white text-sm">{a.paralelo}</span> &bull; <span className="text-neutral-400">{a.idioma}</span>
-                  <p className="font-semibold text-neutral-200 mt-0.5">{a.docente_actual}</p>
-                  <p className="text-[11px] text-amber-400 font-mono mt-0.5">
-                    {a.dias_en_aula} días continuos en aula
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    const par = paralelos.find((p) => p.codigo_paralelo === a.paralelo);
-                    setParaleloARotar(par || { id_paralelo: a.id_asignacion, codigo_paralelo: a.paralelo, idioma: a.idioma });
-                    setModalRotar(true);
-                  }}
-                  className="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-lg text-xs flex items-center gap-1 shadow"
-                >
-                  <ArrowRightLeft className="w-3.5 h-3.5" /> Relevar
-                </button>
-              </div>
+          <div className="flex flex-wrap gap-2">
+            {alertasRotacion.slice(0, 4).map((a, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  const par = paralelos.find((p) => p.codigo_paralelo === a.paralelo);
+                  setParaleloARotar(par || { id_paralelo: a.id_asignacion, codigo_paralelo: a.paralelo, idioma: a.idioma });
+                  setModalRotar(true);
+                }}
+                className="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-lg text-xs flex items-center gap-1 shadow"
+              >
+                <ArrowRightLeft className="w-3 h-3" />
+                {a.paralelo} ({a.dias_en_aula}d)
+              </button>
             ))}
+            {alertasRotacion.length > 4 && (
+              <span className="text-xs text-amber-400 self-center">+{alertasRotacion.length - 4} más</span>
+            )}
           </div>
         </div>
       )}
 
-      <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 flex items-center justify-between">
-        <div className="relative w-80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-1">
+        <div className="relative w-full sm:w-80">
           <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-2.5" />
           <input
             type="text"
             placeholder="Buscar docente por nombre, CI o correo..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white"
+            className="w-full bg-neutral-900 border border-neutral-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white"
           />
         </div>
         <span className="text-xs text-neutral-500">
-          Total docentes registrados: <strong className="text-white">{docentesFiltrados.length}</strong>
+          Mostrando <strong className="text-white">{docentesFiltrados.length === 0 ? 0 : (page - 1) * PER_PAGE + 1}-{Math.min(page * PER_PAGE, docentesFiltrados.length)}</strong> de <strong className="text-white">{docentesFiltrados.length}</strong> docentes
         </span>
       </div>
 
@@ -297,7 +307,7 @@ export default function DocentesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800 text-neutral-300">
-              {docentesFiltrados.map((doc) => (
+              {docentesPaginados.map((doc) => (
                 <tr key={doc.id_docente} className="hover:bg-neutral-800/30 transition">
                   <td className="p-3">
                     <div className="font-bold text-white text-sm">
@@ -343,8 +353,35 @@ export default function DocentesPage() {
                   </td>
                 </tr>
               ))}
+              {docentesPaginados.length === 0 && !loading && (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-neutral-500">
+                    No se encontraron docentes con los filtros seleccionados.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
+        </div>
+
+        <div className="flex items-center justify-between p-3 border-t border-neutral-800 text-xs text-neutral-400">
+          <span>Página {page} de {totalPages} &bull; {docentesFiltrados.length} registros</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="p-1.5 rounded bg-neutral-800 hover:bg-neutral-700 disabled:opacity-40 text-white"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+              className="p-1.5 rounded bg-neutral-800 hover:bg-neutral-700 disabled:opacity-40 text-white"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 

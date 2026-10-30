@@ -291,17 +291,17 @@ export default function EstudiantesPage() {
         </div>
       )}
 
-      <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 space-y-3">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2 w-full md:w-auto">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 py-1 text-xs">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {(['TODOS', 'MILITAR', 'CIVIL'] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => { setFiltroTipo(t); setPage(1); }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                   filtroTipo === t
-                    ? 'bg-sky-600 text-white shadow-sm'
-                    : 'bg-neutral-950 text-neutral-400 hover:text-white border border-neutral-800'
+                    ? 'bg-sky-600 text-white shadow-xs'
+                    : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
                 }`}
               >
                 {t === 'TODOS' ? 'Todos' : t === 'MILITAR' ? 'Militares (FFAA)' : 'Civiles'}
@@ -309,15 +309,50 @@ export default function EstudiantesPage() {
             ))}
           </div>
 
-          <form onSubmit={handleBuscar} className="flex items-center gap-2 w-full md:w-80">
+          <div className="h-4 w-px bg-neutral-800 hidden sm:block mx-1" />
+
+          <select
+            value={filtroIdioma}
+            onChange={(e) => { setFiltroIdioma(e.target.value); setPage(1); }}
+            className="bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-1.5 text-white"
+          >
+            <option value="">Todos los Idiomas</option>
+            {idiomasDisponibles.map((i) => (
+              <option key={i} value={i}>{i}</option>
+            ))}
+          </select>
+
+          <select
+            value={filtroParalelo}
+            onChange={(e) => { setFiltroParalelo(e.target.value); setPage(1); }}
+            className="bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-1.5 text-white"
+          >
+            <option value="">Todos los Cursos/Paralelos</option>
+            {paralelosDisponibles.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
+
+          {(filtroIdioma || filtroParalelo || busqueda) && (
+            <button
+              onClick={() => { setFiltroIdioma(''); setFiltroParalelo(''); setBusqueda(''); setPage(1); }}
+              className="text-sky-400 hover:text-sky-300 text-xs font-medium underline px-1"
+            >
+              Limpiar
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3">
+          <form onSubmit={handleBuscar} className="flex items-center gap-2 w-full sm:w-72">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-2.5 top-2" />
               <input
                 type="text"
-                placeholder="Buscar por CI, nombre o apellido..."
+                placeholder="Buscar por CI, nombre..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-neutral-500"
+                className="w-full bg-neutral-900 border border-neutral-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-neutral-500"
               />
             </div>
             <button
@@ -327,42 +362,8 @@ export default function EstudiantesPage() {
               Buscar
             </button>
           </form>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-neutral-800/60 text-xs">
-          <span className="text-neutral-400 flex items-center gap-1 font-medium">
-            <Filter className="w-3.5 h-3.5" /> Filtrar por:
-          </span>
-          <select
-            value={filtroIdioma}
-            onChange={(e) => { setFiltroIdioma(e.target.value); setPage(1); }}
-            className="bg-neutral-950 border border-neutral-800 rounded-lg px-2.5 py-1 text-white"
-          >
-            <option value="">Todos los Idiomas</option>
-            {idiomasDisponibles.map((i) => (
-              <option key={i} value={i}>{i}</option>
-            ))}
-          </select>
-          <select
-            value={filtroParalelo}
-            onChange={(e) => { setFiltroParalelo(e.target.value); setPage(1); }}
-            className="bg-neutral-950 border border-neutral-800 rounded-lg px-2.5 py-1 text-white"
-          >
-            <option value="">Todos los Cursos/Paralelos</option>
-            {paralelosDisponibles.map((p) => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
-          {(filtroIdioma || filtroParalelo || busqueda) && (
-            <button
-              onClick={() => { setFiltroIdioma(''); setFiltroParalelo(''); setBusqueda(''); setPage(1); }}
-              className="text-sky-400 hover:text-sky-300 text-xs font-medium underline"
-            >
-              Limpiar Filtros
-            </button>
-          )}
-          <span className="ml-auto text-neutral-500 text-[11px]">
-            Total registros: <strong className="text-white">{total}</strong>
+          <span className="text-neutral-500 text-[11px] whitespace-nowrap hidden md:inline">
+            Total: <strong className="text-white">{total}</strong>
           </span>
         </div>
       </div>

@@ -19,9 +19,13 @@ import {
   BookOpen,
   ShieldAlert,
   RefreshCw,
-  Calculator
+  Calculator,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
+
+const PER_PAGE = 10;
 
 interface AlumnoCalificacion {
   id_inscripcion: number;
@@ -58,6 +62,7 @@ export default function CalificacionesPage() {
 
   const [filtroIdioma, setFiltroIdioma] = useState('');
   const [busqueda, setBusqueda] = useState('');
+  const [page, setPage] = useState(1);
 
   const [modalCalificar, setModalCalificar] = useState(false);
   const [evaluando, setEvaluando] = useState<{
@@ -138,6 +143,10 @@ export default function CalificacionesPage() {
     return paralelos.filter((p) => p.nivel?.programa?.idioma?.nombre_idioma === filtroIdioma);
   }, [paralelos, filtroIdioma]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [busqueda, idParaleloSeleccionado, filtroIdioma]);
+
   const alumnosFiltrados = useMemo(() => {
     if (esEstudiante) {
       return alumnos.filter((a) => a.estudiante.nombre_completo.toLowerCase().includes(usuario.nombre.toLowerCase()) || a.estudiante.ci.includes(usuario.ci.split(' ')[0]));
@@ -149,6 +158,12 @@ export default function CalificacionesPage() {
       a.estudiante.ci.toLowerCase().includes(q)
     );
   }, [alumnos, busqueda, esEstudiante, usuario]);
+
+  const totalPages = Math.max(1, Math.ceil(alumnosFiltrados.length / PER_PAGE));
+  const alumnosPaginados = useMemo(() => {
+    const start = (page - 1) * PER_PAGE;
+    return alumnosFiltrados.slice(start, start + PER_PAGE);
+  }, [alumnosFiltrados, page]);
 
   const notaCalculadaPonderada = useMemo(() => {
     const e = parseFloat(formNotas.examen.toString()) || 0;
@@ -267,14 +282,14 @@ export default function CalificacionesPage() {
       )}
 
       {!esEstudiante && (
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-3 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 py-1 text-xs">
+          <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5">
               <span className="text-neutral-400 font-semibold">Idioma:</span>
               <select
                 value={filtroIdioma}
                 onChange={(e) => setFiltroIdioma(e.target.value)}
-                className="bg-neutral-950 border border-neutral-700 rounded-lg px-2.5 py-1.5 text-white"
+                className="bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-1.5 text-white"
               >
                 <option value="">Todos los idiomas</option>
                 {idiomasDisponibles.map((i) => (
@@ -288,7 +303,7 @@ export default function CalificacionesPage() {
               <select
                 value={idParaleloSeleccionado}
                 onChange={(e) => setIdParaleloSeleccionado(e.target.value)}
-                className="bg-neutral-950 border border-emerald-500/50 rounded-lg px-3 py-1.5 text-white font-mono font-bold"
+                className="bg-neutral-900 border border-emerald-500/50 rounded-lg px-3 py-1.5 text-white font-mono font-bold"
               >
                 {paralelosFiltrados.map((p) => (
                   <option key={p.id_paralelo} value={p.id_paralelo}>
@@ -299,14 +314,14 @@ export default function CalificacionesPage() {
             </div>
           </div>
 
-          <div className="relative w-full md:w-64">
+          <div className="relative w-full sm:w-64">
             <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-2.5" />
             <input
               type="text"
-              placeholder="Buscar estudiante en acta..."
+              placeholder="Buscar en acta..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full bg-neutral-950 border border-neutral-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white"
+              className="w-full bg-neutral-900 border border-neutral-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white"
             />
           </div>
         </div>
@@ -329,7 +344,7 @@ export default function CalificacionesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800 text-neutral-300">
-              {alumnosFiltrados.map((item) => {
+              {alumnosPaginados.map((item) => {
                 const primerLibro = item.libros_evaluados?.[0];
                 return (
                   <tr key={item.id_inscripcion} className="hover:bg-neutral-800/30 transition">
@@ -420,6 +435,28 @@ export default function CalificacionesPage() {
             </tbody>
           </table>
         </div>
+
+        {alumnosFiltrados.length > PER_PAGE && (
+          <div className="flex items-center justify-between p-3 border-t border-neutral-800 text-xs text-neutral-400 bg-neutral-950/40">
+            <span>Página {page} de {totalPages} ({alumnosFiltrados.length} estudiantes)</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="p-1.5 rounded-lg border border-neutral-800 hover:bg-neutral-800 text-neutral-300 disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                className="p-1.5 rounded-lg border border-neutral-800 hover:bg-neutral-800 text-neutral-300 disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {modalCalificar && evaluando && (

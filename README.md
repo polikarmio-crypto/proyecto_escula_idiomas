@@ -1,6 +1,23 @@
-# 🏛️ Sistema de Gestión Académica — Escuela de Idiomas del Ejército (EIE)
+# 🏛️ Sistema Académico y de Control Administrativo (SACA)
+## Escuela de Idiomas del Ejército (EIE) — Fuerzas Armadas de Bolivia
 
-Sistema integral de gestión académica, control financiero, analítica operativa y métodos numéricos para la **Escuela de Idiomas del Ejército de Bolivia (EIE)**.
+> **Comando de Educación y Doctrina Militar (CEDMIL)**  
+> *"Think Globally, Act Locally — Líderes en la Enseñanza de Idiomas Nativos y Extranjeros"*
+
+Plataforma institucional integral para la administración académica, control financiero en ventanilla bajo disciplina FIFO, gestión de almacén con control de punto de reorden (ROP), analítica matemática e investigación operativa para la **Escuela de Idiomas del Ejército de Bolivia**.
+
+---
+
+## 👥 Equipo de Desarrollo y Distribución de Responsabilidades
+
+El proyecto fue desarrollado bajo una arquitectura modular de 3 capas distribuida de forma técnica y equitativa entre los cuatro integrantes del equipo:
+
+| Integrante | Rol en el Proyecto | Rama Git Asignada | Módulos & Responsabilidades Técnicas | Tecnologías Clave |
+|---|---|---|---|---|
+| **Pablo Medina** | **Lead Architect & Frontend Core** | `Pablo` | • Arquitectura general del sistema y `AppShell` institucional.<br>• Landing Page comercial (`/`) con Misión, Visión, carrusel, filiales, preinscripción y solicitud de correo.<br>• Dashboard central SACA (`/dashboard`) y control multi-rol.<br>• Módulo 1 (Catálogos Base) y Módulo 2 (Estructura Académica).<br>• Sistema de diseño, motor de temas Claro/Oscuro/Contraste y cortinas militares. | Next.js 14, React 18, Tailwind CSS, TypeScript, NextAuth.js |
+| **Arturo** | **Backend Lead & DB Architect** | `Arturo` | • Diseño y normalización de la Base de Datos a 5FN en PostgreSQL.<br>• 11 migraciones DDL con índices parciales y triggers PL/pgSQL.<br>• API REST Laravel: `EstudianteController`, `DocenteController`, `ParaleloController`, `InscripcionController`.<br>• Reglas de negocio militares: Rotación quincenal de docentes (≤15 días) y expediente civil vs militar.<br>• Vistas frontend: `/estudiantes`, `/docentes`, `/paralelos`, `/inscripciones`. | Laravel 12, PHP 8.2 FPM, PostgreSQL 16, Eloquent ORM |
+| **Ricardo** | **Financial & Operations Lead** | `Ricardo` | • Módulo 8: Cajas y Recaudaciones con cola FIFO y llamada de turnos (`CajaPagoController`, vista `/cajas`).<br>• Módulo 9: Almacén de Textos Oficiales ALC, inventario y control ROP (`AlmacenController`, vista `/almacen`).<br>• Módulo 7: Calificaciones bajo Ponderación Militar 80/10/10 (`CalificacionController`, vista `/calificaciones`).<br>• Modelos financieros y kardex físico de movimientos. | Laravel 12, PostgreSQL 16, Tailwind CSS, UI FIFO / ROP |
+| **Candia** | **Microservices, Analytics & DevOps** | `Candia` | • Microservicio en Java 17 / Quarkus (`quarkus/`): endpoints `/api/analytics/*`.<br>• Implementación estricta de Investigación Operativa H3: Regresión Mínimos Cuadrados, Simplex, Interpolación de Newton y validación oficial Tabla 5.3.<br>• Teoría de Colas M/M/c con fórmula de Erlang-C.<br>• Vista frontend de Analítica (`/metodos-numericos`).<br>• Orquestación Docker Compose, Dockerfiles y scripts de despliegue (`setup.bat`, `setup.sh`). | Java 17+, Quarkus REST, Apache Maven, Docker Compose |
 
 ---
 
@@ -9,7 +26,7 @@ Sistema integral de gestión académica, control financiero, analítica operativ
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                     FRONTEND WEB (Next.js 14 + React 18)               │
-│                 TypeScript, Vanilla CSS, NextAuth.js                   │
+│                 TypeScript, Tailwind CSS, NextAuth.js                  │
 │                              Puerto: 3000                              │
 └───────────────────▲─────────────────────────────────▲───────────────────┘
                     │                                 │
@@ -17,7 +34,7 @@ Sistema integral de gestión académica, control financiero, analítica operativ
                     ▼                                 ▼
 ┌───────────────────────────────────────┐ ┌───────────────────────────────┐
 │       BACKEND CORE (Laravel 12)       │ │  MICROSERVICIO IO (Quarkus)   │
-│   PHP 8.2 FPM, Eloquent ORM, Sanctum │ │     Java 17+, Quarkus REST    │
+│   PHP 8.2 FPM, Eloquent ORM, Sanctum  │ │     Java 17+, Quarkus REST    │
 │   Reglas de Negocio, FIFO, Almacén    │ │ Teoría Colas M/M/c, Métodos   │
 │              Puerto: 8000             │ │ Numéricos    Puerto: 8080     │
 └───────────────────▲───────────────────┘ └───────────────▲───────────────┘
@@ -26,8 +43,8 @@ Sistema integral de gestión académica, control financiero, analítica operativ
                     ▼                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                    BASE DE DATOS (PostgreSQL 16)                       │
-│            Normalizada hasta 5FN, Extensiones pg_trgm, UUID           │
-│            Índices Parciales, Vistas Materializadas/Performantes       │
+│            Normalizada hasta 5FN, Extensiones pg_trgm, UUID             │
+│            Índices Parciales, Vistas Materializadas y Triggers         │
 │                              Puerto: 5432                              │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -36,385 +53,259 @@ Sistema integral de gestión académica, control financiero, analítica operativ
 
 ## 📋 Requisitos Previos
 
-| Herramienta | Versión Mínima | Uso |
-|---|---|---|
-| **Docker Desktop** | 4.x+ | Contenedores de PostgreSQL y Backend Laravel |
-| **Node.js** | 18.x+ | Frontend Next.js |
-| **npm** | 9.x+ | Gestor de paquetes del frontend |
-| **Java JDK** | 17+ (probado con 25) | Microservicio Quarkus |
-| **Apache Maven** | 3.9+ | Compilación y ejecución de Quarkus |
+Antes de ejecutar el sistema, asegúrate de tener instalado en tu equipo:
 
-> **Nota:** El backend Laravel corre dentro de un contenedor Docker, **no necesitas PHP instalado** en tu máquina local.
+| Herramienta | Versión Mínima | Uso en el Sistema |
+|---|---|---|
+| **Docker Desktop** | 4.x+ (con Docker Compose v2) | Contenedor de PostgreSQL 16 y Backend Laravel 12 |
+| **Node.js** | 18.x+ (LTS recomendado 20.x) | Ejecución del Frontend Next.js |
+| **npm** | 9.x+ | Gestor de dependencias del frontend |
+| **Java JDK** | 17+ (probado con JDK 21 / 25) | Microservicio de Analítica Quarkus |
+| **Apache Maven** | 3.9+ | Compilación y ejecución de Quarkus (`mvn`) |
+| **Git** | 2.x+ | Control de versiones |
+
+> 💡 **Nota importante:** El backend Laravel corre 100% dentro de un contenedor Docker que ya incluye PHP 8.2-FPM, extensiones PostgreSQL (`pdo_pgsql`) y Composer. **No necesitas tener PHP ni Composer instalados en tu máquina anfitriona**.
 
 ---
 
-## 🚀 Pasos para Ejecutar el Proyecto
+## 🚀 Guía Paso a Paso para Ejecutar el Proyecto
 
-### Paso 1 — Clonar y acceder al proyecto
+### Paso 1: Clonar el Repositorio
+
+Abre tu terminal (PowerShell en Windows o Bash en Linux/macOS) y clona el proyecto:
 
 ```powershell
-git clone <URL_DEL_REPOSITORIO>
-cd proyecto_Idiomas
+git clone https://github.com/polikarmio-crypto/escuelaidiomas_bacarlix.git
+cd escuelaidiomas_bacarlix
 ```
 
-### Paso 2 — Crear archivo de variables de entorno
+*(Si ya tienes la carpeta abierta, sitúate en la raíz del proyecto).*
 
+---
+
+### Paso 2: Configurar las Variables de Entorno
+
+Copia el archivo de configuración base tanto para el entorno general como para el frontend:
+
+**En Windows (PowerShell):**
 ```powershell
-# Windows PowerShell:
 Copy-Item .env.example .env
-
-# Linux / Mac:
-cp .env.example .env
+Copy-Item frontend\.env.example frontend\.env.local
 ```
 
-### Paso 3 — Levantar PostgreSQL + Backend Laravel (Docker)
+**En Linux / macOS:**
+```bash
+cp .env.example .env
+cp frontend/.env.example frontend/.env.local
+```
+
+---
+
+### Paso 3: Iniciar PostgreSQL y Backend con Docker
+
+Levanta los contenedores de la base de datos y del backend en segundo plano:
 
 ```powershell
-cd "f:\Pablo Medina\proyecto_Idiomas"
 docker compose up -d postgres backend
 ```
 
-Esto levanta:
-- **eie_postgres** — Base de datos PostgreSQL 16 en el puerto `5432`
-- **eie_backend** — API REST Laravel 12 en el puerto `8000`
-
-Verificar que estén corriendo:
+Verifica que ambos contenedores estén activos y saludables:
 
 ```powershell
 docker compose ps
 ```
 
-Deberías ver ambos contenedores en estado `Up` / `Healthy`.
+Deberás observar:
+- `eie_postgres` en el puerto `5432` (Estado: `Up (healthy)`)
+- `eie_backend` en el puerto `8000` (Estado: `Up`)
 
-### Paso 4 — Ejecutar migraciones y seeders (primera vez)
+---
+
+### Paso 4: Ejecutar Migraciones y Carga Inicial de Datos (Seeders)
+
+Ejecuta el siguiente comando dentro del contenedor de Laravel para estructurar la base de datos y poblarla con más de 450 registros de prueba (estudiantes, docentes, paralelos, notas, inventario de libros y cajas):
 
 ```powershell
 docker compose exec backend php artisan migrate:fresh --seed
 ```
 
-> Esto crea las 28 tablas, triggers, índices, vistas y carga **450+ registros de prueba** (estudiantes, docentes, paralelos, inscripciones, pagos, etc.).
+> **Verificación del Backend:**  
+> Puedes comprobar que la API responde ingresando en tu navegador a:  
+> `http://localhost:8000/api/v1/health`  
+> O mediante terminal:
+> ```powershell
+> curl http://localhost:8000/api/v1/health
+> ```
+> Deberá responder: `{"status":"OK","service":"Escuela de Idiomas del Ejército - API", ...}`
 
-### Paso 5 — Verificar que la API funciona
+---
 
-```powershell
-curl http://localhost:8000/api/v1/health
-```
+### Paso 5: Instalar y Levantar el Frontend (Next.js)
 
-Respuesta esperada:
-```json
-{
-  "status": "OK",
-  "service": "Escuela de Idiomas del Ejército - API",
-  "timestamp": "..."
-}
-```
-
-### Paso 6 — Levantar el Frontend (Next.js)
+Abre una **segunda pestaña o ventana de terminal**:
 
 ```powershell
-cd "f:\Pablo Medina\proyecto_Idiomas\frontend"
-npm install      # Solo la primera vez
+cd frontend
+npm install
 npm run dev
 ```
 
-El frontend estará disponible en: **http://localhost:3000**
+El portal estará disponible inmediatamente en tu navegador:
+🌐 **http://localhost:3000**
 
-### Paso 7 — Levantar el Microservicio Quarkus (Opcional — Métodos Numéricos & IO)
+- **Ruta `/`**: Landing Page institucional con Misión, Visión, oferta de 36 libros ALC, 9 filiales, preinscripción online y solicitud de correo institucional `@idiomas.ejercito.mil.bo`.
+- **Ruta `/dashboard`**: Plataforma académica SACA para ingreso de usuarios autorizados.
+
+---
+
+### Paso 6: Levantar el Microservicio Quarkus (Analítica y Métodos Numéricos)
+
+Abre una **tercera pestaña de terminal** para iniciar el motor matemático:
 
 ```powershell
-cd "f:\Pablo Medina\proyecto_Idiomas\quarkus"
+cd quarkus
 mvn quarkus:dev
 ```
 
-> **Nota:** Usa `mvn` directamente (Maven global), **NO** `./mvnw` ya que el wrapper puede dar problemas en Windows.
-
-El microservicio estará disponible en: **http://localhost:8080**
-
----
-
-## 🔑 Cuentas de Prueba — Acceso por Roles (Diagrama de Clases UML, pág. 24)
-
-El sistema implementa estrictamente los **6 roles de actores institucionales** del diseño UML:
-
-### Login por Email Institucional (Modo Demo)
-
-En la pantalla de login, haz clic en **"Ingreso con Email Institucional"** e ingresa uno de los siguientes correos. El sistema detecta el rol automáticamente por el prefijo:
-
-| Rol Institucional | Email de Prueba | PIN | Módulos del Sistema Habilitados |
-|---|---|---|---|
-| 🔴 **Administrador del Sistema** | `admin@ejercito.mil.bo` | `9999` | **Módulo 1: Catálogos Base** (`/catalogos`), Dashboard y Auditoría general. |
-| 🔵 **Jefe Académico** | `jefe.academico@ejercito.mil.bo` | `5050` | **Módulo 2:** Estructura Académica (`/estructura`)<br>**Módulo 3:** Docentes (`/docentes`)<br>**Módulo 4:** Estudiantes (`/estudiantes`)<br>**Módulo 5:** Paralelos (`/paralelos`)<br>**Módulo 6:** Inscripciones (`/inscripciones`)<br>**Módulo 7:** Supervisión de Calificaciones (`/calificaciones`)<br>**IO:** Métodos Numéricos (`/metodos-numericos`) |
-| 🟢 **Docente / Catedrático** | `doc.rios@ejercito.mil.bo` | `1010` | **Módulo 5:** Consulta de paralelos asignados (`/paralelos`)<br>**Módulo 7:** Registro de notas por libro 80/10/10 (`/calificaciones`) |
-| 🟡 **Cajero / Ventanilla** | `cajero@ejercito.mil.bo` | `3030` | **Módulo 8:** Cajas y Recaudaciones (`/cajas` - llamada FIFO, cobro de matrículas/mensualidades/libros y emisión de comprobantes) |
-| 🩷 **Encargado de Almacén** | `almacen@ejercito.mil.bo` | `4040` | **Módulo 9:** Almacén e Inventario de Libros (`/almacen` - stock físico, movimientos de entrada/salida, control de ROP y pedidos de reposición) |
-| 🔷 **Estudiante (Civil / Militar)** | `est.mamani@ejercito.mil.bo` | _(sin PIN)_ | **Módulo 6:** Consulta de cursos matriculados (`/inscripciones`)<br>**Módulo 7:** Consulta de notas y avance libro a libro (`/calificaciones`)<br>**Módulo 8:** Solicitud de ficha de atención digital para caja (`/cajas`) |
-
-### Matriz de Permisos por Rol — Módulos Accesibles (Casos de Uso 11.1 a 11.9)
-
-| Módulo del Sistema | Caso de Uso | Administrador | Jefe Académico | Docente | Cajero | Encargado Almacén | Estudiante |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Dashboard** | General | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **1. Catálogos Base** | CU 11.1 | ✅ (Exclusivo) | — | — | — | — | — |
-| **2. Estructura Académica** | CU 11.2 | — | ✅ (Exclusivo) | — | — | — | — |
-| **3. Docentes & Rotación** | CU 11.3 | — | ✅ | — | — | — | — |
-| **4. Estudiantes (Expedientes)** | CU 11.4 | — | ✅ | — | — | — | — |
-| **5. Paralelos & Asignación** | CU 11.5 | — | ✅ (Crea/Asigna) | 👁️ (Consulta) | — | — | — |
-| **6. Inscripciones & Avance** | CU 11.6 | — | ✅ (Inscribe) | — | — | — | 👁️ (Consulta) |
-| **7. Calificaciones (80/10/10)** | CU 11.7 | — | ✅ (Examen Nivel) | ✅ (Califica Libros) | — | — | 👁️ (Consulta) |
-| **8. Cajas & Recaudaciones** | CU 11.8 | — | — | — | ✅ (Cobra/Atiende) | — | 🎟️ (Saca Ficha) |
-| **9. Almacén & ROP** | CU 11.9 | — | — | — | — | ✅ (Exclusivo) | — |
-| **Métodos Numéricos & IO** | Analítica | — | ✅ | — | — | — | — |
+El microservicio estará disponible en:
+🌐 **http://localhost:8080**  
+- Validación H3: `http://localhost:8080/api/analytics/prediccion-rendimiento/validacion-h3`
 
 ---
 
-## 🎯 Reglas de Negocio Académicas y Militares
+## 🔑 Cuentas de Acceso y Roles Institucionales (Modo Demo)
 
-### 1. Rotación Docente Quincenal (≤ 15 días)
-Los docentes en aula no deben permanecer más de 15 días continuos en un mismo paralelo.
-- Endpoint de alertas: `GET /api/v1/docentes/alertas/rotacion`
-- Algoritmo de asignación óptima: `POST /api/analytics/asignacion-optima` (Quarkus)
+El sistema cuenta con un conmutador de roles en el encabezado y en el modal de login. Para ingresar a cualquiera de los roles, pulsa en **"Ingreso con Email Institucional"** o usa las siguientes credenciales:
 
-### 2. Fórmula de Evaluación Ponderada Militar (80 / 10 / 10)
-- **Examen Teórico / Práctico:** 80%
-- **Defensa Oral / Speaking:** 10%
-- **Participación y Disciplina:** 10%
-- **Nota Mínima de Aprobación:** **71.0 / 100 puntos**
-
-### 3. Subtipo de Estudiantes (Civiles vs. Militares)
-- **Civiles:** Cédula de Identidad, datos particulares, arancel regular.
-- **Militares:** Registro complementario con Grado Militar, Unidad Militar y Código Institucional.
+| Rol Institucional | Email Institucional | PIN de Seguridad | Módulos y Funciones Habilitadas |
+|---|---|:---:|---|
+| 🔴 **Administrador del Sistema** | `admin@ejercito.mil.bo` | `9999` | **Módulo 1: Catálogos Base** (`/catalogos`), Dashboard global, auditoría y control de usuarios. |
+| 🔵 **Jefe Académico** | `jefe.academico@ejercito.mil.bo` | `5050` | **Módulos 2 al 6:** Estructura Académica (`/estructura`), Docentes y Rotación (`/docentes`), Estudiantes (`/estudiantes`), Paralelos (`/paralelos`), Inscripciones (`/inscripciones`), Supervisión de Notas (`/calificaciones`) y Analítica H3 (`/metodos-numericos`). |
+| 🟢 **Docente Catedrático** | `doc.rios@ejercito.mil.bo` | `1010` | **Módulo 5:** Mis Paralelos asignados.<br>**Módulo 7:** Registro de notas por libro bajo fórmula militar 80/10/10. |
+| 🟡 **Cajero / Ventanilla** | `cajero@ejercito.mil.bo` | `3030` | **Módulo 8: Cajas y Recaudaciones** (`/cajas`) — Atención por orden FIFO, llamada de turnos, cobro de matrículas y emisión de boletas. |
+| 🩷 **Encargado de Almacén** | `almacen@ejercito.mil.bo` | `4040` | **Módulo 9: Almacén de Libros** (`/almacen`) — Control de stock ALC, kardex de entregas, punto de reorden (ROP) y reposición. |
+| 🔷 **Estudiante (Civil / Militar)** | `est.mamani@ejercito.mil.bo` | *(Sin PIN)* | Consulta de cursos inscritos, avance libro a libro, notas acumuladas y solicitud de ficha de atención digital para ventanilla. |
 
 ---
 
-## ⏱️ Módulo de Cajas: Disciplina FIFO y Teoría de Colas (M/M/c)
+## 🎖️ Reglas de Negocio Militares y Académicas Implementadas
 
-- **FIFO (First In, First Out):** Fichas emitidas con marca de tiempo exacta.
-- **Métricas Operativas Diarias:** λ (tasa de llegada), μ (tasa de servicio), c (ventanillas), ρ (utilización), Lq (largo de cola), Wq (tiempo de espera).
-- **Quarkus:** Cálculo analítico de la Fórmula C de Erlang con `POST /api/analytics/teoria-colas/mmc`.
+1. **Rotación Docente Quincenal (≤ 15 días):**  
+   Por doctrina militar pedagógica, ningún docente imparte clases de forma ininterrumpida por más de 15 días a un mismo paralelo, garantizando la adaptación fonética del estudiante. El sistema emite alertas automáticas en `GET /api/v1/docentes/alertas/rotacion`.
+
+2. **Evaluación Ponderada Militar (Fórmula 80 / 10 / 10):**  
+   - **Examen Teórico / Práctico Escrito:** 80%  
+   - **Defensa Oral (Speaking):** 10%  
+   - **Participación y Disciplina en Aula:** 10%  
+   - **Nota Mínima de Aprobación:** **71.0 / 100 puntos**. Si la nota es inferior a 71, el estudiante no es promovido al siguiente libro.
+
+3. **Subtipo de Estudiantes:**  
+   - **Civil:** C.I., expedido, contacto particular y arancel regular.  
+   - **Militar:** Registro de Grado Militar, Unidad Militar de destino y Código de Escalafón.
+
+4. **Disciplina FIFO en Cajas (First In, First Out):**  
+   Las fichas de turno se encolan con marca de tiempo precisa. No se atiende fuera de orden cronológico.
+
+5. **Punto de Reorden en Almacén (ROP):**  
+   Alerta automática cuando el inventario físico de un libro ALC desciende por debajo del stock mínimo calculado por la demanda del paralelo.
 
 ---
 
-## 📦 Módulo de Almacén: Control ROP
+## 📊 Métodos Numéricos & Investigación Operativa (H3)
 
-- **ROP (Reorder Point):** Punto de reorden calculado por consumo promedio.
-- **Alertas Automáticas:** `GET /api/v1/almacen/alertas-rop`
-- **Kardex Físico:** Movimientos auditados (Entrada, Salida, Ajuste).
+Siguiendo el pliego de especificaciones **H3 - Proyecto Semestral de Métodos Numéricos e Investigación Operativa**:
 
----
-
-## 📊 Módulo de Métodos Numéricos & Investigación Operativa (H3 MN)
-
-Implementa la suite matemática institucional tanto en el microservicio reactivo **Quarkus** (`/api/analytics/*`) como en el core **Laravel** (`/api/v1/metodos-numericos/*`), siguiendo las especificaciones del documento **H3 - Proyecto Semestral MN**:
-
-| Método / Modelo | Base Matemática | Aplicación en la Escuela de Idiomas |
+| Método | Base Matemática | Aplicación Práctica en la EIE |
 |---|---|---|
-| **Predicción de Rendimiento & Deserción (H3)** | Mínimos Cuadrados $\hat{y} = ax + b$, proyección a exámenes de nivel $x_p \in \{6, 12, 18, 24, 30, 36\}$ y regla $R(x_p)$ (Eq. 4.11) | Alerta temprana al Jefe Académico: clasificación de riesgo **ALTO** ($\hat{y}_p < 51$ o $a < -3.0$), **MEDIO** ($51 \le \hat{y}_p < 65$ o $-3.0 \le a < 0$) y **BAJO** ($\hat{y}_p \ge 65$ y $a \ge 0$). Recálculo por lotes al cierre de rotación docente (Fig. 5.4). |
-| **Mínimos Cuadrados General** | Minimización de diferencias al cuadrado $SSE = \sum (y_i - \hat{y}_i)^2$, $R^2$, Pearson $r$ | Proyección de demanda de textos en Almacén y tendencia de matrículas anuales. |
-| **Interpolación de Newton** | Polinomio en Diferencias Divididas $P(x) = f[x_0] + \sum f[x_0,\dots,x_k] \prod (x - x_j)$ | Estimación de calificaciones intermedias sin presuponer linealidad estricta. |
-| **Programación Lineal Simplex** | Método Simplex estándar en forma canónica (maximización con holguras) | Asignación óptima de carga horaria en aulas y laboratorios de idiomas. |
-| **Teoría de Colas M/M/c (FIFO)** | Modelo multiservidor markoviano con fórmula Erlang-C | Optimización de ventanillas de Caja en periodo de matrículas para reducir tiempos de espera $W_q$. |
-
-### Caso de Validación Oficial H3 (Tabla 5.3 del Documento)
-
-El microservicio y el frontend integran la verificación exacta de la Tabla 5.3:
-- **Entrada:** Calificaciones de libros 1 al 6: `{78, 74, 75, 68, 66, 61}`
-- **Coeficientes obtenidos:** $a \approx -3.3143$ pts/libro, $b \approx 81.9333$, $R^2 \approx 0.9362$ (ajuste fuerte)
-- **Proyección al Examen de Nivel 2 ($x_p = 12$):** $\hat{y}_{12} = 42.16$ puntos
-- **Clasificación de Riesgo:** **ALTO** ($\hat{y}_{12} < 51$ y $a < -3.0$) $\to$ Requiere intervención pedagógica inmediata del Jefe Académico antes del examen.
+| **Predicción de Rendimiento H3** | Mínimos Cuadrados $\hat{y} = ax + b$ proyectado a exámenes de nivel $x_p \in \{6, 12, 18, 24, 30, 36\}$ | Clasificación preventiva de riesgo de deserción en tres niveles: **ALTO** ($\hat{y} < 51$), **MEDIO** ($51 \le \hat{y} < 65$) y **BAJO** ($\hat{y} \ge 65$). |
+| **Validación Oficial H3 (Tabla 5.3)** | Datos de entrada: `{78, 74, 75, 68, 66, 61}` | Coeficientes exactos: $a \approx -3.314$, $b \approx 81.933$, $R^2 \approx 0.936$. Proyección libro 12: $\hat{y}_{12} = 42.16$ (Alerta de Riesgo Alto). |
+| **Interpolación de Newton** | Polinomio de diferencias divididas | Estimación de calificaciones intermedias sin presuponer linealidad. |
+| **Programación Lineal Simplex** | Algoritmo Simplex primal maximizador con variables de holgura | Asignación óptima de carga horaria en laboratorios y aulas climatizadas. |
+| **Teoría de Colas M/M/c** | Distribución de Poisson y tiempos de servicio exponenciales con fórmula C de Erlang | Dimensionamiento óptimo de ventanillas de cobro en periodo de matriculación. |
 
 ---
 
-## 🗄️ Base de Datos Normalizada (5FN)
+## 🛠️ Comandos de Mantenimiento Frecuentes
 
-Estructurada en **11 migraciones** cubriendo 28+ tablas con integridad referencial completa:
-
-- Tablas base del dominio académico, militar, financiero y almacén
-- Tabla `usuario` con control multi-rol y tabla `log_auditoria` con payloads JSON
-- Índices parciales especializados:
-  - `idx_ficha_cola_fifo`: FIFO por antigüedad de llegada
-  - `idx_inscripcion_activa`: Inscripciones vigentes
-  - `idx_asig_docente_activa`: Rotación de docentes activos
-  - `idx_pedido_rep_pendiente`: Pedidos de almacén pendientes
-- Vistas SQL de alto rendimiento para métricas de cola, stock y rotación docente
-- Triggers PL/pgSQL para validación automática de ponderaciones militares
-
----
-
-## 📋 Catálogo de Endpoints REST API
-
-### Laravel (`/api/v1`)
-
-| Grupo | Método | Endpoint | Descripción |
-|---|---|---|---|
-| **Sistema** | `GET` | `/api/v1/health` | Verificación de estado |
-| **Auth** | `POST` | `/api/v1/auth/login` | Login con email y contraseña |
-| **Auth** | `GET` | `/api/v1/auth/usuarios` | Lista de usuarios y roles |
-| **Dashboard** | `GET` | `/api/v1/dashboard` | Métricas consolidadas |
-| **Catálogos** | `GET` | `/api/v1/catalogos` | Gestiones, idiomas, aulas, horarios |
-| **Estructura** | `GET` | `/api/v1/estructura/programas` | Árbol curricular |
-| **Estudiantes** | `GET` | `/api/v1/estudiantes` | Listado con filtros por tipo |
-| **Estudiantes** | `POST` | `/api/v1/estudiantes` | Registrar nuevo estudiante |
-| **Estudiantes** | `GET` | `/api/v1/estudiantes/{id}` | Ficha completa |
-| **Estudiantes** | `PUT` | `/api/v1/estudiantes/{id}` | Actualizar estudiante |
-| **Estudiantes** | `DELETE` | `/api/v1/estudiantes/{id}` | Baja lógica (soft delete) |
-| **Docentes** | `GET` | `/api/v1/docentes` | Listado de docentes |
-| **Docentes** | `POST` | `/api/v1/docentes` | Registrar docente |
-| **Docentes** | `GET` | `/api/v1/docentes/alertas/rotacion` | Alertas de rotación ≥15 días |
-| **Docentes** | `POST` | `/api/v1/docentes/rotar` | Rotar docente a nuevo paralelo |
-| **Paralelos** | `GET` | `/api/v1/paralelos` | Listado con cupos y horarios |
-| **Paralelos** | `POST` | `/api/v1/paralelos` | Crear paralelo |
-| **Inscripciones** | `GET` | `/api/v1/inscripciones` | Listado de inscritos |
-| **Inscripciones** | `POST` | `/api/v1/inscripciones` | Inscribir estudiante |
-| **Calificaciones** | `GET` | `/api/v1/calificaciones/paralelo/{id}` | Centralizador de notas |
-| **Calificaciones** | `POST` | `/api/v1/calificaciones/libro` | Registrar nota (80/10/10) |
-| **Calificaciones** | `POST` | `/api/v1/calificaciones/examen-nivel` | Examen de suficiencia |
-| **Cajas** | `GET` | `/api/v1/cajas` | Estado de ventanillas |
-| **Cajas** | `GET` | `/api/v1/cajas/cola-fifo` | Cola FIFO ordenada |
-| **Cajas** | `GET` | `/api/v1/cajas/metricas` | Indicadores M/M/c del día |
-| **Cajas** | `POST` | `/api/v1/cajas/ficha` | Emitir ticket FIFO |
-| **Cajas** | `POST` | `/api/v1/cajas/ficha/llamar` | Llamar siguiente en cola |
-| **Cajas** | `POST` | `/api/v1/cajas/ficha/finalizar` | Finalizar turno |
-| **Cajas** | `POST` | `/api/v1/cajas/pago` | Registrar pago |
-| **Cajas** | `GET` | `/api/v1/cajas/pagos` | Historial de pagos |
-| **Almacén** | `GET` | `/api/v1/almacen/stock` | Stock actual y ROP |
-| **Almacén** | `GET` | `/api/v1/almacen/alertas-rop` | Libros bajo ROP |
-| **Almacén** | `POST` | `/api/v1/almacen/movimiento` | Movimiento de kardex |
-| **Almacén** | `GET` | `/api/v1/almacen/kardex/{id}` | Historial de un libro |
-| **Almacén** | `GET` | `/api/v1/almacen/pedidos` | Pedidos de reposición |
-| **Almacén** | `POST` | `/api/v1/almacen/pedidos` | Solicitar reposición |
-| **Almacén** | `PUT` | `/api/v1/almacen/pedidos/{id}/recibir` | Recepcionar lote |
-| **Métodos Num.** | `POST` | `/api/v1/metodos-numericos/minimos-cuadrados` | Regresión lineal + SSE |
-| **Métodos Num.** | `POST` | `/api/v1/metodos-numericos/interpolacion-newton` | Diferencias divididas |
-| **Métodos Num.** | `POST` | `/api/v1/metodos-numericos/simplex` | Programación lineal |
-| **H3 Predictivo** | `POST` | `/api/v1/metodos-numericos/prediccion-rendimiento` | Predicción individual H3 y riesgo de deserción |
-| **H3 Predictivo** | `GET` | `/api/v1/metodos-numericos/prediccion-rendimiento/validacion-h3` | Caso oficial Tabla 5.3 ($a=-3.314$, $R^2=0.936$) |
-| **H3 Predictivo** | `POST` | `/api/v1/metodos-numericos/prediccion-rendimiento/lote` | Recálculo por lotes al cierre de rotación |
-
-### Quarkus (`/api/analytics`)
-
-| Método | Endpoint | Descripción |
-|---|---|---|
-| `GET` | `/api/analytics/status` | Estado del microservicio (versión 3.0.0-H3) |
-| `POST` | `/api/analytics/prediccion-rendimiento` | Predicción de rendimiento y clasificación de riesgo H3 |
-| `GET` | `/api/analytics/prediccion-rendimiento/validacion-h3` | Caso de validación Tabla 5.3 del H3 |
-| `POST` | `/api/analytics/prediccion-rendimiento/lote` | Recálculo masivo por lotes (Figura 5.4) |
-| `POST` | `/api/analytics/asignacion-optima` | Asignación óptima de docentes |
-| `POST` | `/api/analytics/teoria-colas/mmc` | Análisis M/M/c (Erlang-C) |
-| `POST` | `/api/analytics/minimos-cuadrados` | Mínimos cuadrados (SSE) |
-| `POST` | `/api/analytics/interpolacion-newton` | Interpolación Newton |
-| `POST` | `/api/analytics/simplex` | Método Simplex |
-
----
-
-## 🛠️ Comandos Útiles
-
-### Gestión de Docker
+### Docker y Base de Datos
 
 ```powershell
 # Ver estado de los contenedores
 docker compose ps
 
-# Ver logs del backend
+# Ver registros en tiempo real del backend
 docker compose logs -f backend
 
-# Ver logs de PostgreSQL
-docker compose logs -f postgres
-
-# Detener todos los contenedores
-docker compose down
-
-# Reiniciar los contenedores
+# Reiniciar servicios
 docker compose restart
 
-# Reconstruir contenedores (después de cambios en Dockerfile)
-docker compose up --build -d postgres backend
+# Detener los contenedores
+docker compose down
+
+# Reconstruir contenedores si se modifica un Dockerfile
+docker compose up -d --build postgres backend
 ```
 
-### Comandos Artisan (Laravel) — Ejecutar dentro del contenedor
+### Laravel Artisan (Dentro del Contenedor)
 
 ```powershell
-# Migrar base de datos desde cero con seeders
+# Resetear base de datos completa con seeders
 docker compose exec backend php artisan migrate:fresh --seed
 
-# Solo ejecutar migraciones
-docker compose exec backend php artisan migrate
-
-# Solo ejecutar seeders
-docker compose exec backend php artisan db:seed
-
-# Limpiar caché
-docker compose exec backend php artisan cache:clear
+# Limpiar cachés de configuración y rutas
 docker compose exec backend php artisan config:clear
-
-# Ver rutas registradas
-docker compose exec backend php artisan route:list
+docker compose exec backend php artisan cache:clear
+docker compose exec backend php artisan route:clear
 ```
 
-### Base de Datos PostgreSQL
+### Frontend (Next.js)
 
 ```powershell
-# Acceder al shell de PostgreSQL
-docker compose exec postgres psql -U postgres -d escuela_idiomas
+# Compilar frontend para producción y verificar tipos TypeScript
+npm run build
 
-# Contar registros de una tabla
-docker compose exec postgres psql -U postgres -d escuela_idiomas -c "SELECT COUNT(*) FROM estudiante;"
-
-# Ver todas las tablas
-docker compose exec postgres psql -U postgres -d escuela_idiomas -c "\dt"
+# Ejecutar el servidor de producción compilado
+npm run start
 ```
 
 ---
 
-## 📁 Estructura del Proyecto
+## 🗂️ Estructura del Directorio del Proyecto
 
 ```
 proyecto_Idiomas/
-├── backend/                     # Laravel 12 API REST
-│   ├── app/Http/Controllers/Api/  # Controladores de la API
-│   ├── app/Models/                # Modelos Eloquent
-│   ├── database/migrations/       # 11 migraciones (28+ tablas)
-│   ├── database/seeders/          # Seeders con 450+ registros
-│   ├── routes/api.php             # Definición de rutas REST
-│   └── Dockerfile                 # Imagen Docker PHP 8.2 FPM
-├── frontend/                    # Next.js 14 + React 18
-│   ├── src/app/                   # Páginas (App Router)
-│   │   ├── almacen/               # Módulo de Almacén / ROP
-│   │   ├── cajas/                 # Módulo de Cajas / FIFO
-│   │   ├── calificaciones/        # Módulo de Calificaciones (80/10/10)
-│   │   ├── docentes/              # Módulo de Docentes / Rotación
-│   │   ├── estudiantes/           # Módulo de Estudiantes (CRUD)
-│   │   ├── inscripciones/         # Módulo de Inscripciones
-│   │   ├── metodos-numericos/     # Módulo de Métodos Numéricos & IO
-│   │   ├── paralelos/             # Módulo de Paralelos
-│   │   └── page.tsx               # Dashboard principal
-│   ├── src/components/            # Componentes compartidos
-│   │   └── AppShell.tsx           # Layout principal con roles y navegación
-│   └── .env.local                 # Variables de entorno del frontend
-├── quarkus/                     # Microservicio Java (Quarkus)
-│   ├── src/main/java/.../service/   # Servicios de negocio
-│   │   └── MetodosNumericosService.java
-│   ├── src/main/java/.../resource/  # Endpoints REST
-│   │   └── AnalyticsResource.java
-│   └── pom.xml                      # Dependencias Maven
-├── docker/                      # Configuración Docker
-│   └── postgres/init.sql          # Script de inicialización PG
-├── docker-compose.yml           # Orquestación de 4 servicios
-├── .env.example                 # Template de variables de entorno
-└── README.md                    # Esta documentación
+├── backend/                     # API REST Laravel 12 (PHP 8.2 FPM)
+│   ├── app/Http/Controllers/Api/  # 12 Controladores REST
+│   ├── app/Models/                # 28 Modelos de dominio Eloquent
+│   ├── database/migrations/       # 11 Migraciones DDL en 5FN
+│   ├── database/seeders/          # Poblado de 450+ registros
+│   └── routes/api.php             # Definición de rutas /api/v1
+├── frontend/                    # Portal Web Next.js 14 (App Router)
+│   ├── public/                    # Logotipos oficiales e imágenes
+│   │   ├── images/logos/logo-eie.png
+│   │   └── images/carousel/       # Banners de la Landing Page
+│   ├── src/app/                   # 16 Rutas y vistas completas
+│   │   ├── page.tsx               # Landing Page comercial institucional
+│   │   ├── dashboard/             # Panel de control de roles SACA
+│   │   ├── estudiantes/           # Módulo 4: CRUD Estudiantes
+│   │   ├── docentes/              # Módulo 3: CRUD Docentes y Rotación
+│   │   ├── paralelos/             # Módulo 5: Paralelos y Asignaciones
+│   │   ├── inscripciones/         # Módulo 6: Matriculación
+│   │   ├── calificaciones/        # Módulo 7: Ponderación 80/10/10
+│   │   ├── cajas/                 # Módulo 8: Turnos FIFO y Pagos
+│   │   ├── almacen/               # Módulo 9: Kardex y ROP
+│   │   └── metodos-numericos/     # Suite de Investigación Operativa
+│   └── src/components/            # AppShell con temas y animaciones
+├── quarkus/                     # Microservicio Java 17+ (Quarkus REST)
+│   ├── src/main/java/.../service/ # Servicios matemáticos e IO
+│   └── src/test/java/.../         # Tests unitarios H3
+├── docker-compose.yml           # Orquestación de contenedores
+├── setup.bat                    # Script de inicialización Windows
+└── README.md                    # Documentación técnica integral
 ```
 
 ---
 
-## 🔒 Seguridad
+## 📄 Licencia y Derechos
 
-- **Bajas lógicas (Soft Delete):** Los registros eliminados no se borran físicamente, se marcan con `deleted_at`.
-- **Baja física:** Disponible bajo confirmación explícita del usuario.
-- **Auditoría completa:** Tabla `log_auditoria` con estampas de tiempo, IP y snapshots JSON.
-- **PINs de seguridad:** Cada rol (excepto Estudiante) requiere PIN para cambio de contexto.
-- **Autenticación dual:** Google OAuth (producción) y Login Demo Institucional (desarrollo).
-
----
-
-## 📄 Licencia y Uso Institucional
-
-Desarrollado para uso exclusivo del **Ejército de Bolivia** y la **Escuela de Idiomas del Ejército (EIE)**.
+Desarrollado para la **Escuela de Idiomas del Ejército (EIE)** bajo la tuición del **Comando de Educación y Doctrina Militar (CEDMIL)**, Estado Plurinacional de Bolivia.

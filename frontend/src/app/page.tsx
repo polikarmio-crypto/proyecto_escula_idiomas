@@ -35,9 +35,15 @@ export default function IndexPage() {
       if (saved === 'dark' || saved === 'light') {
         setTheme(saved);
         document.documentElement.setAttribute('data-theme', saved);
+        if (saved === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
       } else {
         setTheme('light');
         document.documentElement.setAttribute('data-theme', 'light');
+        document.documentElement.classList.remove('dark');
       }
     } catch (e) {
       setTheme('light');
@@ -50,6 +56,11 @@ export default function IndexPage() {
     try {
       localStorage.setItem('eie_theme', nuevo);
       document.documentElement.setAttribute('data-theme', nuevo);
+      if (nuevo === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
     } catch (e) {}
   };
 

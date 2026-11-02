@@ -168,6 +168,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem('eie_theme', nuevoTema);
       document.documentElement.setAttribute('data-theme', nuevoTema);
+      if (nuevoTema === 'dark' || nuevoTema === 'high-contrast') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
     } catch (e) {}
   };
 
@@ -226,6 +231,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     const root = document.documentElement;
     root.setAttribute('data-theme', theme);
     root.setAttribute('data-font-size', fontSize);
+    if (theme === 'dark' || theme === 'high-contrast') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
   }, [theme, fontSize]);
 
   const handleLoginSubmit = (e: React.FormEvent) => {

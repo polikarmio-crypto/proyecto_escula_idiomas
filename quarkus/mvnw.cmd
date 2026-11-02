@@ -32,7 +32,7 @@
 @SET __MVNW_ERROR__=
 @SET __MVNW_PSMODULEP_SAVE=%PSModulePath%
 @SET PSModulePath=
-@FOR /F "usebackq tokens=1* delims==" %%A IN (`powershell -noprofile "& {$scriptDir='%~dp0teleport'; $defaultRecipe='${__MVNW_CMD__:=mvn}'; try { if ($defaultRecipe -eq 'mvn') {$defaultRecipe=''; foreach($f in @('.mvn/wrapper/maven-wrapper.properties')) {if (Test-Path (Join-Path $scriptDir $f)) {$wrapperProperties=Get-Content (Join-Path $scriptDir $f) -Raw; if ($wrapperProperties -match 'wrapperUrl\s*=\s*(.+?)(\s|$)') {$wrapperUrl=$Matches[1]; break}}}} } catch {$__MVNW_ERROR__=$_}; if ($__MVNW_ERROR__) {'__MVNW_ERROR__='+$__MVNW_ERROR__} else {$distributionUrl=''; foreach($f in @('.mvn/wrapper/maven-wrapper.properties')) {if (Test-Path (Join-Path $scriptDir $f)) {$wrapperProperties=Get-Content (Join-Path $scriptDir $f) -Raw; if ($wrapperProperties -match 'distributionUrl\s*=\s*(.+?)(\s|$)') {$distributionUrl=$Matches[1]; break}}}; if (-not $distributionUrl) {'__MVNW_ERROR__=distributionUrl is not set in any of .mvn/wrapper/maven-wrapper.properties'} else {'__MVNW_CMD__='+$defaultRecipe}}}"`) DO @(
+@FOR /F "usebackq tokens=1* delims==" %%A IN (`powershell -noprofile "& {$scriptDir='%~dp0'; $defaultRecipe='${__MVNW_CMD__:=mvn}'; try { if ($defaultRecipe -eq 'mvn') {$defaultRecipe=''; foreach($f in @('.mvn/wrapper/maven-wrapper.properties')) {if (Test-Path (Join-Path $scriptDir $f)) {$wrapperProperties=Get-Content (Join-Path $scriptDir $f) -Raw; if ($wrapperProperties -match 'wrapperUrl\s*=\s*(.+?)(\s|$)') {$wrapperUrl=$Matches[1]; break}}}} } catch {$__MVNW_ERROR__=$_}; if ($__MVNW_ERROR__) {'__MVNW_ERROR__='+$__MVNW_ERROR__} else {$distributionUrl=''; foreach($f in @('.mvn/wrapper/maven-wrapper.properties')) {if (Test-Path (Join-Path $scriptDir $f)) {$wrapperProperties=Get-Content (Join-Path $scriptDir $f) -Raw; if ($wrapperProperties -match 'distributionUrl\s*=\s*(.+?)(\s|$)') {$distributionUrl=$Matches[1]; break}}}; if (-not $distributionUrl) {'__MVNW_ERROR__=distributionUrl is not set in any of .mvn/wrapper/maven-wrapper.properties'} else {'__MVNW_CMD__='+$defaultRecipe}}}"`) DO @(
   @IF NOT "%%A"=="" @SET "%%A=%%B"
 )
 @SET "PSModulePath=%__MVNW_PSMODULEP_SAVE%"
@@ -125,7 +125,7 @@ GOTO endDetectBaseDir
 @SET MAVEN_JAVA_EXE=java.exe
 @IF NOT "%JAVA_HOME%"=="" SET "MAVEN_JAVA_EXE=%JAVA_HOME%\bin\java.exe"
 
-@FOR /F "tokens=1,2 delims==" %%A IN ('"%MAVEN_JAVA_EXE%" -cp "%~dp0.mvn\wrapper\maven-wrapper.jar" "-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%" %JVM_CONFIG_MAVEN_OPTS% org.apache.maven.wrapper.MavenWrapperMain %MAVEN_CMD_LINE_ARGS%') DO @(
+@FOR /F "usebackq tokens=1,2 delims==" %%A IN (`^""%MAVEN_JAVA_EXE%" -cp "%~dp0.mvn\wrapper\maven-wrapper.jar" "-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%" %JVM_CONFIG_MAVEN_OPTS% org.apache.maven.wrapper.MavenWrapperMain %MAVEN_CMD_LINE_ARGS%^"`) DO @(
     @IF "%%A"=="MVNW_COMMAND" SET "MVNW_COMMAND=%%B"
 )
 

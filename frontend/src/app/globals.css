@@ -246,6 +246,271 @@ html[data-theme="light"] .text-purple-400 {
   color: #7e22ce !important;
 }
 
+
+/* ========================================================
+   MODO OSCURO: REGLAS EXPLÍCITAS PARA RECUADROS, CAJITAS,
+   INPUTS, TABLAS Y TEXTOS SEGÚN PALETA MILITAR INSTITUCIONAL
+   ======================================================== */
+
+html[data-theme="dark"],
+html.dark,
+:root:not([data-theme="light"]):not([data-theme="high-contrast"]) {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] body,
+html.dark body,
+:root:not([data-theme="light"]):not([data-theme="high-contrast"]) body {
+  color: #f8fafc !important;
+}
+
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] h5,
+html[data-theme="dark"] h6,
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6 {
+  color: #ffffff !important;
+}
+
+/* Inversión automática de clases oscuras a claras en modo oscuro */
+html[data-theme="dark"] .text-slate-900,
+html[data-theme="dark"] .text-slate-800,
+html[data-theme="dark"] .text-neutral-900,
+html[data-theme="dark"] .text-neutral-800,
+html[data-theme="dark"] .text-gray-900,
+html[data-theme="dark"] .text-gray-800,
+html[data-theme="dark"] .text-black,
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+html.dark .text-neutral-900,
+html.dark .text-neutral-800,
+html.dark .text-gray-900,
+html.dark .text-gray-800,
+html.dark .text-black {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .text-slate-700,
+html[data-theme="dark"] .text-neutral-700,
+html[data-theme="dark"] .text-gray-700,
+html.dark .text-slate-700,
+html.dark .text-neutral-700,
+html.dark .text-gray-700 {
+  color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] .text-slate-600,
+html[data-theme="dark"] .text-neutral-600,
+html[data-theme="dark"] .text-gray-600,
+html.dark .text-slate-600,
+html.dark .text-neutral-600,
+html.dark .text-gray-600 {
+  color: #cbd5e1 !important;
+}
+
+/* Textos secundarios y muted en recuadros: blanco ahumado / slate claro legible */
+html[data-theme="dark"] .text-neutral-500,
+html[data-theme="dark"] .text-slate-500,
+html[data-theme="dark"] .text-gray-500,
+html.dark .text-neutral-500,
+html.dark .text-slate-500,
+html.dark .text-gray-500 {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="dark"] .text-neutral-400,
+html[data-theme="dark"] .text-slate-400,
+html[data-theme="dark"] .text-gray-400,
+html.dark .text-neutral-400,
+html.dark .text-slate-400,
+html.dark .text-gray-400 {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .text-neutral-300,
+html[data-theme="dark"] .text-slate-300,
+html.dark .text-neutral-300,
+html.dark .text-slate-300 {
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] .text-neutral-200,
+html[data-theme="dark"] .text-slate-200,
+html.dark .text-neutral-200,
+html.dark .text-slate-200 {
+  color: #f8fafc !important;
+}
+
+/* Recuadros, tarjetas y cajas de información */
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .login-card,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .modal-card,
+html[data-theme="dark"] [class*="bg-neutral-900"],
+html[data-theme="dark"] [class*="bg-neutral-950"],
+html[data-theme="dark"] [class*="bg-slate-900"],
+html[data-theme="dark"] [class*="bg-slate-950"],
+html[data-theme="dark"] [class*="bg-[#121d2b]"],
+html[data-theme="dark"] [class*="bg-[#0b131f]"],
+html[data-theme="dark"] [class*="bg-[#1a2738]"],
+html.dark .card,
+html.dark .login-card,
+html.dark .modal-content,
+html.dark .modal-card,
+html.dark [class*="bg-neutral-900"],
+html.dark [class*="bg-neutral-950"],
+html.dark [class*="bg-slate-900"],
+html.dark [class*="bg-slate-950"],
+html.dark [class*="bg-[#121d2b]"],
+html.dark [class*="bg-[#0b131f]"],
+html.dark [class*="bg-[#1a2738]"] {
+  border-color: #24354a !important;
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .card p,
+html[data-theme="dark"] .modal-content p,
+html[data-theme="dark"] [class*="bg-neutral-900"] > p,
+html[data-theme="dark"] [class*="bg-slate-900"] > p,
+html.dark .card p,
+html.dark .modal-content p,
+html.dark [class*="bg-neutral-900"] > p,
+html.dark [class*="bg-slate-900"] > p {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] strong,
+html[data-theme="dark"] b,
+html.dark strong,
+html.dark b {
+  color: #ffffff;
+}
+
+/* Tablas dentro de los recuadros en modo oscuro */
+html[data-theme="dark"] table,
+html.dark table {
+  background-color: transparent !important;
+  color: #f8fafc !important;
+}
+
+html[data-theme="dark"] table thead,
+html[data-theme="dark"] thead[class*="bg-neutral-"],
+html.dark table thead,
+html.dark thead[class*="bg-neutral-"] {
+  background-color: #0b131f !important;
+  color: #cbd5e1 !important;
+  border-bottom: 2px solid #24354a !important;
+}
+
+html[data-theme="dark"] table thead th,
+html.dark table thead th {
+  color: #cbd5e1 !important;
+  background-color: #0b131f !important;
+}
+
+html[data-theme="dark"] table tbody tr,
+html.dark table tbody tr {
+  border-color: #1a2738 !important;
+  background-color: transparent !important;
+}
+
+html[data-theme="dark"] table tbody tr:hover,
+html.dark table tbody tr:hover {
+  background-color: rgba(27, 67, 50, 0.22) !important;
+}
+
+html[data-theme="dark"] table tbody td,
+html.dark table tbody td {
+  color: #f1f5f9 !important;
+}
+
+/* Cajitas de formularios: inputs, selects, textareas */
+html[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]),
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] .input,
+html.dark input:not([type="checkbox"]):not([type="radio"]),
+html.dark select,
+html.dark textarea,
+html.dark .input {
+  background-color: #0d1724 !important;
+  color: #ffffff !important;
+  border-color: #2b3d52 !important;
+}
+
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] select:focus,
+html[data-theme="dark"] textarea:focus,
+html[data-theme="dark"] .input:focus,
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus,
+html.dark .input:focus {
+  background-color: #0d1724 !important;
+  border-color: #40916c !important;
+  box-shadow: 0 0 0 3px rgba(64, 145, 108, 0.3) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder,
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Menús desplegables (<select> y sus <option>) */
+html[data-theme="dark"] select option,
+html.dark select option {
+  background-color: #121d2b !important;
+  color: #ffffff !important;
+}
+
+/* Etiquetas (labels) */
+html[data-theme="dark"] label,
+html.dark label {
+  color: #cbd5e1 !important;
+}
+
+/* Colores de acento / estado en modo oscuro */
+html[data-theme="dark"] .text-emerald-400,
+html.dark .text-emerald-400 {
+  color: #4ade80 !important;
+}
+
+html[data-theme="dark"] .text-sky-400,
+html[data-theme="dark"] .text-sky-300,
+html.dark .text-sky-400,
+html.dark .text-sky-300 {
+  color: #38bdf8 !important;
+}
+
+html[data-theme="dark"] .text-amber-400,
+html[data-theme="dark"] .text-amber-300,
+html.dark .text-amber-400,
+html.dark .text-amber-300 {
+  color: #fbbf24 !important;
+}
+
+html[data-theme="dark"] .text-purple-400,
+html.dark .text-purple-400 {
+  color: #c084fc !important;
+}
+
+html[data-theme="dark"] .text-red-400,
+html[data-theme="dark"] .text-red-300,
+html.dark .text-red-400,
+html.dark .text-red-300 {
+  color: #f87171 !important;
+}
+
 html[data-theme="high-contrast"] {
   --bg-primary: #000000;
   --bg-surface: #000000;

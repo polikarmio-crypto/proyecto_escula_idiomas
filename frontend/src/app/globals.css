@@ -222,7 +222,7 @@ html[data-theme="light"] div.text-white,
 html[data-theme="light"] td.text-white,
 html[data-theme="light"] th.text-white { color: #181C19 !important; }
 
-/* Exception: keep white text inside colored buttons/badges */
+/* Exception: keep white text inside colored buttons/badges & topbar */
 html[data-theme="light"] .btn-primary .text-white,
 html[data-theme="light"] .btn-gold .text-white,
 html[data-theme="light"] .btn-bolivia-green .text-white,
@@ -231,6 +231,22 @@ html[data-theme="light"] [class*="bg-emerald-6"] .text-white,
 html[data-theme="light"] [class*="bg-red-6"] .text-white,
 html[data-theme="light"] [class*="bg-amber-6"] .text-white,
 html[data-theme="light"] [class*="bg-sky-6"] .text-white { color: #ffffff !important; }
+
+/* Topbar y Landing Header siempre con texto claro (fondo verde militar) */
+html[data-theme="light"] .topbar,
+html[data-theme="light"] .topbar *,
+html[data-theme="light"] .landing-header,
+html[data-theme="light"] .landing-header * { color: #E8EBE7 !important; }
+html[data-theme="light"] .topbar .text-muted,
+html[data-theme="light"] .topbar [class*="text-muted"],
+html[data-theme="light"] .landing-header .text-muted,
+html[data-theme="light"] .landing-header [class*="text-white/"] { color: rgba(232,235,231,0.75) !important; }
+html[data-theme="light"] .landing-header nav a { color: #FFFFFF !important; }
+html[data-theme="light"] .landing-header nav a:hover { color: #B59449 !important; }
+html[data-theme="light"] .landing-header [class*="text-[#B59449]"],
+html[data-theme="light"] .landing-header [class*="text-amber"] { color: #B59449 !important; }
+html[data-theme="light"] .landing-header .btn-gold,
+html[data-theme="light"] .landing-header .btn-gold * { color: #181C19 !important; }
 
 html[data-theme="light"] .text-neutral-400,
 html[data-theme="light"] .text-neutral-500,
@@ -343,6 +359,78 @@ html[data-theme="light"] [class*="text-red-200"],
 html[data-theme="light"] [class*="text-red-300"],
 html[data-theme="light"] [class*="text-red-400"]     { color: #b91c1c !important; }
 html[data-theme="light"] .text-purple-400            { color: #6B1FA3 !important; }
+
+/* ═══════════════════════════════════════════════════════════
+   LIGHT MODE: Overrides para páginas con clases Tailwind dark hardcodeadas
+   Estas páginas usan bg-neutral-9xx y text-white sin las variables CSS
+   ═══════════════════════════════════════════════════════════ */
+
+/* Colores de texto neutrales oscuros → texto legible claro */
+html[data-theme="light"] .text-neutral-100,
+html[data-theme="light"] .text-neutral-50 { color: #1F2422 !important; }
+
+/* Eliminar todos los texto-blanco en la página (el topbar ya está protegido más arriba) */
+html[data-theme="light"] .page-content strong.text-white,
+html[data-theme="light"] .page-content p.text-white,
+html[data-theme="light"] .page-content h1.text-white,
+html[data-theme="light"] .page-content h2.text-white,
+html[data-theme="light"] .page-content h3.text-white,
+html[data-theme="light"] .page-content div.text-white,
+html[data-theme="light"] .page-content span.text-white { color: #181C19 !important; }
+
+/* bg-neutral-950 y variantes con opacity */
+html[data-theme="light"] .bg-neutral-950 { background-color: #E3E6E1 !important; color: #181C19 !important; }
+html[data-theme="light"] .hover\:bg-neutral-700:hover { background-color: #C8CCC6 !important; }
+html[data-theme="light"] .hover\:bg-neutral-800:hover { background-color: #D5D9D4 !important; }
+
+/* Divisores neutrales */
+html[data-theme="light"] .divide-neutral-800 > * + * { border-color: #D5D9D4 !important; }
+html[data-theme="light"] .divide-neutral-700 > * + * { border-color: #BCC2BA !important; }
+
+/* text-neutral-* adicionales */
+html[data-theme="light"] .text-neutral-200 { color: #2A3030 !important; }
+html[data-theme="light"] .text-neutral-100,
+html[data-theme="light"] .text-neutral-50 { color: #181C19 !important; }
+
+/* Botones de paginación y controles */
+html[data-theme="light"] .bg-neutral-800.disabled\:opacity-40,
+html[data-theme="light"] button.bg-neutral-800 { background-color: #E3E6E1 !important; color: #2A3030 !important; border: 1px solid #D5D9D4 !important; }
+
+/* Botones sky colored → mantienen color */
+html[data-theme="light"] .bg-sky-600 { background-color: #0284c7 !important; color: #fff !important; }
+html[data-theme="light"] .hover\:bg-sky-500:hover { background-color: #0ea5e9 !important; color: #fff !important; }
+html[data-theme="light"] [class*="bg-sky-600"]:not([class*="bg-sky-600\/"]) { background-color: #0284c7 !important; color: #fff !important; }
+html[data-theme="light"] [class*="shadow-sky-600"] { box-shadow: 0 2px 6px rgba(2,132,199,0.25) !important; }
+
+/* bg-sky-500/10 y bg-sky-500/30 para badges */
+html[data-theme="light"] [class*="bg-sky-500\\/"] { background-color: #DDEDF5 !important; }
+html[data-theme="light"] [class*="border-sky-500\\/"] { border-color: #93C5D9 !important; }
+html[data-theme="light"] [class*="bg-sky-950\\/"] { background-color: #EBF4FA !important; }
+html[data-theme="light"] [class*="border-sky-800"] { border-color: #93C5D9 !important; }
+
+/* bg-amber-500/20 y texto amber */
+html[data-theme="light"] [class*="bg-amber-500\\/"] { background-color: #FAF0D7 !important; }
+html[data-theme="light"] [class*="bg-amber-950\\/"],
+html[data-theme="light"] [class*="bg-amber-50"] { background-color: #FDF7E8 !important; }
+html[data-theme="light"] [class*="border-amber-500\\/"],
+html[data-theme="light"] [class*="border-amber-200"],
+html[data-theme="light"] [class*="border-amber-800"] { border-color: #E8C97A !important; }
+
+/* bg-red-950/60 → claro */
+html[data-theme="light"] [class*="bg-red-950\\/"] { background-color: #FEF0F0 !important; }
+html[data-theme="light"] [class*="border-red-800\\/"],
+html[data-theme="light"] [class*="border-red-200"] { border-color: #F5AAAA !important; }
+html[data-theme="light"] [class*="text-red-300"] { color: #b91c1c !important; }
+
+/* bg-emerald-50 y emerald-950 */
+html[data-theme="light"] [class*="bg-emerald-50"] { background-color: #EBF5EF !important; }
+html[data-theme="light"] [class*="bg-emerald-950\\/"] { background-color: #EBF5EF !important; }
+html[data-theme="light"] [class*="border-emerald-200"],
+html[data-theme="light"] [class*="border-emerald-800"] { border-color: #A7CDB8 !important; }
+
+/* placeholder en modo claro */
+html[data-theme="light"] .placeholder-neutral-500::placeholder { color: #6B7570 !important; }
+html[data-theme="light"] .placeholder-neutral-400::placeholder { color: #8A9589 !important; }
 
 /* ── Dark mode utility overrides ──────────────────────────── */
 html[data-theme="dark"],
@@ -616,6 +704,18 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Páginas públicas (index / login): pueden hacer scroll vertical */
+body.public-page {
+  height: auto;
+  overflow-y: auto;
+}
+
+/* Páginas internas del sistema: sin scroll de página, layout fijo */
+body.app-page {
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Tipografía institucional (ceremonial / headings de módulo) */
@@ -1004,18 +1104,20 @@ tbody tr:hover td { background: var(--military-green-subtle) !important; }
 /* ═══════════════════════════════════════════════════════════
    LAYOUT: SIDEBAR + TOPBAR + CONTENT
    ═══════════════════════════════════════════════════════════ */
-.layout { display: flex; min-height: 100vh; }
+.layout { display: flex; height: 100vh; overflow: hidden; }
 
 /* ── Sidebar ────────────────────────────────────────────── */
 .sidebar {
   width: 248px;
   min-width: 248px;
+  height: 100vh;
   background: var(--bg-surface);
   border-right: 1px solid var(--border-fine);
   display: flex;
   flex-direction: column;
   transition: transform .25s ease;
   z-index: 100;
+  overflow: hidden;
 }
 
 .sidebar-logo {
@@ -1024,6 +1126,7 @@ tbody tr:hover td { background: var(--military-green-subtle) !important; }
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .sidebar-nav {
@@ -1033,6 +1136,7 @@ tbody tr:hover td { background: var(--military-green-subtle) !important; }
   display: flex;
   flex-direction: column;
   gap: .2rem;
+  min-height: 0;
 }
 
 /* ── Nav items ──────────────────────────────────────────── */
@@ -1049,6 +1153,7 @@ tbody tr:hover td { background: var(--military-green-subtle) !important; }
   border-left: 3px solid transparent;
   transition: all .12s ease;
   text-decoration: none;
+  flex-shrink: 0;
 }
 .nav-item:hover {
   background: var(--bg-surface-elevated);
@@ -1063,7 +1168,7 @@ tbody tr:hover td { background: var(--military-green-subtle) !important; }
 }
 
 /* ── Main content area ──────────────────────────────────── */
-.main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; height: 100vh; overflow: hidden; }
 
 /* ── Top bar ────────────────────────────────────────────── */
 .topbar {
@@ -1073,11 +1178,10 @@ tbody tr:hover td { background: var(--military-green-subtle) !important; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 50;
   flex-wrap: wrap;
   gap: .65rem;
+  flex-shrink: 0;
+  z-index: 50;
 }
 
 /* En modo claro el topbar es verde oliva oscuro con texto blanco */
@@ -1097,7 +1201,10 @@ html[data-theme="dark"] .topbar {
 .topbar .text-muted, .topbar [class*="text-muted"] { color: rgba(232,235,231,0.65) !important; }
 
 /* ── Page content ───────────────────────────────────────── */
-.page-content { flex: 1; padding: 1.75rem 2rem; overflow-y: auto; }
+.page-content { flex: 1; padding: 1.75rem 2rem; overflow-y: auto; min-height: 0; }
+
+/* ── Sidebar footer ─────────────────────────────────────── */
+.sidebar > div:last-of-type { flex-shrink: 0; }
 
 /* ── Sidebar overlay (mobile) ───────────────────────────── */
 .sidebar-overlay {

@@ -20,7 +20,17 @@ import {
   ExternalLink,
   Menu,
   X,
-  LogIn
+  LogIn,
+  Shield,
+  Globe,
+  Landmark,
+  BookOpen,
+  MapPin,
+  Phone,
+  Clock,
+  Compass,
+  Award,
+  Sparkles
 } from 'lucide-react';
 
 export default function IndexPage() {
@@ -354,7 +364,7 @@ export default function IndexPage() {
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-200 ${theme === 'light' ? 'bg-[var(--bg-base)] text-[var(--text-main)]' : 'bg-[#0E1612] text-slate-100'
       }`}>
 
-      <header className="sticky top-0 z-50 backdrop-blur-md border-b border-[#B59449]/40 bg-[#233329] text-white shadow-sm transition-all">
+      <header className="topbar landing-header sticky top-0 z-50 backdrop-blur-md border-b border-[#B59449]/40 bg-[#233329] text-white shadow-sm transition-all">
         <div className="tricolor-stripe" />
         <div className="w-full max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20 gap-2 sm:gap-4">
@@ -411,11 +421,11 @@ export default function IndexPage() {
               </div>
             </div>
 
-            <nav className="hidden xl:flex items-center gap-3.5 2xl:gap-6 text-xs font-semibold text-white/85">
-              <a href="#mision-vision" className="whitespace-nowrap hover:text-[#B59449] transition py-1">Misión</a>
-              <a href="#carrusel" className="whitespace-nowrap hover:text-[#B59449] transition py-1">Galería</a>
+            <nav className="hidden md:flex items-center gap-2 lg:gap-3 xl:gap-5 text-xs font-semibold text-white">
+              <a href="#mision-vision" className="whitespace-nowrap hover:text-[#B59449] transition py-1">Misión y Visión</a>
               <a href="#oferta-academica" className="whitespace-nowrap hover:text-[#B59449] transition py-1">Idiomas</a>
               <a href="#filiales" className="whitespace-nowrap hover:text-[#B59449] transition py-1">Sedes</a>
+              <a href="#carrusel" className="whitespace-nowrap hover:text-[#B59449] transition py-1">Galería</a>
               <a href="#inscripciones" className="whitespace-nowrap hover:text-[#B59449] transition py-1">Inscripción</a>
               <a href="#correo-institucional" className="whitespace-nowrap hover:text-[#B59449] transition py-1">Correo</a>
               <a href="#contacto" className="whitespace-nowrap hover:text-[#B59449] transition py-1">Contacto</a>
@@ -448,7 +458,7 @@ export default function IndexPage() {
 
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="xl:hidden p-2 rounded-[2px] border border-white/20 bg-[#19251E] text-white transition shrink-0"
+                className="md:hidden p-2 rounded-[2px] border border-white/20 bg-[#19251E] text-white transition shrink-0"
                 aria-label="Abrir menú de navegación"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -457,7 +467,7 @@ export default function IndexPage() {
           </div>
 
           {mobileMenuOpen && (
-            <div className={`xl:hidden border-t py-4 space-y-1.5 animate-solemn-fade ${theme === 'light' ? 'bg-white border-slate-200 shadow-lg' : 'bg-[#0b131f] border-[#24354a] shadow-lg'
+            <div className={`md:hidden border-t py-4 space-y-1.5 animate-solemn-fade ${theme === 'light' ? 'bg-white border-slate-200 shadow-lg text-slate-800' : 'bg-[#0b131f] border-[#24354a] shadow-lg text-slate-200'
               }`}>
               <div className="flex items-center gap-2 px-3 pb-2 mb-2 border-b border-slate-200 dark:border-[#24354a]">
                 <button
@@ -492,9 +502,9 @@ export default function IndexPage() {
               </div>
 
               <a href="#mision-vision" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-xs font-medium hover:bg-slate-100 dark:hover:bg-[#121d2b]">Misión y Visión</a>
-              <a href="#carrusel" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-xs font-medium hover:bg-slate-100 dark:hover:bg-[#121d2b]">Galería Institucional</a>
               <a href="#oferta-academica" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-xs font-medium hover:bg-slate-100 dark:hover:bg-[#121d2b]">Oferta de Idiomas</a>
               <a href="#filiales" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-xs font-medium hover:bg-slate-100 dark:hover:bg-[#121d2b]">Sedes en Bolivia</a>
+              <a href="#carrusel" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-xs font-medium hover:bg-slate-100 dark:hover:bg-[#121d2b]">Galería Institucional</a>
               <a href="#inscripciones" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-xs font-medium hover:bg-slate-100 dark:hover:bg-[#121d2b]">Pre-Inscripción Digital</a>
               <a href="#correo-institucional" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-xs font-medium hover:bg-slate-100 dark:hover:bg-[#121d2b]">Correo Institucional</a>
               <a href="#contacto" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-xs font-medium hover:bg-slate-100 dark:hover:bg-[#121d2b]">Contacto</a>
@@ -548,49 +558,74 @@ export default function IndexPage() {
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <a
                   href="#inscripciones"
-                  className="px-5 py-3 rounded-xl text-xs md:text-sm font-bold btn-bolivia-red inline-flex items-center gap-2 shadow-md"
+                  className="px-5 py-3 rounded-xl text-xs md:text-sm font-bold btn-bolivia-red inline-flex items-center gap-2 shadow-md hover:scale-[1.02] transition"
                 >
                   <span>Inscribirme en Línea (II-2026)</span>
                   <ChevronRight className="w-4 h-4 text-white" />
                 </a>
 
                 <a
-                  href="#carrusel"
-                  className="px-5 py-3 rounded-xl text-xs md:text-sm font-bold btn-bolivia-navy inline-flex items-center gap-2 shadow-sm"
+                  href="#mision-vision"
+                  className="px-4 py-3 rounded-xl text-xs md:text-sm font-bold btn-bolivia-navy inline-flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition"
                 >
-                  <span>Ver Galería y Convocatorias</span>
+                  <Shield className="w-4 h-4 text-[#B59449]" />
+                  <span>Misión y Visión</span>
                 </a>
 
                 <a
                   href="#oferta-academica"
-                  className="text-xs md:text-sm text-[#15803d] dark:text-[#4ade80] font-bold transition px-2 py-2 hover:underline inline-flex items-center gap-1"
+                  className="px-4 py-3 rounded-xl text-xs md:text-sm font-bold btn-bolivia-gold inline-flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition text-white"
                 >
-                  <span>Catálogo de 36 Libros</span>
-                  <span>&rarr;</span>
+                  <Globe className="w-4 h-4 text-white" />
+                  <span>Idiomas Ofertados</span>
+                </a>
+
+                <a
+                  href="#filiales"
+                  className="px-4 py-3 rounded-xl text-xs md:text-sm font-bold btn-bolivia-green inline-flex items-center gap-1.5 shadow-sm hover:scale-[1.02] transition"
+                >
+                  <Landmark className="w-4 h-4 text-white" />
+                  <span>9 Sedes en Bolivia</span>
                 </a>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 border-t border-slate-200 dark:border-[#24354a]">
-                <div className={`p-3.5 rounded-xl border border-l-4 border-l-[#dc2626] ${theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-[#0b131f] border-[#24354a]'
-                  }`}>
+                <a
+                  href="#oferta-academica"
+                  className={`p-3.5 rounded-xl border border-l-4 border-l-[#dc2626] transition hover:shadow-md block ${theme === 'light' ? 'bg-slate-50 hover:bg-white border-slate-200' : 'bg-[#0b131f] hover:bg-[#121d2b] border-[#24354a]'
+                  }`}
+                  title="Ver Plan Curricular de Inglés y 36 Libros"
+                >
                   <p className="text-xl md:text-2xl font-bold font-mono text-[#dc2626] dark:text-[#f87171]">36 Libros</p>
-                  <p className="text-xs text-slate-500 font-medium">Plan Continuo ALC</p>
-                </div>
-                <div className={`p-3.5 rounded-xl border border-l-4 border-l-[#f59e0b] ${theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-[#0b131f] border-[#24354a]'
-                  }`}>
+                  <p className="text-xs text-slate-500 font-medium">Plan Continuo ALC &rarr;</p>
+                </a>
+                <a
+                  href="#mision-vision"
+                  className={`p-3.5 rounded-xl border border-l-4 border-l-[#f59e0b] transition hover:shadow-md block ${theme === 'light' ? 'bg-slate-50 hover:bg-white border-slate-200' : 'bg-[#0b131f] hover:bg-[#121d2b] border-[#24354a]'
+                  }`}
+                  title="Ver Metodología y Misión Institucional"
+                >
                   <p className="text-xl md:text-2xl font-bold font-mono text-[#d97706] dark:text-[#fbbf24]">15 Días</p>
-                  <p className="text-xs text-slate-500 font-medium">Rotación Docente</p>
-                </div>
-                <div className={`p-3.5 rounded-xl border border-l-4 border-l-[#15803d] ${theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-[#0b131f] border-[#24354a]'
-                  }`}>
+                  <p className="text-xs text-slate-500 font-medium">Rotación Docente &rarr;</p>
+                </a>
+                <a
+                  href="#filiales"
+                  className={`p-3.5 rounded-xl border border-l-4 border-l-[#15803d] transition hover:shadow-md block ${theme === 'light' ? 'bg-slate-50 hover:bg-white border-slate-200' : 'bg-[#0b131f] hover:bg-[#121d2b] border-[#24354a]'
+                  }`}
+                  title="Ver Cobertura Nacional y Direcciones de las 9 Sedes"
+                >
                   <p className="text-xl md:text-2xl font-bold font-mono text-[#15803d] dark:text-[#4ade80]">9 Filiales</p>
-                  <p className="text-xs text-slate-500 font-medium">Cobertura Nacional</p>
-                </div>
-                <div className={`p-3.5 rounded-xl border border-l-4 border-l-[#1e3a8a] ${theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-[#0b131f] border-[#24354a]'
-                  }`}>
+                  <p className="text-xs text-slate-500 font-medium">Cobertura Nacional &rarr;</p>
+                </a>
+                <a
+                  href="#oferta-academica"
+                  className={`p-3.5 rounded-xl border border-l-4 border-l-[#1e3a8a] transition hover:shadow-md block ${theme === 'light' ? 'bg-slate-50 hover:bg-white border-slate-200' : 'bg-[#0b131f] hover:bg-[#121d2b] border-[#24354a]'
+                  }`}
+                  title="Ver Certificación Internacional STANAG 6001"
+                >
                   <p className="text-xl md:text-2xl font-bold font-mono text-[#1e3a8a] dark:text-[#60a5fa]">STANAG</p>
-                  <p className="text-xs text-slate-500 font-medium">Norma 6001 / TOEFL</p>
-                </div>
+                  <p className="text-xs text-slate-500 font-medium">Norma 6001 / ALC &rarr;</p>
+                </a>
               </div>
             </div>
 
@@ -623,7 +658,576 @@ export default function IndexPage() {
           </div>
         </section>
 
-        <section id="carrusel" className="space-y-6">
+        {/* ============================================================
+            ACCESOS DIRECTOS INSTITUCIONALES (Misión, Idiomas y Sedes)
+            ============================================================ */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <a
+            href="#mision-vision"
+            className={`group rounded-2xl border p-5 transition-all shadow-sm hover:shadow-md flex flex-col justify-between ${
+              theme === 'light'
+                ? 'bg-white border-slate-200 hover:border-[#15803d]'
+                : 'bg-[#121d2b] border-[#24354a] hover:border-[#4ade80]'
+            }`}
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="w-10 h-10 rounded-xl bg-emerald-500/15 text-[#15803d] dark:text-[#4ade80] flex items-center justify-center font-bold">
+                  <Shield className="w-5 h-5" />
+                </span>
+                <span className="text-[11px] font-mono uppercase font-bold text-[#15803d] dark:text-[#4ade80]">
+                  Doctrina Militar
+                </span>
+              </div>
+              <div>
+                <h3 className={`text-base md:text-lg font-bold group-hover:text-[#15803d] dark:group-hover:text-[#4ade80] transition ${
+                  theme === 'light' ? 'text-slate-900' : 'text-white'
+                }`}>
+                  Misión y Visión
+                </h3>
+                <p className={`text-xs mt-1 leading-relaxed ${
+                  theme === 'light' ? 'text-slate-600' : 'text-slate-300'
+                }`}>
+                  Cometido constitucional, valores éticos y excelencia pedagógica bajo doctrina del CEDMIL.
+                </p>
+              </div>
+            </div>
+            <div className="pt-3 mt-3 border-t border-slate-100 dark:border-[#24354a] flex items-center justify-between text-xs font-semibold text-[#15803d] dark:text-[#4ade80]">
+              <span>Explorar Doctrina</span>
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </a>
+
+          <a
+            href="#oferta-academica"
+            className={`group rounded-2xl border p-5 transition-all shadow-sm hover:shadow-md flex flex-col justify-between ${
+              theme === 'light'
+                ? 'bg-white border-slate-200 hover:border-[#b8860b]'
+                : 'bg-[#121d2b] border-[#24354a] hover:border-[#fbbf24]'
+            }`}
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="w-10 h-10 rounded-xl bg-amber-500/15 text-[#b8860b] dark:text-[#fbbf24] flex items-center justify-center font-bold">
+                  <Globe className="w-5 h-5" />
+                </span>
+                <span className="text-[11px] font-mono uppercase font-bold text-[#b8860b] dark:text-[#fbbf24]">
+                  Oferta Académica
+                </span>
+              </div>
+              <div>
+                <h3 className={`text-base md:text-lg font-bold group-hover:text-[#b8860b] dark:group-hover:text-[#fbbf24] transition ${
+                  theme === 'light' ? 'text-slate-900' : 'text-white'
+                }`}>
+                  Idiomas Ofertados
+                </h3>
+                <p className={`text-xs mt-1 leading-relaxed ${
+                  theme === 'light' ? 'text-slate-600' : 'text-slate-300'
+                }`}>
+                  Inglés ALC (36 Libros), Lenguas Nativas (Aymara, Quechua, Guaraní) e Idiomas Extranjeros.
+                </p>
+              </div>
+            </div>
+            <div className="pt-3 mt-3 border-t border-slate-100 dark:border-[#24354a] flex items-center justify-between text-xs font-semibold text-[#b8860b] dark:text-[#fbbf24]">
+              <span>Ver Catálogo de Idiomas</span>
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </a>
+
+          <a
+            href="#filiales"
+            className={`group rounded-2xl border p-5 transition-all shadow-sm hover:shadow-md flex flex-col justify-between ${
+              theme === 'light'
+                ? 'bg-white border-slate-200 hover:border-[#1e3a8a]'
+                : 'bg-[#121d2b] border-[#24354a] hover:border-[#60a5fa]'
+            }`}
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="w-10 h-10 rounded-xl bg-blue-600/15 text-[#1e3a8a] dark:text-[#60a5fa] flex items-center justify-center font-bold">
+                  <Landmark className="w-5 h-5" />
+                </span>
+                <span className="text-[11px] font-mono uppercase font-bold text-[#1e3a8a] dark:text-[#60a5fa]">
+                  Presencia Nacional
+                </span>
+              </div>
+              <div>
+                <h3 className={`text-base md:text-lg font-bold group-hover:text-[#1e3a8a] dark:group-hover:text-[#60a5fa] transition ${
+                  theme === 'light' ? 'text-slate-900' : 'text-white'
+                }`}>
+                  Nuestras 9 Sedes
+                </h3>
+                <p className={`text-xs mt-1 leading-relaxed ${
+                  theme === 'light' ? 'text-slate-600' : 'text-slate-300'
+                }`}>
+                  Sede Central Estado Mayor (Miraflores) y 8 filiales en guarniciones de todo el país.
+                </p>
+              </div>
+            </div>
+            <div className="pt-3 mt-3 border-t border-slate-100 dark:border-[#24354a] flex items-center justify-between text-xs font-semibold text-[#1e3a8a] dark:text-[#60a5fa]">
+              <span>Ver Sedes y Direcciones</span>
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </a>
+        </div>
+
+        {/* ============================================================
+            1. SECCIÓN: MISIÓN Y VISIÓN
+            ============================================================ */}
+        <span id="mision" className="scroll-mt-24 block -mt-24 pt-24 pointer-events-none" />
+        <section id="mision-vision" className="space-y-6 scroll-mt-24">
+          <div className="text-center max-w-2xl mx-auto space-y-1">
+            <span className="badge-bolivia-tricolor shadow-xs mb-1">
+              <span className="w-2 h-2 rounded-full bg-[#dc2626]" />
+              <span className="w-2 h-2 rounded-full bg-[#f59e0b]" />
+              <span className="w-2 h-2 rounded-full bg-[#15803d]" />
+              <span className="text-slate-800 dark:text-slate-200">CEDMIL &bull; Ejército de Bolivia</span>
+            </span>
+            <p className="text-xs font-mono font-bold uppercase tracking-wider text-[#b8860b]">
+              Doctrina Institucional
+            </p>
+            <h2 className={`text-2xl md:text-3xl font-extrabold ${theme === 'light' ? 'text-[#0f172a]' : 'text-white'
+              }`}>
+              Misión y Visión
+            </h2>
+            <p className="text-xs md:text-sm text-slate-500">
+              Pilares estratégicos que fundamentan el liderazgo académico, la identidad patria y la excelencia lingüística de la Escuela de Idiomas del Ejército.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div className={`rounded-2xl border border-t-4 border-t-[#15803d] p-7 shadow-sm transition flex flex-col justify-between ${theme === 'light'
+                ? 'bg-white border-slate-200 hover:border-[#15803d]'
+                : 'bg-[#121d2b] border-[#24354a] hover:border-[#2d6a4f]'
+              }`}>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-[#24354a]">
+                  <span className="text-xs font-mono font-bold text-[#15803d] dark:text-[#4ade80] uppercase flex items-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5" />
+                    Cometido Institucional
+                  </span>
+                  <span className="text-xs font-mono text-slate-400">Constitución Política</span>
+                </div>
+                <h3 className={`text-xl md:text-2xl font-bold ${theme === 'light' ? 'text-[#0f172a]' : 'text-white'
+                  }`}>
+                  Misión
+                </h3>
+                <p className={`text-xs md:text-sm leading-relaxed text-justify ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'
+                  }`}>
+                  La Escuela de Idiomas del Ejército planifica, coordina y desarrolla de forma permanente el sistema de enseñanza y aprendizaje de idiomas extranjeros y nativos en sus distintas filiales en todo el territorio nacional. Su objetivo es capacitar al recurso humano del Ejército y al personal civil con un elevado nivel de dominio lingüístico para satisfacer sus requerimientos y cumplir con la misión educativa del Comando de Institutos Militares y su función constitucional.
+                </p>
+              </div>
+              <div className="mt-6 pt-3 border-t border-slate-200 dark:border-[#24354a] flex items-center justify-between text-xs text-slate-500 font-mono">
+                <span>CEDMIL &bull; Ejército de Bolivia</span>
+                <span className="text-[#15803d] dark:text-[#4ade80] font-semibold">Función Constitucional</span>
+              </div>
+            </div>
+
+            <div className={`rounded-2xl border border-t-4 border-t-[#dc2626] p-7 shadow-sm transition flex flex-col justify-between ${theme === 'light'
+                ? 'bg-white border-slate-200 hover:border-[#dc2626]'
+                : 'bg-[#121d2b] border-[#24354a] hover:border-[#ef4444]'
+              }`}>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-[#24354a]">
+                  <span className="text-xs font-mono font-bold text-[#b8860b] uppercase flex items-center gap-1.5">
+                    <Compass className="w-3.5 h-3.5" />
+                    Horizonte Estratégico
+                  </span>
+                  <span className="text-xs font-mono text-slate-400">Proyección 2030</span>
+                </div>
+                <h3 className={`text-xl md:text-2xl font-bold ${theme === 'light' ? 'text-[#0f172a]' : 'text-white'
+                  }`}>
+                  Visión
+                </h3>
+                <p className={`text-xs md:text-sm leading-relaxed text-justify ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'
+                  }`}>
+                  Es una institución líder y competitiva en la enseñanza de idiomas nativos y extranjeros con excelencia académica, que forma talento humano especializado en lingüística capaz de afrontar los desafíos de un mundo globalizado y competitivo, consolidando además la interculturalidad a través de su personal académico y profesional.
+                </p>
+              </div>
+              <div className="mt-6 pt-3 border-t border-slate-200 dark:border-[#24354a] flex items-center justify-between text-xs text-slate-500 font-mono">
+                <span>Liderazgo &bull; Competitividad</span>
+                <span className="text-[#b8860b] font-semibold">Interculturalidad y Excelencia</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* 4 Pilares Doctrinarios */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+            <div className={`p-4 rounded-xl border ${theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-[#0b131f] border-[#24354a]'}`}>
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-[#15803d] dark:text-[#4ade80] flex items-center justify-center mb-2.5">
+                <Award className="w-4 h-4" />
+              </div>
+              <h4 className={`text-xs font-bold uppercase tracking-wider ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+                Disciplina Militar
+              </h4>
+              <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                Rigor pedagógico, puntualidad castrense y rotación docente quincenal para máxima adaptabilidad auditiva.
+              </p>
+            </div>
+
+            <div className={`p-4 rounded-xl border ${theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-[#0b131f] border-[#24354a]'}`}>
+              <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-[#b8860b] dark:text-[#fbbf24] flex items-center justify-center mb-2.5">
+                <Globe className="w-4 h-4" />
+              </div>
+              <h4 className={`text-xs font-bold uppercase tracking-wider ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+                Interculturalidad
+              </h4>
+              <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                Enseñanza y preservación activa de nuestras lenguas originarias: Aymara, Quechua y Guaraní.
+              </p>
+            </div>
+
+            <div className={`p-4 rounded-xl border ${theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-[#0b131f] border-[#24354a]'}`}>
+              <div className="w-8 h-8 rounded-lg bg-blue-500/15 text-[#1e3a8a] dark:text-[#60a5fa] flex items-center justify-center mb-2.5">
+                <Shield className="w-4 h-4" />
+              </div>
+              <h4 className={`text-xs font-bold uppercase tracking-wider ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+                Norma STANAG 6001
+              </h4>
+              <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                Estandarización lingüística internacional para misiones de paz de la ONU y agregadurías de defensa.
+              </p>
+            </div>
+
+            <div className={`p-4 rounded-xl border ${theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-[#0b131f] border-[#24354a]'}`}>
+              <div className="w-8 h-8 rounded-lg bg-red-500/15 text-[#dc2626] dark:text-[#f87171] flex items-center justify-center mb-2.5">
+                <BookOpen className="w-4 h-4" />
+              </div>
+              <h4 className={`text-xs font-bold uppercase tracking-wider ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+                Provisión Nacional
+              </h4>
+              <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                Diplomas y certificados oficiales con valor curricular ministerial y reconocimiento en las FF.AA.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ============================================================
+            2. SECCIÓN: CATÁLOGO DE IDIOMAS Y PROGRAMAS
+            ============================================================ */}
+        <span id="idiomas" className="scroll-mt-24 block -mt-24 pt-24 pointer-events-none" />
+        <section id="oferta-academica" className="space-y-6 scroll-mt-24">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-mono font-bold uppercase tracking-wider text-[#1b4332] dark:text-[#74c69d]">
+                Oferta Formativa Oficial
+              </p>
+              <h2 className={`text-2xl md:text-3xl font-extrabold mt-1 ${theme === 'light' ? 'text-[#0f172a]' : 'text-white'
+                }`}>
+                Catálogo de Idiomas y Programas Formativos
+              </h2>
+              <p className="text-xs md:text-sm text-slate-500 mt-1">
+                Programas estructurados para personal militar y comunidad civil en 3 áreas lingüísticas estratégicas.
+              </p>
+            </div>
+
+            <div className={`inline-flex border p-1 rounded-xl text-xs font-semibold ${theme === 'light' ? 'bg-slate-100 border-slate-300' : 'bg-[#0b131f] border-[#24354a]'
+              }`}>
+              <button
+                onClick={() => setTabIdioma('INGLES')}
+                className={`px-3.5 py-1.5 rounded-lg transition ${tabIdioma === 'INGLES'
+                    ? 'bg-[#d97706] text-white font-bold shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+              >
+                Inglés ALC (36 Libros)
+              </button>
+              <button
+                onClick={() => setTabIdioma('NATIVOS')}
+                className={`px-3.5 py-1.5 rounded-lg transition ${tabIdioma === 'NATIVOS'
+                    ? 'bg-[#15803d] text-white font-bold shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+              >
+                Lenguas Nativas
+              </button>
+              <button
+                onClick={() => setTabIdioma('EXTRANJEROS')}
+                className={`px-3.5 py-1.5 rounded-lg transition ${tabIdioma === 'EXTRANJEROS'
+                    ? 'bg-[#b91c1c] text-white font-bold shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+              >
+                Idiomas Extranjeros
+              </button>
+            </div>
+          </div>
+
+          {tabIdioma === 'INGLES' && (
+            <div className={`border rounded-2xl p-6 md:p-8 space-y-6 shadow-sm ${theme === 'light' ? 'bg-white border-slate-200' : 'bg-[#121d2b] border-[#24354a]'
+              }`}>
+              <div className="pb-3 border-b border-slate-200 dark:border-[#24354a] flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div>
+                  <p className="text-xs font-bold text-[#b8860b] uppercase tracking-wider">
+                    Plan Curricular de Inglés Militar y Civil
+                  </p>
+                  <h3 className={`text-xl md:text-2xl font-bold ${theme === 'light' ? 'text-[#0f172a]' : 'text-white'
+                    }`}>
+                    Inglés Técnico Superior &bull; 36 Libros y 6 Niveles Formativos
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Estructura secuencial con rotación pedagógica cada 15 días y exámenes de nivel al completar cada bloque de 6 libros.
+                  </p>
+                </div>
+                <div className="shrink-0">
+                  <span className="badge-bolivia-tricolor">
+                    <span>Metodología ALC Oficial</span>
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  { nivel: 'Nivel 1', libros: 'Libros 1 al 6', tit: 'Inglés Elemental / Básico', eval: 'Examen de Nivel en Libro 6', border: 'border-l-4 border-l-[#15803d]' },
+                  { nivel: 'Nivel 2', libros: 'Libros 7 al 12', tit: 'Inglés Pre-Intermedio', eval: 'Examen de Nivel en Libro 12', border: 'border-l-4 border-l-[#15803d]' },
+                  { nivel: 'Nivel 3', libros: 'Libros 13 al 18', tit: 'Inglés Intermedio', eval: 'Examen de Nivel en Libro 18', border: 'border-l-4 border-l-[#f59e0b]' },
+                  { nivel: 'Nivel 4', libros: 'Libros 19 al 24', tit: 'Inglés Intermedio Alto', eval: 'Examen de Nivel en Libro 24', border: 'border-l-4 border-l-[#f59e0b]' },
+                  { nivel: 'Nivel 5', libros: 'Libros 25 al 30', tit: 'Inglés Avanzado Profesional', eval: 'Examen de Nivel en Libro 30', border: 'border-l-4 border-l-[#dc2626]' },
+                  { nivel: 'Nivel 6', libros: 'Libros 31 al 36', tit: 'Suficiencia & Especialidad Militar', eval: 'Defensa de Grado Técnico Superior', border: 'border-l-4 border-l-[#1e3a8a] dark:border-l-[#38bdf8]' },
+                ].map((item, idx) => (
+                  <div key={idx} className={`border p-4 rounded-xl space-y-2 ${item.border} ${theme === 'light'
+                      ? 'bg-slate-50 border-slate-200'
+                      : 'bg-[#0b131f] border-[#24354a]'
+                    }`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono font-bold text-[#b8860b]">{item.nivel}</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded font-mono ${theme === 'light' ? 'bg-slate-200 text-slate-700' : 'bg-[#1a2738] text-slate-300'
+                        }`}>
+                        {item.libros}
+                      </span>
+                    </div>
+                    <h4 className={`text-sm font-bold ${theme === 'light' ? 'text-slate-800' : 'text-white'
+                      }`}>
+                      {item.tit}
+                    </h4>
+                    <p className="text-xs text-slate-500">{item.eval}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className={`p-4 rounded-xl border text-xs flex flex-col sm:flex-row items-center justify-between gap-3 ${theme === 'light' ? 'bg-amber-50/70 border-amber-200 text-amber-900' : 'bg-[#1a2738]/60 border-[#b8860b]/40 text-amber-200'}`}>
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[#b8860b] shrink-0" />
+                  <span>Todos los cursos de inglés incluyen acceso a laboratorios multimedia y biblioteca de audio oficial.</span>
+                </div>
+                <a href="#inscripciones" className="font-bold underline whitespace-nowrap text-[#b8860b]">
+                  Inscribirse en Inglés &rarr;
+                </a>
+              </div>
+            </div>
+          )}
+
+          {tabIdioma === 'NATIVOS' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                {
+                  idioma: 'Aymara',
+                  sub: 'Jach\'a Qhana',
+                  desc: 'Lengua originaria hablada en la cuenca del Altiplano boliviano. Formación con enfoque comunicativo, gramatical e intercultural.',
+                  niveles: 'Básico, Intermedio y Avanzado (6 módulos)',
+                  region: 'Altiplano • La Paz, Oruro, Potosí'
+                },
+                {
+                  idioma: 'Quechua',
+                  sub: 'Runasimi',
+                  desc: 'Idioma de los valles interandinos y el sur del país. Enseñanza estructurada con docentes certificados para la integración social.',
+                  niveles: 'Básico, Intermedio y Avanzado (6 módulos)',
+                  region: 'Valles • Cochabamba, Chuquisaca, Potosí'
+                },
+                {
+                  idioma: 'Guaraní',
+                  sub: 'Ñe\'ẽ Porã',
+                  desc: 'Lengua originaria del Chaco y la Amazonía boliviana. Vocabulario técnico, identidad cultural y aplicación comunitaria.',
+                  niveles: 'Básico, Intermedio y Avanzado (6 módulos)',
+                  region: 'Chaco & Oriente • Santa Cruz, Tarija'
+                },
+              ].map((nat, i) => (
+                <div key={i} className={`border rounded-2xl p-6 space-y-3 shadow-sm flex flex-col justify-between ${theme === 'light' ? 'bg-white border-slate-200' : 'bg-[#121d2b] border-[#24354a]'
+                  }`}>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className={`text-xl font-bold ${theme === 'light' ? 'text-slate-900' : 'text-white'
+                        }`}>
+                        {nat.idioma}
+                      </h3>
+                      <span className="text-xs font-mono text-slate-500">{nat.sub}</span>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold text-[#15803d] dark:text-[#4ade80] block">
+                      {nat.region}
+                    </span>
+                    <p className={`text-xs leading-relaxed ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'
+                      }`}>
+                      {nat.desc}
+                    </p>
+                  </div>
+                  <div className="pt-3 border-t border-slate-200 dark:border-[#24354a]">
+                    <p className="text-xs text-slate-500 font-mono">
+                      Estructura: {nat.niveles}
+                    </p>
+                    <a href="#inscripciones" className="text-xs font-bold text-[#15803d] dark:text-[#4ade80] mt-2 block hover:underline">
+                      Inscribirme en {nat.idioma} &rarr;
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {tabIdioma === 'EXTRANJEROS' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { lang: 'Portugués', pais: 'Brasil / CPLP', enfoque: 'Integración Regional, Mercosur y Frontera' },
+                  { lang: 'Francés', pais: 'Francia / Francofonía', enfoque: 'Diplomacia y Misiones de Paz de la ONU' },
+                  { lang: 'Ruso', pais: 'Federación Rusa', enfoque: 'Cooperación Técnico-Militar y Ciencia' },
+                  { lang: 'Chino Mandarín', pais: 'R.P. China', enfoque: 'Comercio Bilateral y Relaciones Internacionales' },
+                ].map((ext, idx) => (
+                  <div key={idx} className={`border p-5 rounded-xl space-y-2 flex flex-col justify-between ${theme === 'light' ? 'bg-white border-slate-200' : 'bg-[#121d2b] border-[#24354a]'
+                    }`}>
+                    <div>
+                      <h4 className={`font-bold text-base ${theme === 'light' ? 'text-slate-800' : 'text-white'
+                        }`}>
+                        {ext.lang}
+                      </h4>
+                      <p className="text-xs font-mono font-semibold text-[#b8860b] mt-0.5">{ext.pais}</p>
+                      <p className="text-xs text-slate-500 mt-2">{ext.enfoque}</p>
+                    </div>
+                    <div className="pt-2 border-t border-slate-100 dark:border-[#24354a]">
+                      <a href="#inscripciones" className="text-xs font-semibold text-[#b8860b] hover:underline">
+                        Postular &rarr;
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* ============================================================
+            3. SECCIÓN: 9 SEDES Y FILIALES EN BOLIVIA
+            ============================================================ */}
+        <span id="sedes" className="scroll-mt-24 block -mt-24 pt-24 pointer-events-none" />
+        <section id="filiales" className="space-y-6 scroll-mt-24">
+          <div className="text-center max-w-2xl mx-auto space-y-1">
+            <span className="badge-bolivia-tricolor shadow-xs mb-1">
+              <span className="w-2 h-2 rounded-full bg-[#dc2626]" />
+              <span className="w-2 h-2 rounded-full bg-[#f59e0b]" />
+              <span className="w-2 h-2 rounded-full bg-[#15803d]" />
+              <span className="text-slate-800 dark:text-slate-200">Presencia Nacional Estratégica</span>
+            </span>
+            <p className="text-xs font-mono font-bold uppercase tracking-wider text-[#b8860b]">
+              Presencia Territorial
+            </p>
+            <h2 className={`text-2xl md:text-3xl font-extrabold ${theme === 'light' ? 'text-[#0f172a]' : 'text-white'
+              }`}>
+              Nuestras 9 Sedes y Filiales en Bolivia
+            </h2>
+            <p className="text-xs md:text-sm text-slate-500">
+              Infraestructura académica propia, laboratorios multimedia y ambientes disciplinados en las principales guarniciones del territorio boliviano.
+            </p>
+          </div>
+
+          {/* Sede Central Destacada */}
+          <div className={`rounded-2xl border-2 border-[#b8860b] p-6 md:p-8 relative overflow-hidden shadow-md ${
+            theme === 'light' ? 'bg-gradient-to-r from-amber-50/40 via-white to-amber-50/20' : 'bg-[#121d2b]'
+          }`}>
+            <div className="tricolor-stripe absolute top-0 left-0 right-0" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center pt-2">
+              <div className="lg:col-span-8 space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2.5 py-1 rounded bg-[#b8860b] text-white text-[11px] font-bold font-mono uppercase tracking-wider">
+                    Sede Central &bull; Casa Matriz
+                  </span>
+                  <span className="text-xs font-mono text-slate-500 font-bold">
+                    La Paz &bull; Estado Mayor General (Miraflores)
+                  </span>
+                </div>
+                <h3 className={`text-xl md:text-2xl font-extrabold ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+                  Cuartel General del Ejército &bull; Av. Saavedra Nro. 1420
+                </h3>
+                <p className={`text-xs md:text-sm leading-relaxed ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>
+                  Sede de la Dirección General de la EIE, Jefatura Académica, laboratorios centrales de audio y biblioteca lingüística. Ofrece cursos en modalidades presencial, intensivo y sabatino.
+                </p>
+                <div className="flex flex-wrap items-center gap-4 pt-2 text-xs font-mono">
+                  <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                    <Phone className="w-3.5 h-3.5 text-[#b8860b]" />
+                    Central Telefónica: 2-2223401
+                  </span>
+                  <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                    <Send className="w-3.5 h-3.5 text-[#15803d]" />
+                    WhatsApp Oficial: 72005358
+                  </span>
+                  <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                    <Clock className="w-3.5 h-3.5 text-[#1e3a8a]" />
+                    Lun a Vie: 07:30 - 18:30 | Sáb: 08:00 - 13:00
+                  </span>
+                </div>
+              </div>
+              <div className="lg:col-span-4 flex flex-col items-center justify-center border-t lg:border-t-0 lg:border-l border-slate-200 dark:border-[#24354a] pt-4 lg:pt-0 lg:pl-6 space-y-3">
+                <a
+                  href="#inscripciones"
+                  className="w-full text-center px-4 py-2.5 rounded-xl text-xs font-bold btn-bolivia-red shadow-sm hover:scale-[1.02] transition"
+                >
+                  Inscribirme en Sede Central
+                </a>
+                <a
+                  href="#contacto"
+                  className="w-full text-center px-4 py-2.5 rounded-xl text-xs font-semibold border border-slate-300 dark:border-[#364d68] hover:bg-slate-100 dark:hover:bg-[#1a2738] transition"
+                >
+                  Ver Mapa y Ubicación
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Grid de las otras 8 filiales */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { ciudad: 'El Alto', depto: 'La Paz', dir: 'Ciudad Satélite, Plan 405 (Guarnición Militar El Alto)', tel: '2-2819034' },
+              { ciudad: 'Viacha', depto: 'La Paz', dir: 'Regimiento de Artillería 1 Cnl. Max Toledo', tel: '2-2801944' },
+              { ciudad: 'Achacachi', depto: 'La Paz', dir: 'Regimiento de Infantería 8 Ayacucho', tel: '2-2891044' },
+              { ciudad: 'Cochabamba', depto: 'Cochabamba', dir: 'Av. Ramón Rivero y Calle Heroínas', tel: '4-4259102' },
+              { ciudad: 'Santa Cruz', depto: 'Santa Cruz', dir: 'Av. Ejército Nro. 520 (Colegio Militar de Aviación)', tel: '3-3349102' },
+              { ciudad: 'Tarija', depto: 'Tarija', dir: 'Barrio El Tejar, Av. Las Américas', tel: '4-6649102' },
+              { ciudad: 'Uncía', depto: 'Potosí', dir: 'Regimiento de Caballería 7 Chichas', tel: '2-5810294' },
+              { ciudad: 'Riberalta', depto: 'Beni', dir: 'Guarnición Militar de la Amazonía', tel: '3-8529104' },
+            ].map((sede, i) => (
+              <div key={i} className={`border p-4 rounded-xl space-y-2 transition flex flex-col justify-between ${theme === 'light'
+                  ? 'bg-white border-slate-200 hover:border-slate-400 hover:shadow-sm'
+                  : 'bg-[#121d2b] border-[#24354a] hover:border-slate-500'
+                }`}>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <h4 className={`font-bold text-sm ${theme === 'light' ? 'text-slate-900' : 'text-white'
+                      }`}>
+                      {sede.ciudad}
+                    </h4>
+                    <span className="text-[10px] font-mono text-[#b8860b] uppercase font-semibold">{sede.depto}</span>
+                  </div>
+                  <p className="text-xs text-slate-500 leading-relaxed">{sede.dir}</p>
+                </div>
+                <div className="pt-2 border-t border-slate-100 dark:border-[#24354a] flex items-center justify-between text-xs font-mono">
+                  <span className="text-[#15803d] dark:text-[#4ade80] font-medium flex items-center gap-1">
+                    <Phone className="w-3 h-3" /> {sede.tel}
+                  </span>
+                  <a href="#inscripciones" className="text-[11px] text-[#b8860b] hover:underline font-semibold">
+                    Postular &rarr;
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ============================================================
+            4. SECCIÓN: GALERÍA Y CONVOCATORIAS OFICIALES (CARRUSEL)
+            ============================================================ */}
+        <span id="galeria" className="scroll-mt-24 block -mt-24 pt-24 pointer-events-none" />
+        <section id="carrusel" className="space-y-6 scroll-mt-24">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <p className="text-xs font-mono font-bold uppercase tracking-wider text-[#b8860b]">
@@ -762,274 +1366,6 @@ export default function IndexPage() {
                   </span>
                 </div>
               </button>
-            ))}
-          </div>
-        </section>
-
-        <section id="mision-vision" className="space-y-6">
-          <div className="text-center max-w-2xl mx-auto space-y-1">
-            <p className="text-xs font-mono font-bold uppercase tracking-wider text-[#b8860b]">
-              Doctrina Institucional
-            </p>
-            <h2 className={`text-2xl md:text-3xl font-extrabold ${theme === 'light' ? 'text-[#0f172a]' : 'text-white'
-              }`}>
-              Misión y Visión
-            </h2>
-            <p className="text-xs md:text-sm text-slate-500">
-              Pilares estratégicos que fundamentan el liderazgo académico y ético de la Escuela de Idiomas del Ejército.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            <div className={`rounded-2xl border border-t-4 border-t-[#15803d] p-7 shadow-sm transition flex flex-col justify-between ${theme === 'light'
-                ? 'bg-white border-slate-200 hover:border-[#15803d]'
-                : 'bg-[#121d2b] border-[#24354a] hover:border-[#2d6a4f]'
-              }`}>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-[#24354a]">
-                  <span className="text-xs font-mono font-bold text-[#15803d] dark:text-[#4ade80] uppercase">
-                    Cometido Institucional
-                  </span>
-                  <span className="text-xs font-mono text-slate-400">Constitución Política</span>
-                </div>
-                <h3 className={`text-xl md:text-2xl font-bold ${theme === 'light' ? 'text-[#0f172a]' : 'text-white'
-                  }`}>
-                  Misión
-                </h3>
-                <p className={`text-xs md:text-sm leading-relaxed text-justify ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'
-                  }`}>
-                  La Escuela de Idiomas del Ejército planifica, coordina y desarrolla de forma permanente el sistema de enseñanza y aprendizaje de idiomas extranjeros y nativos en sus distintas filiales en todo el territorio nacional. Su objetivo es capacitar al recurso humano del Ejército y al personal civil con un elevado nivel de dominio lingüístico para satisfacer sus requerimientos y cumplir con la misión educativa del Comando de Institutos Militares y su función constitucional.
-                </p>
-              </div>
-              <div className="mt-6 pt-3 border-t border-slate-200 dark:border-[#24354a] flex items-center justify-between text-xs text-slate-500 font-mono">
-                <span>CEDMIL &bull; Ejército de Bolivia</span>
-                <span className="text-[#15803d] dark:text-[#4ade80] font-semibold">Función Constitucional</span>
-              </div>
-            </div>
-
-            <div className={`rounded-2xl border border-t-4 border-t-[#dc2626] p-7 shadow-sm transition flex flex-col justify-between ${theme === 'light'
-                ? 'bg-white border-slate-200 hover:border-[#dc2626]'
-                : 'bg-[#121d2b] border-[#24354a] hover:border-[#ef4444]'
-              }`}>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-[#24354a]">
-                  <span className="text-xs font-mono font-bold text-[#b8860b] uppercase">
-                    Horizonte Estratégico
-                  </span>
-                  <span className="text-xs font-mono text-slate-400">Proyección 2030</span>
-                </div>
-                <h3 className={`text-xl md:text-2xl font-bold ${theme === 'light' ? 'text-[#0f172a]' : 'text-white'
-                  }`}>
-                  Visión
-                </h3>
-                <p className={`text-xs md:text-sm leading-relaxed text-justify ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'
-                  }`}>
-                  Es una institución líder y competitiva en la enseñanza de idiomas nativos y extranjeros con excelencia académica, que forma talento humano especializado en lingüística capaz de afrontar los desafíos de un mundo globalizado y competitivo, consolidando además la interculturalidad a través de su personal académico y profesional.
-                </p>
-              </div>
-              <div className="mt-6 pt-3 border-t border-slate-200 dark:border-[#24354a] flex items-center justify-between text-xs text-slate-500 font-mono">
-                <span>Liderazgo &bull; Competitividad</span>
-                <span className="text-[#b8860b] font-semibold">Interculturalidad y Excelencia</span>
-              </div>
-            </div>
-
-          </div>
-        </section>
-
-        <section id="oferta-academica" className="space-y-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-mono font-bold uppercase tracking-wider text-[#1b4332] dark:text-[#74c69d]">
-                Oferta Formativa
-              </p>
-              <h2 className={`text-2xl md:text-3xl font-extrabold mt-1 ${theme === 'light' ? 'text-[#0f172a]' : 'text-white'
-                }`}>
-                Catálogo de Idiomas y Programas
-              </h2>
-            </div>
-
-            <div className={`inline-flex border p-1 rounded-xl text-xs font-semibold ${theme === 'light' ? 'bg-slate-100 border-slate-300' : 'bg-[#0b131f] border-[#24354a]'
-              }`}>
-              <button
-                onClick={() => setTabIdioma('INGLES')}
-                className={`px-3.5 py-1.5 rounded-lg transition ${tabIdioma === 'INGLES'
-                    ? 'bg-[#d97706] text-white font-bold shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-              >
-                Inglés ALC
-              </button>
-              <button
-                onClick={() => setTabIdioma('NATIVOS')}
-                className={`px-3.5 py-1.5 rounded-lg transition ${tabIdioma === 'NATIVOS'
-                    ? 'bg-[#15803d] text-white font-bold shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-              >
-                Lenguas Nativas
-              </button>
-              <button
-                onClick={() => setTabIdioma('EXTRANJEROS')}
-                className={`px-3.5 py-1.5 rounded-lg transition ${tabIdioma === 'EXTRANJEROS'
-                    ? 'bg-[#b91c1c] text-white font-bold shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-              >
-                Idiomas Extranjeros
-              </button>
-            </div>
-          </div>
-
-          {tabIdioma === 'INGLES' && (
-            <div className={`border rounded-2xl p-6 md:p-8 space-y-6 shadow-sm ${theme === 'light' ? 'bg-white border-slate-200' : 'bg-[#121d2b] border-[#24354a]'
-              }`}>
-              <div className="pb-3 border-b border-slate-200 dark:border-[#24354a]">
-                <p className="text-xs font-bold text-[#b8860b] uppercase tracking-wider">
-                  Plan Curricular de Inglés
-                </p>
-                <h3 className={`text-xl md:text-2xl font-bold ${theme === 'light' ? 'text-[#0f172a]' : 'text-white'
-                  }`}>
-                  Inglés Técnico Superior &bull; 36 Libros y 6 Niveles Formativos
-                </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  Estructura secuencial con rotación pedagógica cada 15 días y evaluaciones de nivel al completar cada bloque de 6 libros.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[
-                  { nivel: 'Nivel 1', libros: 'Libros 1 al 6', tit: 'Inglés Elemental / Básico', eval: 'Examen de Nivel en Libro 6', border: 'border-l-4 border-l-[#15803d]' },
-                  { nivel: 'Nivel 2', libros: 'Libros 7 al 12', tit: 'Inglés Pre-Intermedio', eval: 'Examen de Nivel en Libro 12', border: 'border-l-4 border-l-[#15803d]' },
-                  { nivel: 'Nivel 3', libros: 'Libros 13 al 18', tit: 'Inglés Intermedio', eval: 'Examen de Nivel en Libro 18', border: 'border-l-4 border-l-[#f59e0b]' },
-                  { nivel: 'Nivel 4', libros: 'Libros 19 al 24', tit: 'Inglés Intermedio Alto', eval: 'Examen de Nivel en Libro 24', border: 'border-l-4 border-l-[#f59e0b]' },
-                  { nivel: 'Nivel 5', libros: 'Libros 25 al 30', tit: 'Inglés Avanzado Profesional', eval: 'Examen de Nivel en Libro 30', border: 'border-l-4 border-l-[#dc2626]' },
-                  { nivel: 'Nivel 6', libros: 'Libros 31 al 36', tit: 'Suficiencia & Especialidad Militar', eval: 'Defensa de Grado Técnico Superior', border: 'border-l-4 border-l-[#1e3a8a] dark:border-l-[#38bdf8]' },
-                ].map((item, idx) => (
-                  <div key={idx} className={`border p-4 rounded-xl space-y-2 ${item.border} ${theme === 'light'
-                      ? 'bg-slate-50 border-slate-200'
-                      : 'bg-[#0b131f] border-[#24354a]'
-                    }`}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono font-bold text-[#b8860b]">{item.nivel}</span>
-                      <span className={`text-[10px] px-2 py-0.5 rounded font-mono ${theme === 'light' ? 'bg-slate-200 text-slate-700' : 'bg-[#1a2738] text-slate-300'
-                        }`}>
-                        {item.libros}
-                      </span>
-                    </div>
-                    <h4 className={`text-sm font-bold ${theme === 'light' ? 'text-slate-800' : 'text-white'
-                      }`}>
-                      {item.tit}
-                    </h4>
-                    <p className="text-xs text-slate-500">{item.eval}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {tabIdioma === 'NATIVOS' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                {
-                  idioma: 'Aymara',
-                  sub: 'Jach\'a Qhana',
-                  desc: 'Lengua originaria hablada en la cuenca del Altiplano boliviano. Formación con enfoque comunicativo, gramatical e intercultural.',
-                  niveles: 'Básico, Intermedio y Avanzado (6 módulos)',
-                },
-                {
-                  idioma: 'Quechua',
-                  sub: 'Runasimi',
-                  desc: 'Idioma de los valles interandinos y el sur del país. Enseñanza estructurada con docentes certificados para la integración social.',
-                  niveles: 'Básico, Intermedio y Avanzado (6 módulos)',
-                },
-                {
-                  idioma: 'Guaraní',
-                  sub: 'Ñe\'ẽ Porã',
-                  desc: 'Lengua originaria del Chaco y la Amazonía boliviana. Vocabulario técnico, identidad cultural y aplicación comunitaria.',
-                  niveles: 'Básico, Intermedio y Avanzado (6 módulos)',
-                },
-              ].map((nat, i) => (
-                <div key={i} className={`border rounded-2xl p-6 space-y-3 shadow-sm ${theme === 'light' ? 'bg-white border-slate-200' : 'bg-[#121d2b] border-[#24354a]'
-                  }`}>
-                  <div className="flex items-center justify-between">
-                    <h3 className={`text-xl font-bold ${theme === 'light' ? 'text-slate-900' : 'text-white'
-                      }`}>
-                      {nat.idioma}
-                    </h3>
-                    <span className="text-xs font-mono text-slate-500">{nat.sub}</span>
-                  </div>
-                  <p className={`text-xs leading-relaxed ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'
-                    }`}>
-                    {nat.desc}
-                  </p>
-                  <p className="text-xs text-slate-500 font-mono pt-2 border-t border-slate-200 dark:border-[#24354a]">
-                    Estructura: {nat.niveles}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {tabIdioma === 'EXTRANJEROS' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { lang: 'Portugués', pais: 'Brasil / CPLP', enfoque: 'Integración Regional y Fronteriza' },
-                { lang: 'Francés', pais: 'Francia / Francofonía', enfoque: 'Diplomacia y Misiones de Paz ONU' },
-                { lang: 'Ruso', pais: 'Federación Rusa', enfoque: 'Cooperación Técnica Militar' },
-                { lang: 'Chino Mandarín', pais: 'R.P. China', enfoque: 'Comercio y Relaciones Bilaterales' },
-              ].map((ext, idx) => (
-                <div key={idx} className={`border p-4 rounded-xl space-y-1.5 ${theme === 'light' ? 'bg-white border-slate-200' : 'bg-[#121d2b] border-[#24354a]'
-                  }`}>
-                  <h4 className={`font-bold text-sm ${theme === 'light' ? 'text-slate-800' : 'text-white'
-                    }`}>
-                    {ext.lang}
-                  </h4>
-                  <p className="text-xs font-mono text-[#b8860b]">{ext.pais}</p>
-                  <p className="text-xs text-slate-500">{ext.enfoque}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section id="filiales" className="space-y-6">
-          <div className="text-center max-w-2xl mx-auto space-y-1">
-            <p className="text-xs font-mono font-bold uppercase tracking-wider text-[#b8860b]">
-              Presencia Territorial
-            </p>
-            <h2 className={`text-2xl md:text-3xl font-extrabold ${theme === 'light' ? 'text-[#0f172a]' : 'text-white'
-              }`}>
-              Nuestras 9 Sedes y Filiales en Bolivia
-            </h2>
-            <p className="text-xs md:text-sm text-slate-500">
-              Infraestructura académica y laboratorios de idiomas en guarniciones de todo el territorio nacional.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {[
-              { ciudad: 'La Paz (Sede Central)', dir: 'Av. Saavedra Nro. 1420, Miraflores (Cuartel General)', tel: '2-2223401' },
-              { ciudad: 'El Alto', dir: 'Ciudad Satélite, Plan 405 (Guarnición Militar El Alto)', tel: '2-2819034' },
-              { ciudad: 'Viacha', dir: 'Regimiento de Artillería 1 Cnl. Max Toledo', tel: '2-2801944' },
-              { ciudad: 'Achacachi', dir: 'Regimiento de Infantería 8 Ayacucho', tel: '2-2891044' },
-              { ciudad: 'Cochabamba', dir: 'Av. Ramón Rivero y Calle Heroínas', tel: '4-4259102' },
-              { ciudad: 'Santa Cruz', dir: 'Av. Ejército Nro. 520 (Colegio Militar de Aviación)', tel: '3-3349102' },
-              { ciudad: 'Tarija', dir: 'Barrio El Tejar, Av. Las Américas', tel: '4-6649102' },
-              { ciudad: 'Uncía (Potosí)', dir: 'Regimiento de Caballería 7 Chichas', tel: '2-5810294' },
-              { ciudad: 'Riberalta (Beni)', dir: 'Guarnición Militar de la Amazonía', tel: '3-8529104' },
-            ].map((sede, i) => (
-              <div key={i} className={`border p-4 rounded-xl space-y-1.5 transition ${theme === 'light'
-                  ? 'bg-white border-slate-200 hover:border-slate-400'
-                  : 'bg-[#121d2b] border-[#24354a] hover:border-slate-500'
-                }`}>
-                <h4 className={`font-bold text-sm ${theme === 'light' ? 'text-slate-900' : 'text-white'
-                  }`}>
-                  {sede.ciudad}
-                </h4>
-                <p className="text-xs text-slate-500">{sede.dir}</p>
-                <p className="text-xs font-mono font-medium text-[#1b4332] dark:text-[#74c69d]">Central: {sede.tel}</p>
-              </div>
             ))}
           </div>
         </section>

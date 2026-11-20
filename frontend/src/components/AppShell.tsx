@@ -233,6 +233,21 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, [theme, fontSize]);
 
+  // Gestionar overflow del body según si es ruta pública o interna
+  useEffect(() => {
+    const isPublicRoute = pathname === '/' || pathname === '/login';
+    if (isPublicRoute) {
+      document.body.classList.add('public-page');
+      document.body.classList.remove('app-page');
+    } else {
+      document.body.classList.add('app-page');
+      document.body.classList.remove('public-page');
+    }
+    return () => {
+      document.body.classList.remove('public-page', 'app-page');
+    };
+  }, [pathname]);
+
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setAuthStep('Redirigiendo a autenticación institucional con Google...');

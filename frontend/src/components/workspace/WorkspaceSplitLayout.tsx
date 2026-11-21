@@ -164,11 +164,11 @@ export default function WorkspaceSplitLayout({
           {onNew && (
             <button
               onClick={onNew}
-              className="px-3 py-1.5 bg-[#1B3B2B] hover:bg-[#12281D] text-amber-300 dark:bg-[#F59E0B] dark:hover:bg-[#D97706] dark:text-black font-mono font-bold text-xs uppercase tracking-wider transition flex items-center gap-1.5 shadow-xs shrink-0"
+              className="px-3 py-1.5 bg-[#F59E0B] hover:bg-[#D97706] text-zinc-950 font-mono font-black text-xs uppercase tracking-wider transition flex items-center gap-1.5 shadow-xs shrink-0"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{newLabel}</span>
-              <span className="sm:hidden">Nuevo</span>
+              <Plus className="w-3.5 h-3.5 text-zinc-950" />
+              <span className="hidden sm:inline text-zinc-950">{newLabel}</span>
+              <span className="sm:hidden text-zinc-950">Nuevo</span>
             </button>
           )}
         </div>
@@ -179,7 +179,7 @@ export default function WorkspaceSplitLayout({
         {/* Panel Izquierdo — Tabla Paginada (8 Columnas en Desktop) */}
         <div className="col-span-12 lg:col-span-8 flex flex-col justify-between min-h-0 border-r border-[#D4D4D0] dark:border-[#242B27] bg-[var(--bg-base)]">
           {/* Contenedor de la Tabla con Scroll Vertical Propio */}
-          <div className="flex-1 min-h-0 overflow-y-auto">{tableContent}</div>
+          <div className="flex-1 min-h-0 overflow-y-auto flex flex-col justify-between">{tableContent}</div>
 
           {/* Barra de Paginación Fija al Fondo (44px) */}
           {pagination && (

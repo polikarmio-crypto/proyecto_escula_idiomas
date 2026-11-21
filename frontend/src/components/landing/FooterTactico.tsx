@@ -137,10 +137,10 @@ export default function FooterTactico() {
             <div className="space-y-2">
               <Link
                 href="/login"
-                className="w-full py-2.5 px-3 bg-[#1B3B2B] hover:bg-[#12281D] text-amber-300 dark:bg-[#F59E0B] dark:hover:bg-[#D97706] dark:text-black font-bold flex items-center justify-between transition uppercase tracking-wider text-[11px] shadow-sm"
+                className="w-full py-2.5 px-3 bg-[#F59E0B] hover:bg-[#D97706] text-zinc-950 font-black flex items-center justify-between transition uppercase tracking-wider text-[11px] shadow-sm"
               >
-                <span>Acceder a SACA</span>
-                <Terminal className="w-3.5 h-3.5" />
+                <span className="text-zinc-950 font-black">Acceder a SACA</span>
+                <Terminal className="w-3.5 h-3.5 text-zinc-950" />
               </Link>
 
               <a

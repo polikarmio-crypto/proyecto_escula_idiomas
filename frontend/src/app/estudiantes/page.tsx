@@ -26,6 +26,7 @@ import {
   Printer
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
+import { useDynamicPagination } from '@/hooks/useDynamicPagination';
 
 interface EstudianteItem {
   id: number;
@@ -51,6 +52,8 @@ interface EstudianteItem {
 export default function EstudiantesPage() {
   const { esJefeAcademico, esAdmin, rolConfig } = useAuthRole();
   const puedeAdministrar = esJefeAcademico || esAdmin;
+
+  const { pageSize, containerRef } = useDynamicPagination({ rowHeight: 42, minItems: 8, maxItems: 25 });
 
   const [estudiantes, setEstudiantes] = useState<EstudianteItem[]>([]);
   const [estudianteSeleccionado, setEstudianteSeleccionado] = useState<EstudianteItem | null>(null);
@@ -100,7 +103,7 @@ export default function EstudiantesPage() {
     try {
       const params = new URLSearchParams();
       params.append('page', page.toString());
-      params.append('per_page', '7');
+      params.append('per_page', pageSize.toString());
       if (filtroTipo !== 'TODOS') params.append('tipo', filtroTipo);
       if (filtroIdioma) params.append('idioma', filtroIdioma);
       if (filtroParalelo) params.append('paralelo', filtroParalelo);
@@ -143,7 +146,7 @@ export default function EstudiantesPage() {
 
   useEffect(() => {
     cargarEstudiantes();
-  }, [page, filtroTipo, filtroIdioma, filtroParalelo]);
+  }, [page, filtroTipo, filtroIdioma, filtroParalelo, pageSize]);
 
   const handleBuscar = (e: React.FormEvent) => {
     e.preventDefault();
@@ -323,7 +326,7 @@ export default function EstudiantesPage() {
     );
   }
 
-  const totalPages = Math.max(1, Math.ceil(total / 7));
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
     <div className="h-full flex flex-col min-h-0 overflow-hidden">
@@ -427,8 +430,8 @@ export default function EstudiantesPage() {
 
       {/* ÁREA DE TRABAJO DIVIDIDA (SPLIT-WORKSPACE) */}
       <div className="split-workspace">
-        {/* PANEL PRINCIPAL: TABLA COMPACTA (7 REGISTROS) */}
-        <div className="workspace-main-panel">
+        {/* PANEL PRINCIPAL: TABLA DINÁMICA DE ALTO ADAPTATIVO */}
+        <div ref={containerRef} className="workspace-main-panel">
           <div className="workspace-table-container">
             <table className="compact-table">
               <thead>

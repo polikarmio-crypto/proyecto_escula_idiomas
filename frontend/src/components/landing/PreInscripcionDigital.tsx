@@ -258,10 +258,10 @@ export default function PreInscripcionDigital() {
 
                 <a
                   href="#correo-institucional"
-                  className="px-5 py-2.5 bg-[#1B3B2B] hover:bg-[#12281D] text-amber-300 dark:bg-[#F59E0B] dark:hover:bg-[#D97706] dark:text-black font-bold uppercase tracking-wider flex items-center gap-2"
+                  className="px-5 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-zinc-950 font-black uppercase tracking-wider flex items-center gap-2 shadow-sm"
                 >
                   <span>Solicitar Correo Institucional</span>
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4 text-zinc-950" />
                 </a>
 
                 <button
@@ -291,10 +291,10 @@ export default function PreInscripcionDigital() {
                   <button
                     type="button"
                     onClick={() => setFormInscripcion({ ...formInscripcion, tipo_estudiante: 'Civil' })}
-                    className={`p-3 text-xs font-mono font-bold uppercase border transition-all text-center ${
+                    className={`p-3 text-xs font-mono font-black uppercase border transition-all text-center ${
                       formInscripcion.tipo_estudiante === 'Civil'
-                        ? 'bg-[#1B3B2B] text-amber-300 border-[#1B3B2B] dark:bg-[#F59E0B] dark:text-black dark:border-[#F59E0B]'
-                        : 'bg-[#F4F3EF] text-zinc-700 border-[#D4D4D0] hover:border-zinc-500 dark:bg-[#0A0C0B] dark:text-zinc-400 dark:border-[#242B27]'
+                        ? 'bg-[#F59E0B] text-zinc-950 border-[#F59E0B] shadow-sm'
+                        : 'bg-[#F4F3EF] text-zinc-700 border-[#D4D4D0] hover:border-zinc-500 dark:bg-[#0A0C0B] dark:text-zinc-300 dark:border-[#242B27]'
                     }`}
                   >
                     Estudiante Civil
@@ -302,10 +302,10 @@ export default function PreInscripcionDigital() {
                   <button
                     type="button"
                     onClick={() => setFormInscripcion({ ...formInscripcion, tipo_estudiante: 'Militar' })}
-                    className={`p-3 text-xs font-mono font-bold uppercase border transition-all text-center ${
+                    className={`p-3 text-xs font-mono font-black uppercase border transition-all text-center ${
                       formInscripcion.tipo_estudiante === 'Militar'
-                        ? 'bg-[#1B3B2B] text-amber-300 border-[#1B3B2B] dark:bg-[#F59E0B] dark:text-black dark:border-[#F59E0B]'
-                        : 'bg-[#F4F3EF] text-zinc-700 border-[#D4D4D0] hover:border-zinc-500 dark:bg-[#0A0C0B] dark:text-zinc-400 dark:border-[#242B27]'
+                        ? 'bg-[#F59E0B] text-zinc-950 border-[#F59E0B] shadow-sm'
+                        : 'bg-[#F4F3EF] text-zinc-700 border-[#D4D4D0] hover:border-zinc-500 dark:bg-[#0A0C0B] dark:text-zinc-300 dark:border-[#242B27]'
                     }`}
                   >
                     Personal Militar
@@ -555,7 +555,7 @@ export default function PreInscripcionDigital() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full sm:w-auto px-8 py-3.5 bg-[#1B3B2B] hover:bg-[#12281D] text-amber-300 dark:bg-[#F59E0B] dark:hover:bg-[#D97706] dark:text-black font-mono font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50 shadow-md"
+                  className="w-full sm:w-auto px-8 py-3.5 bg-[#F59E0B] hover:bg-[#D97706] text-zinc-950 font-mono font-black text-xs uppercase tracking-wider transition-all disabled:opacity-50 shadow-md"
                 >
                   {loading ? 'Procesando en Sistema...' : '[ Registrar Pre-Inscripción Oficial ]'}
                 </button>

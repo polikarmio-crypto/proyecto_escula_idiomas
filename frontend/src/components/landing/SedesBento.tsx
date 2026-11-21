@@ -179,7 +179,7 @@ export default function SedesBento() {
 
                   <div className="relative z-10 space-y-4">
                     <div className="flex items-center justify-between text-xs font-mono">
-                      <span className="px-2.5 py-1 bg-[#1B3B2B] text-amber-300 dark:bg-[#F59E0B] dark:text-black font-bold uppercase tracking-wider">
+                      <span className="px-2.5 py-1 bg-[#F59E0B] text-zinc-950 font-black uppercase tracking-wider shadow-xs">
                         ★ SEDE PRINCIPAL
                       </span>
                       <span className="text-[#D97706] dark:text-[#F59E0B] font-mono flex items-center gap-1 font-semibold">

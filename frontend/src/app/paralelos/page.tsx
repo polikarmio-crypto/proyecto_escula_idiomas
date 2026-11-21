@@ -22,13 +22,14 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
-
-const PER_PAGE = 7;
+import { useDynamicPagination } from '@/hooks/useDynamicPagination';
 
 export default function ParalelosPage() {
   const { rolActivo, esJefeAcademico, esDocente, esAdmin, usuario } = useAuthRole();
   const puedeCrear = esJefeAcademico || esAdmin;
   const puedeAsignar = esJefeAcademico || esAdmin;
+
+  const { pageSize, containerRef } = useDynamicPagination({ rowHeight: 44, minItems: 8, maxItems: 25 });
 
   const [loading, setLoading] = useState(false);
   const [paralelos, setParalelos] = useState<any[]>([]);
@@ -364,11 +365,11 @@ export default function ParalelosPage() {
     });
   }, [paralelos, esDocente, usuario.nombre, busqueda]);
 
-  const totalPages = Math.max(1, Math.ceil(paralelosVisibles.length / PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(paralelosVisibles.length / pageSize));
   const paralelosPaginados = useMemo(() => {
-    const start = (page - 1) * PER_PAGE;
-    return paralelosVisibles.slice(start, start + PER_PAGE);
-  }, [paralelosVisibles, page]);
+    const start = (page - 1) * pageSize;
+    return paralelosVisibles.slice(start, start + pageSize);
+  }, [paralelosVisibles, page, pageSize]);
 
   if (!puedeCrear && !esDocente) {
     return (
@@ -407,7 +408,7 @@ export default function ParalelosPage() {
           />
         </div>
         <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
-          {paralelosVisibles.length === 0 ? 0 : (page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, paralelosVisibles.length)} / {paralelosVisibles.length}
+          {paralelosVisibles.length === 0 ? 0 : (page - 1) * pageSize + 1}–{Math.min(page * pageSize, paralelosVisibles.length)} / {paralelosVisibles.length}
         </span>
         <div style={{ flex: 1 }} />
         <button
@@ -440,7 +441,7 @@ export default function ParalelosPage() {
       {/* Split Workspace */}
       <div className="split-workspace" style={{ flex: 1, minHeight: 0 }}>
         {/* Panel Izquierdo: Tabla compacta */}
-        <div className="workspace-main-panel">
+        <div ref={containerRef} className="workspace-main-panel">
           <div className="workspace-table-container">
             {paralelosPaginados.length === 0 ? (
               <div className="flex items-center justify-center h-full" style={{ color: 'var(--text-muted)' }}>

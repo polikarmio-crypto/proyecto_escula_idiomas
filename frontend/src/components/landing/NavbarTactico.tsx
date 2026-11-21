@@ -89,10 +89,10 @@ export default function NavbarTactico() {
                   STANAG 6001
                 </span>
               </div>
-              <span className="text-xs sm:text-sm lg:text-base font-extrabold tracking-tight text-[#111312] dark:text-white font-display uppercase">
+              <span className="text-xs sm:text-sm lg:text-base font-black tracking-tight text-zinc-950 dark:text-white font-display uppercase">
                 Escuela de Idiomas del Ejército
               </span>
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-mono hidden sm:block">
+              <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-mono font-medium hidden sm:block">
                 Sede Central Miraflores • La Paz, Bolivia
               </span>
             </div>
@@ -104,12 +104,12 @@ export default function NavbarTactico() {
               <a
                 key={link.href}
                 href={link.href}
-                className="px-2.5 py-1.5 text-[11px] font-mono font-medium text-zinc-700 dark:text-zinc-300 hover:text-[#111312] dark:hover:text-white hover:bg-[#EAE8E1] dark:hover:bg-[#121614] border border-transparent hover:border-[#D4D4D0] dark:hover:border-[#242B27] transition-all flex flex-col items-start group"
+                className="px-2.5 py-1.5 text-[11px] font-mono font-medium text-zinc-800 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-[#EAE8E1] dark:hover:bg-[#121614] border border-transparent hover:border-[#D4D4D0] dark:hover:border-[#242B27] transition-all flex flex-col items-start group"
               >
-                <span className="text-[9px] text-[#D97706]/80 dark:text-[#F59E0B]/70 group-hover:text-[#D97706] dark:group-hover:text-[#F59E0B] tracking-wider">
+                <span className="text-[9px] text-[#D97706] dark:text-[#F59E0B] group-hover:text-[#B45309] dark:group-hover:text-[#F59E0B] tracking-wider font-bold">
                   {link.label.split(' // ')[0]}
                 </span>
-                <span className="tracking-tight text-zinc-800 dark:text-zinc-200 group-hover:text-black dark:group-hover:text-white">
+                <span className="tracking-tight text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-950 dark:group-hover:text-white font-bold">
                   {link.text}
                 </span>
               </a>
@@ -124,7 +124,7 @@ export default function NavbarTactico() {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider">SYS: ONLINE</span>
               </div>
-              <span className="text-zinc-500 dark:text-zinc-400 tabular-nums">BOT: {horaBolivia || '12:00:00'}</span>
+              <span className="text-zinc-700 dark:text-zinc-400 tabular-nums font-semibold">BOT: {horaBolivia || '12:00:00'}</span>
             </div>
 
             {/* Componente ThemeToggle */}
@@ -133,11 +133,11 @@ export default function NavbarTactico() {
             {/* Botón de Acceso al Login */}
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 bg-[#1B3B2B] hover:bg-[#132B1F] text-white dark:bg-[#F59E0B] dark:hover:bg-[#D97706] dark:text-black font-mono font-bold text-xs uppercase tracking-wider transition-all shadow-xs dark:shadow-[0_0_15px_rgba(245,158,11,0.25)] hover:shadow dark:hover:shadow-[0_0_20px_rgba(245,158,11,0.4)]"
+              className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-zinc-950 font-mono font-black text-xs uppercase tracking-wider transition-all shadow-xs dark:shadow-[0_0_15px_rgba(245,158,11,0.25)] hover:shadow dark:hover:shadow-[0_0_20px_rgba(245,158,11,0.4)]"
             >
-              <Terminal className="w-3.5 h-3.5" />
-              <span>Acceso SACA</span>
-              <ChevronRight className="w-3.5 h-3.5" />
+              <Terminal className="w-3.5 h-3.5 text-zinc-950" />
+              <span className="text-zinc-950 font-black">Acceso SACA</span>
+              <ChevronRight className="w-3.5 h-3.5 text-zinc-950" />
             </Link>
 
             {/* Toggle Menú Móvil */}
@@ -169,13 +169,13 @@ export default function NavbarTactico() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2.5 bg-white dark:bg-[#121614] border border-[#D4D4D0] dark:border-[#242B27] hover:border-[#D97706] dark:hover:border-[#F59E0B] text-zinc-800 dark:text-zinc-200 hover:text-black dark:hover:text-white flex items-center justify-between transition"
+                className="px-3 py-2.5 bg-white dark:bg-[#121614] border border-[#D4D4D0] dark:border-[#242B27] hover:border-[#D97706] dark:hover:border-[#F59E0B] text-zinc-900 dark:text-zinc-100 hover:text-black dark:hover:text-white flex items-center justify-between transition"
               >
                 <div>
-                  <span className="text-[10px] text-[#D97706] dark:text-[#F59E0B] block">{link.label}</span>
-                  <span className="font-sans font-semibold text-sm">{link.text}</span>
+                  <span className="text-[10px] text-[#D97706] dark:text-[#F59E0B] font-bold block">{link.label}</span>
+                  <span className="font-sans font-bold text-sm text-zinc-950 dark:text-white">{link.text}</span>
                 </div>
-                <ArrowRight className="w-3.5 h-3.5 text-zinc-400" />
+                <ArrowRight className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
               </a>
             ))}
           </div>
@@ -184,7 +184,7 @@ export default function NavbarTactico() {
             <Link
               href="/login"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex-1 py-3 bg-[#1B3B2B] text-white dark:bg-[#F59E0B] dark:text-black font-bold text-center block uppercase tracking-wider"
+              className="flex-1 py-3 bg-[#F59E0B] hover:bg-[#D97706] text-zinc-950 font-black text-center block uppercase tracking-wider"
             >
               Iniciar Sesión en SACA
             </Link>

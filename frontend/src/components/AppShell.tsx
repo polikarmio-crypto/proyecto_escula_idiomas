@@ -514,10 +514,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   />
                 </div>
                 <div className="hidden sm:block">
-                  <span className="text-[11px] font-black font-display text-white uppercase tracking-wider block leading-none">
+                  <span className="text-[11px] font-black font-display text-[#F4F4F0] uppercase tracking-wider block leading-none">
                     EIE • SACA
                   </span>
-                  <span className="text-[8px] font-mono text-[#F59E0B] uppercase">
+                  <span className="text-[8px] font-mono text-[#F59E0B] uppercase font-bold">
                     CEDMIL // LA PAZ
                   </span>
                 </div>
@@ -555,40 +555,40 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </div>
 
               {/* Breadcrumb Dinámico Táctico */}
-              <div className="hidden md:flex items-center gap-1.5 text-xs font-mono text-zinc-300">
-                <span className="text-zinc-400">SISTEMA</span>
-                <span className="text-[#F59E0B]">&gt;</span>
-                <span className="text-zinc-300">{rolConfig.titulo.split(' ')[0].toUpperCase()}</span>
-                <span className="text-[#F59E0B]">&gt;</span>
-                <span className="text-white font-bold uppercase truncate max-w-[140px] lg:max-w-none">
+              <div className="hidden md:flex items-center gap-1.5 text-xs font-mono text-[#F4F4F0]">
+                <span className="text-zinc-300">SISTEMA</span>
+                <span className="text-[#F59E0B] font-bold">&gt;</span>
+                <span className="text-zinc-200 font-semibold">{rolConfig.titulo.split(' ')[0].toUpperCase()}</span>
+                <span className="text-[#F59E0B] font-bold">&gt;</span>
+                <span className="text-[#F4F4F0] font-black uppercase truncate max-w-[140px] lg:max-w-none">
                   {pathname.replace('/', '') || 'DASHBOARD'}
                 </span>
               </div>
             </div>
 
-            {/* Acciones de la Derecha: Telemetría, Toggle Tema, Pill Usuario */}
+            {/* Acciones de la Derecha: Telemetría, Toggle Tema, Pill Usuario, Logout Header */}
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               {/* Indicador de Conexión Táctico */}
               <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 bg-black/30 border border-white/15 font-mono text-[10px]">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-zinc-400">SESIÓN:</span>
+                <span className="text-zinc-300 font-semibold">SESIÓN:</span>
                 <span className="text-emerald-400 font-bold">ONLINE</span>
               </div>
 
               {/* Acceso a Configuración */}
               <Link
                 href="/configuracion"
-                className="hidden md:flex items-center gap-1 px-2 py-1 bg-white/10 hover:bg-white/15 border border-white/20 text-white text-[11px] font-mono transition"
+                className="hidden md:flex items-center gap-1 px-2 py-1 bg-white/10 hover:bg-white/15 border border-white/20 text-[#F4F4F0] text-[11px] font-mono transition"
                 title="Configuración & Accesibilidad"
               >
                 <Sliders size={12} className="text-[#F59E0B]" />
-                <span>Ajustes</span>
+                <span className="font-semibold">Ajustes</span>
               </Link>
 
               {/* Selector de Modo Claro / Oscuro */}
               <ThemeToggle />
 
-              {/* Pill Compacta de Credenciales */}
+              {/* Pill Compacta de Credenciales con Logout Directo */}
               <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-white/20">
                 <div
                   style={{ backgroundColor: 'var(--military-green-primary)' }}
@@ -597,13 +597,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   {(usuario?.nombre || session?.user?.name || rolConfig.nombrePorDefecto).slice(0, 2).toUpperCase()}
                 </div>
                 <div className="hidden xl:block min-w-0 max-w-[150px]">
-                  <p className="text-[11px] font-bold text-white truncate leading-none">
+                  <p className="text-[11px] font-black text-[#F4F4F0] truncate leading-none">
                     {usuario?.nombre || session?.user?.name || rolConfig.nombrePorDefecto}
                   </p>
-                  <span className="text-[9px] font-mono text-[#F59E0B] truncate block mt-0.5">
+                  <span className="text-[9px] font-mono text-[#F59E0B] font-bold truncate block mt-0.5">
                     ROL // {rolConfig.titulo.split(' ')[0].toUpperCase()}
                   </span>
                 </div>
+
+                {/* Botón Compacto de Cerrar Sesión en Header */}
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex items-center gap-1 px-2 py-1 bg-red-600/20 hover:bg-red-600/40 border border-red-500/40 text-red-200 hover:text-white text-[11px] font-mono transition rounded-[2px] shrink-0"
+                  title="Cerrar Sesión Operativa"
+                >
+                  <LogOut size={12} className="text-red-400" />
+                  <span className="hidden sm:inline text-[10px] font-bold">Salir</span>
+                </button>
               </div>
             </div>
           </header>
@@ -646,7 +657,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 {navCategories.map((cat, catIdx) => (
                   <div key={catIdx} className="space-y-0.5">
                     {!sidebarCollapsed ? (
-                      <div className="px-2 py-1 text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
+                      <div className="px-2 py-1 text-[9px] font-mono font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest">
                         {cat.title}
                       </div>
                     ) : (
@@ -663,14 +674,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                           onClick={(e) => handleNavClick(e, item)}
                           className={`nav-item flex items-center gap-2.5 px-2 py-1.5 text-xs font-mono transition-all border-l-2 ${
                             isActive
-                              ? 'bg-[#1B3B2B]/10 dark:bg-[#4D6B53]/20 text-[#1B3B2B] dark:text-white border-[#D97706] dark:border-[#F59E0B] font-bold'
-                              : 'text-zinc-700 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-[#EAE8E1]/60 dark:hover:bg-[#181E1B] border-transparent'
+                              ? 'active bg-[#1B3B2B] text-white font-semibold border-[#1B3B2B] dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500'
+                              : 'text-zinc-900 dark:text-zinc-200 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-[#181E1B] border-transparent'
                           } ${sidebarCollapsed ? 'justify-center' : ''}`}
                           title={sidebarCollapsed ? item.label : undefined}
                         >
-                          <Icon size={16} className="shrink-0" />
-                          {!sidebarCollapsed && <span className="truncate flex-1 text-[11px]">{item.label}</span>}
-                          {!sidebarCollapsed && isActive && <ChevronRight size={12} className="text-[#D97706] dark:text-[#F59E0B] shrink-0" />}
+                          <Icon size={16} className={`shrink-0 ${isActive ? 'text-white dark:text-amber-400' : 'text-zinc-800 dark:text-zinc-300'}`} />
+                          {!sidebarCollapsed && <span className="truncate flex-1 text-[11px] font-semibold">{item.label}</span>}
+                          {!sidebarCollapsed && isActive && <ChevronRight size={12} className="text-[#F59E0B] shrink-0" />}
                         </Link>
                       );
                     })}
@@ -679,7 +690,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </nav>
 
               {/* Tarjeta de Credenciales al Fondo */}
-              <div className="p-2 border-t border-[#D4D4D0] dark:border-[#242B27] bg-[#F4F3EF]/60 dark:bg-[#0A0C0B] shrink-0">
+              <div className="p-2 border-t border-[#D4D4D0] dark:border-[#242B27] bg-[#EAE8E1]/80 dark:bg-[#0A0C0B] shrink-0">
                 {!sidebarCollapsed ? (
                   <div className="space-y-2">
                     <div className="p-2 bg-white dark:bg-[#121614] border border-[#D4D4D0] dark:border-[#242B27]">
@@ -689,10 +700,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                         </span>
                         <span className="text-emerald-600 dark:text-emerald-400 font-bold">● ACTIVO</span>
                       </div>
-                      <p className="text-[11px] font-bold text-[#111312] dark:text-white truncate">
+                      <p className="text-[11px] font-bold text-zinc-900 dark:text-white truncate">
                         {usuario?.nombre || session?.user?.name || rolConfig.nombrePorDefecto}
                       </p>
-                      <p className="text-[9px] font-mono text-zinc-500 truncate">
+                      <p className="text-[9px] font-mono text-zinc-600 dark:text-zinc-400 truncate">
                         {usuario?.email || session?.user?.email || rolConfig.emailPorDefecto}
                       </p>
                     </div>
@@ -730,7 +741,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
               {/* Contenedor de la Página Actual */}
               <main className="page-content flex-1 h-full min-h-0 overflow-hidden flex flex-col p-0 z-10">
-                <div key={pathname} className="h-full w-full min-h-0 overflow-hidden flex flex-col">
+                <div key={pathname} className="h-full w-full min-h-0 overflow-hidden flex flex-col animate-panel-fade">
                   {children}
                 </div>
               </main>

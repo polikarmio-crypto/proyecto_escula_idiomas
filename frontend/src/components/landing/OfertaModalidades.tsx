@@ -211,30 +211,30 @@ export default function OfertaModalidades() {
         <div className="flex flex-wrap items-center gap-2 p-1.5 bg-[#EAE8E1]/60 dark:bg-[#121614] border border-[#D4D4D0] dark:border-[#242B27]">
           <button
             onClick={() => setTabActiva('INGLES')}
-            className={`px-4 sm:px-6 py-2.5 font-mono text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`px-4 sm:px-6 py-2.5 font-mono text-xs font-black uppercase tracking-wider transition-all ${
               tabActiva === 'INGLES'
-                ? 'bg-[#1B3B2B] text-amber-300 dark:bg-[#F59E0B] dark:text-black shadow'
-                : 'text-zinc-700 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-[#181F1A]'
+                ? 'bg-[#F59E0B] text-zinc-950 shadow'
+                : 'text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-[#181F1A]'
             }`}
           >
             [ INGLÉS ALC / STANAG 6001 ]
           </button>
           <button
             onClick={() => setTabActiva('EXTRANJEROS')}
-            className={`px-4 sm:px-6 py-2.5 font-mono text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`px-4 sm:px-6 py-2.5 font-mono text-xs font-black uppercase tracking-wider transition-all ${
               tabActiva === 'EXTRANJEROS'
-                ? 'bg-[#1B3B2B] text-amber-300 dark:bg-[#F59E0B] dark:text-black shadow'
-                : 'text-zinc-700 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-[#181F1A]'
+                ? 'bg-[#F59E0B] text-zinc-950 shadow'
+                : 'text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-[#181F1A]'
             }`}
           >
             [ IDIOMAS EXTRANJEROS ]
           </button>
           <button
             onClick={() => setTabActiva('NATIVOS')}
-            className={`px-4 sm:px-6 py-2.5 font-mono text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`px-4 sm:px-6 py-2.5 font-mono text-xs font-black uppercase tracking-wider transition-all ${
               tabActiva === 'NATIVOS'
-                ? 'bg-[#1B3B2B] text-amber-300 dark:bg-[#F59E0B] dark:text-black shadow'
-                : 'text-zinc-700 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-[#181F1A]'
+                ? 'bg-[#F59E0B] text-zinc-950 shadow'
+                : 'text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-[#181F1A]'
             }`}
           >
             [ IDIOMAS ORIGINARIOS ]

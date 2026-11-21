@@ -148,10 +148,10 @@ export default function CorreoInstitucional() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-3 bg-[#1B3B2B] hover:bg-[#12281D] text-amber-300 dark:bg-[#F59E0B] dark:hover:bg-[#D97706] dark:text-black font-mono font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0 shadow-md"
+                  className="px-6 py-3 bg-[#F59E0B] hover:bg-[#D97706] text-zinc-950 font-mono font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 disabled:opacity-50 shrink-0 shadow-md"
                 >
-                  <KeyRound className="w-4 h-4" />
-                  <span>{loading ? 'Verificando...' : 'Tramitar Correo'}</span>
+                  <KeyRound className="w-4 h-4 text-zinc-950" />
+                  <span className="text-zinc-950">{loading ? 'Verificando...' : 'Tramitar Correo'}</span>
                 </button>
               </div>
             </div>
@@ -233,10 +233,10 @@ export default function CorreoInstitucional() {
 
                 <Link
                   href="/login"
-                  className="px-5 py-2.5 bg-[#D97706] hover:bg-[#b45309] text-white dark:bg-[#F59E0B] dark:hover:bg-[#D97706] dark:text-black font-bold uppercase tracking-wider flex items-center gap-2 shadow-sm"
+                  className="px-5 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-zinc-950 font-black uppercase tracking-wider flex items-center gap-2 shadow-sm"
                 >
-                  <KeyRound className="w-3.5 h-3.5" />
-                  <span>Ingresar a SACA</span>
+                  <KeyRound className="w-3.5 h-3.5 text-zinc-950" />
+                  <span className="text-zinc-950">Ingresar a SACA</span>
                 </Link>
               </div>
             </div>

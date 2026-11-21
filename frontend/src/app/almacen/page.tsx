@@ -17,13 +17,15 @@ import {
   Truck
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
+import { useDynamicPagination } from '@/hooks/useDynamicPagination';
 
-const PER_PAGE = 7;
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 
 export default function AlmacenPage() {
   const { esAlmacenero, esAdmin, rolConfig } = useAuthRole();
   const puedeOperarAlmacen = esAlmacenero || esAdmin;
+
+  const { pageSize, containerRef } = useDynamicPagination({ rowHeight: 42, minItems: 8, maxItems: 25 });
 
   const [loading, setLoading] = useState(false);
   const [inventario, setInventario] = useState<any[]>([]);
@@ -164,24 +166,24 @@ export default function AlmacenPage() {
     });
   }, [inventario, busqueda]);
 
-  const totalPagesStock = Math.max(1, Math.ceil(inventarioFiltrado.length / PER_PAGE));
+  const totalPagesStock = Math.max(1, Math.ceil(inventarioFiltrado.length / pageSize));
   const inventarioPaginado = useMemo(() => {
-    const start = (pageStock - 1) * PER_PAGE;
-    return inventarioFiltrado.slice(start, start + PER_PAGE);
-  }, [inventarioFiltrado, pageStock]);
+    const start = (pageStock - 1) * pageSize;
+    return inventarioFiltrado.slice(start, start + pageSize);
+  }, [inventarioFiltrado, pageStock, pageSize]);
 
   const pedidosValidos = useMemo(() => Array.isArray(pedidos) ? pedidos : [], [pedidos]);
-  const totalPagesPedidos = Math.max(1, Math.ceil(pedidosValidos.length / PER_PAGE));
+  const totalPagesPedidos = Math.max(1, Math.ceil(pedidosValidos.length / pageSize));
   const pedidosPaginados = useMemo(() => {
-    const start = (pagePedidos - 1) * PER_PAGE;
-    return pedidosValidos.slice(start, start + PER_PAGE);
-  }, [pedidosValidos, pagePedidos]);
+    const start = (pagePedidos - 1) * pageSize;
+    return pedidosValidos.slice(start, start + pageSize);
+  }, [pedidosValidos, pagePedidos, pageSize]);
 
-  const totalPagesAlertas = Math.max(1, Math.ceil(alertasRop.length / PER_PAGE));
+  const totalPagesAlertas = Math.max(1, Math.ceil(alertasRop.length / pageSize));
   const alertasPaginadas = useMemo(() => {
-    const start = (pageAlertas - 1) * PER_PAGE;
-    return alertasRop.slice(start, start + PER_PAGE);
-  }, [alertasRop, pageAlertas]);
+    const start = (pageAlertas - 1) * pageSize;
+    return alertasRop.slice(start, start + pageSize);
+  }, [alertasRop, pageAlertas, pageSize]);
 
   if (!puedeOperarAlmacen) {
     return (
@@ -211,39 +213,39 @@ export default function AlmacenPage() {
 
           <div className="h-4 w-[1px] bg-[var(--border-fine)] shrink-0" />
 
-          {/* Selector de Pestañas Inline */}
+          {/* Selector de Pestañas Inline con Alto Contraste */}
           <div className="flex items-center gap-1 bg-[var(--bg-surface)] p-0.5 rounded border border-[var(--border-fine)] shrink-0">
             <button
               onClick={() => setTab('stock')}
-              className={`px-2.5 py-0.5 rounded text-[11px] font-bold transition font-mono ${
+              className={`px-3 py-1 rounded text-[11px] font-mono font-bold transition-all duration-200 ${
                 tab === 'stock'
-                  ? 'bg-[var(--military-green-primary)] text-white'
-                  : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+                  ? 'bg-[#1B3B2B] text-white dark:bg-[#F59E0B] dark:text-zinc-950 shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50'
               }`}
             >
               Inventario ({inventario.length})
             </button>
             <button
               onClick={() => setTab('alertas')}
-              className={`px-2.5 py-0.5 rounded text-[11px] font-bold transition font-mono flex items-center gap-1 ${
+              className={`px-3 py-1 rounded text-[11px] font-mono font-bold transition-all duration-200 flex items-center gap-1.5 ${
                 tab === 'alertas'
-                  ? 'bg-amber-600 text-white'
-                  : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+                  ? 'bg-[#D97706] text-white dark:bg-[#F59E0B] dark:text-zinc-950 shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50'
               }`}
             >
               <span>Alertas</span>
               {alertasRop.length > 0 && (
-                <span className="px-1 py-0.1 rounded-full bg-red-600 text-white text-[9.5px]">
+                <span className="px-1.5 py-0.2 rounded-full bg-red-600 text-white text-[9.5px] font-bold">
                   {alertasRop.length}
                 </span>
               )}
             </button>
             <button
               onClick={() => setTab('pedidos')}
-              className={`px-2.5 py-0.5 rounded text-[11px] font-bold transition font-mono ${
+              className={`px-3 py-1 rounded text-[11px] font-mono font-bold transition-all duration-200 ${
                 tab === 'pedidos'
-                  ? 'bg-[var(--color-primary)] text-white'
-                  : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+                  ? 'bg-[#1B3B2B] text-white dark:bg-[#F59E0B] dark:text-zinc-950 shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50'
               }`}
             >
               Órdenes ({pedidosValidos.length})
@@ -309,9 +311,9 @@ export default function AlmacenPage() {
       )}
 
       {/* 2. ÁREA DE TABLA COMPACTA PAGINADA */}
-      <div className="workspace-main-panel flex-1 min-h-0 flex flex-col overflow-hidden m-2 border border-[var(--border-fine)] rounded-[2px] bg-[var(--bg-card)]">
+      <div ref={containerRef} className="workspace-main-panel flex-1 min-h-0 flex flex-col overflow-hidden m-2 border border-[var(--border-fine)] rounded-[2px] bg-[var(--bg-card)]">
         {tab === 'stock' && (
-          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div key="stock" className="flex-1 flex flex-col min-h-0 overflow-hidden animate-panel-fade">
             <div className="workspace-table-container flex-1 min-h-0 overflow-y-auto">
               <table className="compact-table">
                 <thead>
@@ -425,7 +427,7 @@ export default function AlmacenPage() {
         )}
 
         {tab === 'alertas' && (
-          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div key="alertas" className="flex-1 flex flex-col min-h-0 overflow-hidden animate-panel-fade">
             <div className="workspace-table-container flex-1 min-h-0 overflow-y-auto">
               <table className="compact-table">
                 <thead>
@@ -496,7 +498,7 @@ export default function AlmacenPage() {
         )}
 
         {tab === 'pedidos' && (
-          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div key="pedidos" className="flex-1 flex flex-col min-h-0 overflow-hidden animate-panel-fade">
             <div className="workspace-table-container flex-1 min-h-0 overflow-y-auto">
               <table className="compact-table">
                 <thead>

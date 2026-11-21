@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   UserCheck,
   Calendar,
@@ -16,9 +16,12 @@ import {
   Shield,
   RefreshCw,
   Award,
-  Users
+  Users,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
+import { useDynamicPagination } from '@/hooks/useDynamicPagination';
 
 interface EstudianteAsistencia {
   id_inscripcion: number;
@@ -35,6 +38,9 @@ interface EstudianteAsistencia {
 export default function AsistenciaPage() {
   const { rolActivo, esDocente, esJefeAcademico, esAdmin, rolConfig, usuario } = useAuthRole();
   const puedeRegistrar = esDocente || esJefeAcademico || esAdmin;
+
+  const { pageSize, containerRef } = useDynamicPagination({ rowHeight: 56, minItems: 5, maxItems: 25 });
+  const [page, setPage] = useState<number>(1);
 
   const [paralelos, setParalelos] = useState<any[]>([]);
   const [idParaleloSeleccionado, setIdParaleloSeleccionado] = useState<string>('');
@@ -120,6 +126,16 @@ export default function AsistenciaPage() {
       cargarAsistencia();
     }
   }, [idParaleloSeleccionado, fechaSeleccionada]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [idParaleloSeleccionado, fechaSeleccionada]);
+
+  const totalPages = Math.max(1, Math.ceil(estudiantes.length / pageSize));
+  const estudiantesPaginados = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return estudiantes.slice(start, start + pageSize);
+  }, [estudiantes, page, pageSize]);
 
   const cambiarEstadoAlumno = (idInscripcion: number, nuevoEstado: 'Presente' | 'Falta' | 'Atraso' | 'Licencia') => {
     setEstudiantes((prev) =>
@@ -314,12 +330,12 @@ export default function AsistenciaPage() {
       {/* ÁREA DE TRABAJO DIVIDIDA (SPLIT-WORKSPACE) */}
       <div className="split-workspace">
         {/* PANEL PRINCIPAL: TABLA DE ASISTENCIA */}
-        <div className="workspace-main-panel">
-          <div className="workspace-table-container">
+        <div ref={containerRef} className="workspace-main-panel flex flex-col justify-between">
+          <div className="workspace-table-container flex-1 flex flex-col justify-between">
             <table className="compact-table">
               <thead>
                 <tr>
-                  <th style={{ width: '32px' }}>#</th>
+                  <th style={{ width: '36px' }}>#</th>
                   <th>Cédula (CI)</th>
                   <th>Estudiante</th>
                   <th>Condición</th>
@@ -342,102 +358,134 @@ export default function AsistenciaPage() {
                     </td>
                   </tr>
                 ) : (
-                  estudiantes.map((est, index) => (
-                    <tr key={est.id_inscripcion} className="hover:bg-[var(--military-green-subtle)] transition">
-                      <td className="font-mono text-[var(--text-dim)] text-xs">{index + 1}</td>
-                      <td className="font-mono text-[var(--text-muted)] font-semibold text-xs whitespace-nowrap">{est.ci}</td>
-                      <td>
-                        <div className="font-bold text-[var(--text-main)] truncate max-w-[200px]">{est.nombre_completo}</div>
-                        {est.grado_militar ? (
-                          <div className="text-[10px] text-[var(--military-gold-primary)] font-bold font-mono flex items-center gap-1">
-                            <Shield className="w-2.5 h-2.5" /> {est.grado_militar}
+                  estudiantesPaginados.map((est, index) => {
+                    const globalIdx = (page - 1) * pageSize + index + 1;
+                    return (
+                      <tr key={est.id_inscripcion} className="hover:bg-[var(--military-green-subtle)] transition">
+                        <td className="font-mono text-[var(--text-dim)] text-xs py-2.5">{globalIdx}</td>
+                        <td className="font-mono text-[var(--text-muted)] font-semibold text-xs whitespace-nowrap py-2.5">{est.ci}</td>
+                        <td className="py-2.5">
+                          <div className="font-bold text-[var(--text-main)] truncate max-w-[200px]">{est.nombre_completo}</div>
+                          {est.grado_militar ? (
+                            <div className="text-[10px] text-[var(--military-gold-primary)] font-bold font-mono flex items-center gap-1">
+                              <Shield className="w-2.5 h-2.5" /> {est.grado_militar}
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-[var(--text-dim)] font-mono">CIVIL</span>
+                          )}
+                        </td>
+                        <td className="whitespace-nowrap py-2.5">
+                          <span className={`badge ${est.tipo === 'Militar' ? 'badge-gold' : 'badge-civil'}`}>
+                            {est.tipo}
+                          </span>
+                        </td>
+                        <td className="py-2.5">
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => cambiarEstadoAlumno(est.id_inscripcion, 'Presente')}
+                              className={`px-2 py-0.5 rounded text-[11px] font-bold transition border ${
+                                est.estado_asistencia === 'Presente'
+                                  ? 'bg-emerald-600 text-white border-emerald-600'
+                                  : 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:text-emerald-500'
+                              }`}
+                            >
+                              P
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => cambiarEstadoAlumno(est.id_inscripcion, 'Falta')}
+                              className={`px-2 py-0.5 rounded text-[11px] font-bold transition border ${
+                                est.estado_asistencia === 'Falta'
+                                  ? 'bg-red-600 text-white border-red-600'
+                                  : 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:text-red-500'
+                              }`}
+                            >
+                              F
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => cambiarEstadoAlumno(est.id_inscripcion, 'Atraso')}
+                              className={`px-2 py-0.5 rounded text-[11px] font-bold transition border ${
+                                est.estado_asistencia === 'Atraso'
+                                  ? 'bg-[#F59E0B] text-zinc-950 border-[#F59E0B]'
+                                  : 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:text-amber-500'
+                              }`}
+                            >
+                              A
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => cambiarEstadoAlumno(est.id_inscripcion, 'Licencia')}
+                              className={`px-2 py-0.5 rounded text-[11px] font-bold transition border ${
+                                est.estado_asistencia === 'Licencia'
+                                  ? 'bg-sky-600 text-white border-sky-600'
+                                  : 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:text-sky-500'
+                              }`}
+                            >
+                              L
+                            </button>
                           </div>
-                        ) : (
-                          <span className="text-[10px] text-[var(--text-dim)] font-mono">CIVIL</span>
-                        )}
-                      </td>
-                      <td className="whitespace-nowrap">
-                        <span className={`badge ${est.tipo === 'Militar' ? 'badge-gold' : 'badge-civil'}`}>
-                          {est.tipo}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => cambiarEstadoAlumno(est.id_inscripcion, 'Presente')}
-                            className={`px-2 py-0.5 rounded text-[11px] font-bold transition border ${
-                              est.estado_asistencia === 'Presente'
-                                ? 'bg-emerald-600 text-white border-emerald-600'
-                                : 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:text-emerald-500'
-                            }`}
-                          >
-                            P
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => cambiarEstadoAlumno(est.id_inscripcion, 'Falta')}
-                            className={`px-2 py-0.5 rounded text-[11px] font-bold transition border ${
-                              est.estado_asistencia === 'Falta'
-                                ? 'bg-red-600 text-white border-red-600'
-                                : 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:text-red-500'
-                            }`}
-                          >
-                            F
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => cambiarEstadoAlumno(est.id_inscripcion, 'Atraso')}
-                            className={`px-2 py-0.5 rounded text-[11px] font-bold transition border ${
-                              est.estado_asistencia === 'Atraso'
-                                ? 'bg-amber-600 text-white border-amber-600'
-                                : 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:text-amber-500'
-                            }`}
-                          >
-                            A
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => cambiarEstadoAlumno(est.id_inscripcion, 'Licencia')}
-                            className={`px-2 py-0.5 rounded text-[11px] font-bold transition border ${
-                              est.estado_asistencia === 'Licencia'
-                                ? 'bg-sky-600 text-white border-sky-600'
-                                : 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:text-sky-500'
-                            }`}
-                          >
-                            L
-                          </button>
-                        </div>
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          value={est.observacion}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setEstudiantes((prev) =>
-                              prev.map((item) => (item.id_inscripcion === est.id_inscripcion ? { ...item, observacion: val } : item))
-                            );
-                          }}
-                          placeholder="Observación..."
-                          className="w-full bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] rounded px-2 py-0.5 text-xs text-[var(--text-main)] outline-none"
-                        />
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+                        <td className="py-2.5">
+                          <input
+                            type="text"
+                            value={est.observacion}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setEstudiantes((prev) =>
+                                prev.map((item) => (item.id_inscripcion === est.id_inscripcion ? { ...item, observacion: val } : item))
+                              );
+                            }}
+                            placeholder="Observación..."
+                            className="w-full bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] rounded px-2 py-0.5 text-xs text-[var(--text-main)] outline-none"
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
           </div>
 
-          {/* DOCKED BOTTOM BAR */}
-          <div className="tactical-pagination">
-            <div className="flex items-center gap-2">
+          {/* DOCKED BOTTOM BAR - PAGINACIÓN TÁCTICA */}
+          <div className="tactical-pagination flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-mono">
               <span className="font-bold text-[var(--military-gold-primary)]">NÓMINA:</span>
-              <span>{estudiantes.length} ESTUDIANTES</span>
+              <span className="text-[var(--text-main)] font-semibold">
+                Mostrando {estudiantes.length === 0 ? 0 : `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, estudiantes.length)}`} de {estudiantes.length} estudiantes
+              </span>
+              <span className="text-[var(--text-dim)]">|</span>
+              <span className="text-[var(--text-muted)]">Pág. {page} de {totalPages}</span>
             </div>
-            <div className="font-mono text-[11px]">
-              <span>FECHA: <strong className="text-[var(--text-main)]">{fechaSeleccionada}</strong></span>
+
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="btn btn-secondary px-2.5 py-1 text-xs font-mono font-bold flex items-center gap-1 disabled:opacity-30 disabled:pointer-events-none"
+                title="Página Anterior"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Anterior</span>
+              </button>
+
+              <span className="px-2.5 py-0.5 bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[11px] font-mono font-bold text-[var(--military-gold-primary)] tabular-nums">
+                {page} / {totalPages}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                className="btn btn-secondary px-2.5 py-1 text-xs font-mono font-bold flex items-center gap-1 disabled:opacity-30 disabled:pointer-events-none"
+                title="Siguiente Página"
+              >
+                <span className="hidden sm:inline">Siguiente</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
         </div>

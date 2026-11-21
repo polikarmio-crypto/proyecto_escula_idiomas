@@ -178,7 +178,7 @@ export default function MetodosNumericosPage() {
                 onClick={() => setTabActiva(t.id as any)}
                 className={`px-2.5 py-0.5 rounded text-[11px] font-bold font-mono transition ${
                   tabActiva === t.id
-                    ? 'bg-[var(--military-green-primary)] text-white'
+                    ? 'bg-[#1B3B2B] text-white dark:bg-[#F59E0B] dark:text-zinc-950 font-bold shadow-xs'
                     : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
                 }`}
               >

@@ -26,12 +26,13 @@ import {
   Check
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
-
-const PER_PAGE = 7;
+import { useDynamicPagination } from '@/hooks/useDynamicPagination';
 
 export default function DocentesPage() {
   const { esJefeAcademico, esAdmin, rolConfig } = useAuthRole();
   const puedeAdministrar = esJefeAcademico || esAdmin;
+
+  const { pageSize, containerRef } = useDynamicPagination({ rowHeight: 44, minItems: 8, maxItems: 25 });
 
   const [loading, setLoading] = useState(false);
   const [docentes, setDocentes] = useState<any[]>([]);
@@ -309,11 +310,11 @@ export default function DocentesPage() {
     );
   }, [docentes, busqueda]);
 
-  const totalPages = Math.max(1, Math.ceil(docentesFiltrados.length / PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(docentesFiltrados.length / pageSize));
   const docentesPaginados = useMemo(() => {
-    const start = (page - 1) * PER_PAGE;
-    return docentesFiltrados.slice(start, start + PER_PAGE);
-  }, [docentesFiltrados, page]);
+    const start = (page - 1) * pageSize;
+    return docentesFiltrados.slice(start, start + pageSize);
+  }, [docentesFiltrados, page, pageSize]);
 
   const idiomaParaleloRelevo = useMemo(() => {
     if (!paraleloARotar) return '';
@@ -388,7 +389,7 @@ export default function DocentesPage() {
           />
         </div>
         <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
-          {docentesFiltrados.length === 0 ? 0 : (page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, docentesFiltrados.length)} / {docentesFiltrados.length}
+          {docentesFiltrados.length === 0 ? 0 : (page - 1) * pageSize + 1}–{Math.min(page * pageSize, docentesFiltrados.length)} / {docentesFiltrados.length}
         </span>
         <div style={{ flex: 1 }} />
         {alertasRotacion.length > 0 && (
@@ -464,7 +465,7 @@ export default function DocentesPage() {
       {/* Split Workspace */}
       <div className="split-workspace" style={{ flex: 1, minHeight: 0 }}>
         {/* Panel Izquierdo: Tabla compacta */}
-        <div className="workspace-main-panel">
+        <div ref={containerRef} className="workspace-main-panel">
           <div className="workspace-table-container">
             {docentesPaginados.length === 0 && !loading ? (
               <div className="flex items-center justify-center h-full" style={{ color: 'var(--text-muted)' }}>

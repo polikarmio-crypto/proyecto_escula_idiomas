@@ -26,8 +26,7 @@ import {
   Check
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
-
-const PER_PAGE = 7;
+import { useDynamicPagination } from '@/hooks/useDynamicPagination';
 
 interface AlumnoCalificacion {
   id_inscripcion: number;
@@ -55,6 +54,8 @@ interface AlumnoCalificacion {
 export default function CalificacionesPage() {
   const { rolActivo, esDocente, esJefeAcademico, esEstudiante, esAdmin, rolConfig, usuario } = useAuthRole();
   const puedeCalificar = esDocente || esJefeAcademico || esAdmin;
+
+  const { pageSize, containerRef } = useDynamicPagination({ rowHeight: 56, minItems: 5, maxItems: 25 });
 
   const [loading, setLoading] = useState(false);
   const [paralelos, setParalelos] = useState<any[]>([]);
@@ -219,11 +220,11 @@ export default function CalificacionesPage() {
     );
   }, [alumnos, busqueda, esEstudiante, usuario]);
 
-  const totalPages = Math.max(1, Math.ceil(alumnosFiltrados.length / PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(alumnosFiltrados.length / pageSize));
   const alumnosPaginados = useMemo(() => {
-    const start = (page - 1) * PER_PAGE;
-    return alumnosFiltrados.slice(start, start + PER_PAGE);
-  }, [alumnosFiltrados, page]);
+    const start = (page - 1) * pageSize;
+    return alumnosFiltrados.slice(start, start + pageSize);
+  }, [alumnosFiltrados, page, pageSize]);
 
   const [alumnoSeleccionado, setAlumnoSeleccionado] = useState<AlumnoCalificacion | null>(null);
 
@@ -424,9 +425,9 @@ export default function CalificacionesPage() {
 
       {/* ÁREA DE TRABAJO DIVIDIDA (SPLIT-WORKSPACE): TABLA COMPACTA + PANEL LATERAL */}
       <div className="split-workspace">
-        {/* PANEL PRINCIPAL: TABLA COMPACTA (7 REGISTROS) */}
-        <div className="workspace-main-panel">
-          <div className="workspace-table-container">
+        {/* PANEL PRINCIPAL: TABLA DINÁMICA DE ALTO ADAPTATIVO */}
+        <div ref={containerRef} className="workspace-main-panel flex flex-col justify-between">
+          <div className="workspace-table-container flex-1 flex flex-col justify-between">
             <table className="compact-table">
               <thead>
                 <tr>
@@ -452,7 +453,7 @@ export default function CalificacionesPage() {
                       onClick={() => setAlumnoSeleccionado(item)}
                       className={`cursor-pointer transition ${esActivo ? 'selected' : ''}`}
                     >
-                      <td>
+                      <td className="py-2.5 sm:py-3">
                         <div className="font-bold text-[var(--text-main)] truncate max-w-[200px]">
                           {item.estudiante.nombre_completo}
                         </div>

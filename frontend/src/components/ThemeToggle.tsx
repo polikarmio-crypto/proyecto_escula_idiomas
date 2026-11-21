@@ -58,6 +58,8 @@ export default function ThemeToggle({ className = '', showLabel = false }: Theme
         document.documentElement.classList.remove('dark');
       }
       window.dispatchEvent(new CustomEvent('eie_theme_change', { detail: nextTheme }));
+      window.dispatchEvent(new Event('eie_theme_change'));
+      window.dispatchEvent(new Event('storage'));
     } catch (e) {}
   };
 

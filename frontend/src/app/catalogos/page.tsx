@@ -304,7 +304,7 @@ export default function CatalogosPage() {
                   onClick={() => setTab(t.id as TabCat)}
                   className={`px-2 py-0.5 rounded text-[11px] font-bold font-mono transition flex items-center gap-1 shrink-0 ${
                     active
-                      ? 'bg-[var(--military-green-primary)] text-white'
+                      ? 'bg-[#1B3B2B] text-white dark:bg-[#F59E0B] dark:text-zinc-950 font-bold shadow-xs'
                       : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
                   }`}
                 >

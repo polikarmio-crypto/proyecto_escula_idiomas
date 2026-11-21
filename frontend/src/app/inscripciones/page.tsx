@@ -21,12 +21,13 @@ import {
   Shield
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
-
-const PER_PAGE = 7;
+import { useDynamicPagination } from '@/hooks/useDynamicPagination';
 
 export default function InscripcionesPage() {
   const { esJefeAcademico, esEstudiante, esAdmin, rolConfig, usuario } = useAuthRole();
   const puedeInscribir = esJefeAcademico || esAdmin;
+
+  const { pageSize, containerRef } = useDynamicPagination({ rowHeight: 44, minItems: 8, maxItems: 25 });
 
   const [loading, setLoading] = useState(false);
   const [inscripciones, setInscripciones] = useState<any[]>([]);
@@ -170,11 +171,11 @@ export default function InscripcionesPage() {
     });
   }, [inscripciones, esEstudiante, usuario, busqueda]);
 
-  const totalPages = Math.max(1, Math.ceil(inscripcionesFiltradas.length / PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(inscripcionesFiltradas.length / pageSize));
   const inscripcionesPaginadas = useMemo(() => {
-    const start = (page - 1) * PER_PAGE;
-    return inscripcionesFiltradas.slice(start, start + PER_PAGE);
-  }, [inscripcionesFiltradas, page]);
+    const start = (page - 1) * pageSize;
+    return inscripcionesFiltradas.slice(start, start + pageSize);
+  }, [inscripcionesFiltradas, page, pageSize]);
 
   const [inscripcionSeleccionada, setInscripcionSeleccionada] = useState<any | null>(null);
 
@@ -268,8 +269,8 @@ export default function InscripcionesPage() {
 
       {/* ÁREA DE TRABAJO DIVIDIDA (SPLIT-WORKSPACE) */}
       <div className="split-workspace">
-        {/* PANEL PRINCIPAL: TABLA DE INSCRIPCIONES (7 REGISTROS) */}
-        <div className="workspace-main-panel">
+        {/* PANEL PRINCIPAL: TABLA DE INSCRIPCIONES DINÁMICA */}
+        <div ref={containerRef} className="workspace-main-panel">
           <div className="workspace-table-container">
             <table className="compact-table">
               <thead>

@@ -302,10 +302,10 @@ export default function HeroEIE() {
               <a
                 href="#inscripciones"
                 onMouseEnter={scrambleCta}
-                className="px-6 py-3.5 bg-[#1B3B2B] hover:bg-[#12281D] text-amber-300 dark:bg-[#F59E0B] dark:hover:bg-[#D97706] dark:text-black font-mono font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-md dark:shadow-[0_0_20px_rgba(245,158,11,0.25)]"
+                className="px-6 py-3.5 bg-[#F59E0B] hover:bg-[#D97706] text-zinc-950 font-mono font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-md dark:shadow-[0_0_20px_rgba(245,158,11,0.25)]"
               >
-                <span>{ctaText}</span>
-                <ArrowRight className="w-4 h-4" />
+                <span className="text-zinc-950">{ctaText}</span>
+                <ArrowRight className="w-4 h-4 text-zinc-950" />
               </a>
 
               <a

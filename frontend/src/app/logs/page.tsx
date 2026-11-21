@@ -25,10 +25,8 @@ import {
   Terminal,
   Activity,
   AlertTriangle,
-  Info,
   Clock,
   User,
-  Sliders,
   Sparkles,
   Layers,
   X
@@ -83,13 +81,11 @@ interface Counters {
 }
 
 export default function LogsViewerPage() {
-  // Estado de carpetas y navegación
   const [folders, setFolders] = useState<LogFolder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<string>('auth');
   const [files, setFiles] = useState<LogFile[]>([]);
   const [selectedFile, setSelectedFile] = useState<string>('');
 
-  // Estado de entradas y filtros
   const [entries, setEntries] = useState<LogEntry[]>([]);
   const [counters, setCounters] = useState<Counters>({
     ALL: 0,
@@ -108,7 +104,6 @@ export default function LogsViewerPage() {
   const [totalEntries, setTotalEntries] = useState<number>(0);
   const [filteredEntries, setFilteredEntries] = useState<number>(0);
 
-  // Estados de carga y operaciones
   const [loadingFolders, setLoadingFolders] = useState<boolean>(true);
   const [loadingEntries, setLoadingEntries] = useState<boolean>(false);
   const [generatingTest, setGeneratingTest] = useState<boolean>(false);
@@ -120,9 +115,8 @@ export default function LogsViewerPage() {
   const [purging, setPurging] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Mapeo de iconos dinámicos
   const renderFolderIcon = (iconName: string, color: string) => {
-    const props = { className: 'w-5 h-5', style: { color } };
+    const props = { className: 'w-4 h-4', style: { color } };
     switch (iconName) {
       case 'Shield': return <Shield {...props} />;
       case 'GraduationCap': return <GraduationCap {...props} />;
@@ -140,7 +134,6 @@ export default function LogsViewerPage() {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
-  // 1. Cargar lista de carpetas
   const loadFolders = useCallback(async () => {
     try {
       setLoadingFolders(true);
@@ -149,7 +142,6 @@ export default function LogsViewerPage() {
       const data = await res.json();
       if (data.status === 'success' && data.folders) {
         setFolders(data.folders);
-        // Mantener seleccionada la actual o la primera
         if (!data.folders.some((f: LogFolder) => f.id === selectedFolder)) {
           setSelectedFolder(data.folders[0]?.id || 'auth');
         }
@@ -162,7 +154,6 @@ export default function LogsViewerPage() {
     }
   }, [selectedFolder]);
 
-  // 2. Cargar archivos de la carpeta seleccionada
   const loadFiles = useCallback(async (folderId: string) => {
     try {
       const res = await fetch(`/api/v1/logs/files?folder=${encodeURIComponent(folderId)}`);
@@ -172,7 +163,6 @@ export default function LogsViewerPage() {
         const fileList: LogFile[] = data.files || [];
         setFiles(fileList);
         if (fileList.length > 0) {
-          // Seleccionar el archivo de hoy o el primero
           const todayFile = fileList.find((f) => f.is_today);
           setSelectedFile(todayFile ? todayFile.filename : fileList[0].filename);
         } else {
@@ -186,7 +176,6 @@ export default function LogsViewerPage() {
     }
   }, []);
 
-  // 3. Cargar entradas del archivo actual con filtros
   const loadEntries = useCallback(async () => {
     if (!selectedFolder) return;
     try {
@@ -223,13 +212,11 @@ export default function LogsViewerPage() {
     }
   }, [selectedFolder, selectedFile, selectedLevel, searchQuery, page, perPage]);
 
-  // Carga inicial
   useEffect(() => {
     loadFolders();
     logger.info('UI_LOGS_VIEWER_OPENED', { component: 'LogsViewerPage' });
   }, [loadFolders]);
 
-  // Al cambiar carpeta, recargar archivos
   useEffect(() => {
     if (selectedFolder) {
       setPage(1);
@@ -237,12 +224,10 @@ export default function LogsViewerPage() {
     }
   }, [selectedFolder, loadFiles]);
 
-  // Al cambiar archivo, nivel o búsqueda, recargar entradas
   useEffect(() => {
     loadEntries();
   }, [selectedFolder, selectedFile, selectedLevel, searchQuery, page, perPage, loadEntries]);
 
-  // Auto-refresco en vivo cada 10s
   useEffect(() => {
     if (!autoRefresh) return;
     const interval = setInterval(() => {
@@ -251,7 +236,6 @@ export default function LogsViewerPage() {
     return () => clearInterval(interval);
   }, [autoRefresh, loadEntries]);
 
-  // Generar batería de prueba
   const handleGenerateTestLogs = async () => {
     try {
       setGeneratingTest(true);
@@ -270,13 +254,11 @@ export default function LogsViewerPage() {
     }
   };
 
-  // Descarga del archivo
   const handleDownloadLog = () => {
     if (!selectedFolder || !selectedFile) return;
     window.open(`/api/v1/logs/download?folder=${encodeURIComponent(selectedFolder)}&file=${encodeURIComponent(selectedFile)}`, '_blank');
   };
 
-  // Purga del archivo
   const handlePurgeLog = async () => {
     if (!selectedFolder || !selectedFile) return;
     try {
@@ -299,7 +281,6 @@ export default function LogsViewerPage() {
     }
   };
 
-  // Copiar JSON al portapapeles
   const handleCopyJson = (id: number, text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
@@ -314,24 +295,23 @@ export default function LogsViewerPage() {
     setExpandedTraces((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Badge y estilos por nivel
   const getLevelBadge = (level: string) => {
     switch (level) {
       case 'INFO':
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">INFO</span>;
+        return <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-blue-950/40 text-blue-400 border border-blue-500/30">INFO</span>;
       case 'WARNING':
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">WARN</span>;
+        return <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-amber-950/40 text-amber-300 border border-amber-500/30">WARN</span>;
       case 'ERROR':
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/40">ERROR</span>;
+        return <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-red-950/40 text-red-400 border border-red-500/40">ERROR</span>;
       case 'CRITICAL':
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-black bg-rose-700/40 text-rose-300 border border-rose-500 animate-pulse">CRITICAL</span>;
+        return <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono font-black bg-rose-950/50 text-rose-300 border border-rose-500 animate-pulse">CRITICAL</span>;
       case 'DEBUG':
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">DEBUG</span>;
+        return <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono font-semibold bg-purple-950/40 text-purple-300 border border-purple-500/30">DEBUG</span>;
       case 'AUDIT':
       case 'EMERGENCY':
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">AUDIT</span>;
+        return <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono font-black bg-emerald-950/40 text-emerald-300 border border-emerald-500/40">AUDIT</span>;
       default:
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-neutral-700 text-neutral-300">{level}</span>;
+        return <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-zinc-800 text-zinc-300">{level}</span>;
     }
   };
 
@@ -340,258 +320,95 @@ export default function LogsViewerPage() {
   }, [folders, selectedFolder]);
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="h-full flex flex-col min-h-0 overflow-hidden bg-[var(--bg-base)] text-[var(--text-main)]">
       {/* Toast de notificación */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-neutral-900 border border-neutral-700 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 transition-all">
-          <Activity className="w-5 h-5 text-amber-400 animate-pulse" />
-          <span className="text-sm font-medium">{toastMessage}</span>
+        <div className="fixed bottom-4 right-4 z-50 bg-[var(--bg-card)] border border-[var(--color-accent)] text-[var(--text-main)] px-4 py-2.5 rounded-[2px] shadow-xl flex items-center space-x-2 text-xs font-mono">
+          <Activity className="w-3.5 h-3.5 text-[var(--color-accent)] animate-pulse" />
+          <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Cabecera Principal */}
-      <div className="bg-neutral-900/80 border border-neutral-800 rounded-2xl p-6 backdrop-blur-md">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start space-x-4">
-            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400">
-              <Terminal className="w-8 h-8" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <h1 className="text-2xl font-black text-white tracking-wide">
-                  Centro de Auditoría y Logs del Sistema
-                </h1>
-                <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  En Vivo
-                </span>
-              </div>
-              <p className="text-sm text-neutral-400 mt-1">
-                Monitoreo unificado de registros por componentes: Backend (Laravel), Frontend (Next.js) y Microservicio Reactivo Quarkus.
-              </p>
-            </div>
+      {/* 1. FRANJA SUPERIOR COMPACTA (44px) */}
+      <div className="strip-utility-bar">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[var(--military-green-subtle)] border border-[var(--border-accent)] text-[var(--military-green-primary)] dark:text-[var(--military-gold-primary)] font-mono text-[11px] font-bold shrink-0">
+            <Terminal className="w-3.5 h-3.5" />
+            <span>SACA / Logs & Auditoría</span>
           </div>
 
-          {/* Botones de acción globales */}
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => {
-                loadFolders();
-                loadEntries();
-              }}
-              disabled={loadingEntries}
-              className="flex items-center space-x-2 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 rounded-xl text-xs font-semibold transition border border-neutral-700"
-              title="Refrescar lista de registros"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loadingEntries ? 'animate-spin text-amber-400' : ''}`} />
-              <span>Actualizar</span>
-            </button>
+          <div className="h-4 w-[1px] bg-[var(--border-fine)] shrink-0" />
 
-            <button
-              onClick={() => setAutoRefresh(!autoRefresh)}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-semibold transition border ${
-                autoRefresh
-                  ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
-                  : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border-neutral-700'
-              }`}
-              title="Alternar refresco automático cada 10 segundos"
-            >
-              <Activity className={`w-3.5 h-3.5 ${autoRefresh ? 'animate-pulse text-emerald-400' : ''}`} />
-              <span>{autoRefresh ? 'Auto 10s: Activo' : 'Auto-Refresco'}</span>
-            </button>
-
-            <button
-              onClick={handleGenerateTestLogs}
-              disabled={generatingTest}
-              className="flex items-center space-x-2 px-3.5 py-2 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white rounded-xl text-xs font-bold shadow-lg transition disabled:opacity-50"
-              title="Generar eventos de prueba en todas las carpetas"
-            >
-              <Sparkles className={`w-3.5 h-3.5 ${generatingTest ? 'animate-spin' : ''}`} />
-              <span>Generar Logs de Prueba</span>
-            </button>
-
-            {selectedFile && (
-              <>
-                <button
-                  onClick={handleDownloadLog}
-                  className="flex items-center space-x-1.5 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 rounded-xl text-xs font-semibold transition border border-neutral-700"
-                  title="Descargar archivo crudo"
-                >
-                  <Download className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Descargar</span>
-                </button>
-
-                <button
-                  onClick={() => setShowPurgeModal(true)}
-                  className="flex items-center space-x-1.5 px-3 py-2 bg-red-950/40 hover:bg-red-900/60 text-red-300 rounded-xl text-xs font-semibold transition border border-red-800/40"
-                  title="Purgar archivo de log con constancia militar"
-                >
-                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                  <span>Purgar</span>
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Cinta de Métricas por Nivel */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2.5 mt-6 pt-6 border-t border-neutral-800">
-          <div className="bg-neutral-950/60 border border-neutral-800 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block">Total Archivo</span>
-            <span className="text-xl font-black text-white font-mono mt-0.5 block">{counters.ALL}</span>
-          </div>
-
-          <div className="bg-blue-950/20 border border-blue-900/40 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-bold text-blue-400 uppercase tracking-wider block">INFO</span>
-            <span className="text-xl font-black text-blue-300 font-mono mt-0.5 block">{counters.INFO}</span>
-          </div>
-
-          <div className="bg-amber-950/20 border border-amber-900/40 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">WARNING</span>
-            <span className="text-xl font-black text-amber-300 font-mono mt-0.5 block">{counters.WARNING}</span>
-          </div>
-
-          <div className="bg-red-950/20 border border-red-900/40 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-bold text-red-400 uppercase tracking-wider block">ERROR</span>
-            <span className="text-xl font-black text-red-400 font-mono mt-0.5 block">{counters.ERROR}</span>
-          </div>
-
-          <div className="bg-purple-950/20 border border-purple-900/40 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-bold text-purple-400 uppercase tracking-wider block">DEBUG</span>
-            <span className="text-xl font-black text-purple-300 font-mono mt-0.5 block">{counters.DEBUG}</span>
-          </div>
-
-          <div className="bg-rose-950/30 border border-rose-800/40 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-bold text-rose-400 uppercase tracking-wider block">CRITICAL</span>
-            <span className="text-xl font-black text-rose-300 font-mono mt-0.5 block">{counters.CRITICAL}</span>
-          </div>
-
-          <div className="bg-emerald-950/20 border border-emerald-900/40 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider block">AUDIT</span>
-            <span className="text-xl font-black text-emerald-300 font-mono mt-0.5 block">{counters.AUDIT}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Selector de Carpetas del Sistema */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <Layers className="w-4 h-4 text-amber-400" />
-            <h2 className="text-sm font-bold text-neutral-200 uppercase tracking-wider">
-              Carpetas y Fuentes del Sistema
-            </h2>
-          </div>
-          <span className="text-xs text-neutral-400">
-            {folders.length} componentes monitoreados
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
-          {folders.map((folder) => {
-            const isSelected = selectedFolder === folder.id;
-            return (
-              <button
-                key={folder.id}
-                onClick={() => setSelectedFolder(folder.id)}
-                className={`text-left p-3.5 rounded-xl border transition-all flex flex-col justify-between ${
-                  isSelected
-                    ? 'bg-neutral-800/90 border-amber-500 shadow-md ring-1 ring-amber-500/40'
-                    : 'bg-neutral-900/60 hover:bg-neutral-800/60 border-neutral-800'
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="p-1.5 rounded-lg bg-neutral-950 border border-neutral-800">
-                      {renderFolderIcon(folder.icon, folder.color)}
-                    </div>
-                    <span
-                      className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded uppercase ${
-                        folder.scope === 'frontend'
-                          ? 'bg-cyan-500/20 text-cyan-300'
-                          : folder.scope === 'quarkus'
-                          ? 'bg-red-500/20 text-red-300'
-                          : 'bg-blue-500/20 text-blue-300'
-                      }`}
-                    >
-                      {folder.scope}
-                    </span>
-                  </div>
-                  <h3 className="text-xs font-bold text-white truncate" title={folder.name}>
-                    {folder.name}
-                  </h3>
-                  <p className="text-[11px] text-neutral-400 font-mono mt-0.5">
-                    /{folder.id}
-                  </p>
-                </div>
-
-                <div className="mt-3 pt-2.5 border-t border-neutral-800/80 flex items-center justify-between text-[11px] text-neutral-400">
-                  <span>{folder.file_count} {folder.file_count === 1 ? 'archivo' : 'archivos'}</span>
-                  <span className="font-mono text-neutral-300 font-semibold">{folder.total_human}</span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Barra de Filtros, Selector de Archivo y Buscador */}
-      <div className="bg-neutral-900/70 border border-neutral-800 rounded-2xl p-4 space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-          {/* Selector de Archivo */}
-          <div className="flex items-center space-x-3">
-            <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center space-x-1.5 whitespace-nowrap">
-              <FileText className="w-3.5 h-3.5 text-amber-400" />
-              <span>Archivo:</span>
+          <div className="flex items-center gap-2 text-xs font-mono truncate">
+            <span className="text-[var(--text-main)] font-bold truncate">
+              {activeFolderMeta?.name || selectedFolder} &gt; {selectedFile || 'sin archivo'}
             </span>
-            {files.length > 0 ? (
-              <select
-                value={selectedFile}
-                onChange={(e) => {
-                  setSelectedFile(e.target.value);
-                  setPage(1);
-                }}
-                className="bg-neutral-950 border border-neutral-700 text-white rounded-xl px-3 py-1.5 text-xs font-mono font-medium focus:ring-1 focus:ring-amber-500 focus:outline-none"
-              >
-                {files.map((file) => (
-                  <option key={file.filename} value={file.filename}>
-                    {file.filename} ({file.size_human}){file.is_today ? ' ★ HOY' : ''}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <span className="text-xs text-neutral-500 italic">No hay archivos en esta carpeta</span>
-            )}
-          </div>
-
-          {/* Buscador de texto en tiempo real */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Buscar en el log (acción, usuario, IP, texto, JSON)..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setPage(1);
-              }}
-              className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-xl pl-9 pr-8 py-1.5 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none font-mono"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold hidden sm:inline">
+              ● EN VIVO
+            </span>
           </div>
         </div>
 
-        {/* Píldoras de Filtro por Nivel */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-neutral-800/80">
-          <span className="text-xs font-bold text-neutral-400 mr-2 flex items-center space-x-1">
-            <Filter className="w-3 h-3 text-neutral-500" />
-            <span>Nivel:</span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            className={`btn text-xs px-2.5 py-1 ${
+              autoRefresh ? 'btn-primary' : 'btn-secondary'
+            }`}
+            title="Alternar refresco automático cada 10 segundos"
+          >
+            <Activity className={`w-3 h-3 ${autoRefresh ? 'animate-pulse' : ''}`} />
+            <span className="hidden sm:inline">{autoRefresh ? '10s ON' : 'Auto'}</span>
+          </button>
+
+          <button
+            onClick={handleGenerateTestLogs}
+            disabled={generatingTest}
+            className="btn btn-secondary text-xs px-2.5 py-1"
+            title="Generar eventos de prueba"
+          >
+            <Sparkles className={`w-3 h-3 ${generatingTest ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Test</span>
+          </button>
+
+          {selectedFile && (
+            <>
+              <button
+                onClick={handleDownloadLog}
+                className="btn btn-secondary text-xs px-2 py-1"
+                title="Descargar archivo crudo"
+              >
+                <Download className="w-3 h-3 text-sky-400" />
+              </button>
+              <button
+                onClick={() => setShowPurgeModal(true)}
+                className="btn btn-secondary text-xs px-2 py-1 text-red-500"
+                title="Purgar archivo de log"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </>
+          )}
+
+          <button
+            onClick={() => {
+              loadFolders();
+              loadEntries();
+            }}
+            disabled={loadingEntries}
+            className="btn btn-secondary text-xs px-2 py-1"
+            title="Sincronizar"
+          >
+            <RefreshCw className={`w-3 h-3 ${loadingEntries ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+      </div>
+
+      {/* 2. CINTA DE FILTRO DE NIVELES (34px) */}
+      <div className="h-9 shrink-0 bg-[var(--bg-surface)] border-b border-[var(--border-fine)] px-3 flex items-center justify-between text-xs font-mono overflow-x-auto">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-bold mr-1">
+            NIVEL:
           </span>
           {['ALL', 'INFO', 'WARNING', 'ERROR', 'DEBUG', 'CRITICAL', 'AUDIT'].map((lvl) => {
             const isSelected = selectedLevel === lvl;
@@ -603,252 +420,264 @@ export default function LogsViewerPage() {
                   setSelectedLevel(lvl);
                   setPage(1);
                 }}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 ${
+                className={`px-2 py-0.5 rounded-[2px] text-[10px] font-mono font-bold transition flex items-center gap-1 shrink-0 ${
                   isSelected
-                    ? 'bg-amber-500 text-neutral-950 shadow-md font-extrabold'
-                    : 'bg-neutral-800/80 hover:bg-neutral-800 text-neutral-300'
+                    ? 'bg-[var(--military-green-primary)] text-white shadow-xs'
+                    : 'bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-[var(--text-main)] border border-[var(--border-fine)]'
                 }`}
               >
                 <span>{lvl === 'ALL' ? 'TODOS' : lvl}</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                    isSelected ? 'bg-neutral-950 text-amber-400' : 'bg-neutral-900 text-neutral-400'
-                  }`}
-                >
-                  {count}
-                </span>
+                <span className="tabular-nums">({count})</span>
               </button>
             );
           })}
         </div>
+
+        <div className="text-[10.5px] text-[var(--text-muted)] hidden md:block">
+          TOTAL: <strong className="text-[var(--text-main)]">{counters.ALL}</strong> EVENTOS
+        </div>
       </div>
 
-      {/* Consola Principal de Registros */}
-      <div className="bg-neutral-900/90 border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl">
-        {/* Barra superior de estado de la consola */}
-        <div className="bg-neutral-950 px-5 py-3 border-b border-neutral-800 flex items-center justify-between text-xs font-mono text-neutral-400">
-          <div className="flex items-center space-x-3">
-            <span className="flex space-x-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500/80 inline-block"></span>
-              <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 inline-block"></span>
-              <span className="w-2.5 h-2.5 rounded-full bg-green-500/80 inline-block"></span>
+      {/* 3. CONSOLA DE AUDITORÍA DIVIDIDA (100% CERO SCROLL EXTERNO) */}
+      <div className="flex-1 min-h-0 grid grid-cols-12 gap-2 p-2 overflow-hidden">
+        {/* Panel Izquierdo (3 cols): Árbol de Carpetas y Archivos */}
+        <div className="col-span-12 lg:col-span-3 bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[2px] p-2 flex flex-col justify-between shadow-xs overflow-hidden">
+          <div className="flex items-center justify-between pb-1.5 border-b border-[var(--border-fine)] shrink-0">
+            <span className="text-[10.5px] font-bold uppercase tracking-wider text-[var(--text-main)] flex items-center gap-1 font-sans">
+              <Folder className="w-3.5 h-3.5 text-[var(--color-accent)]" />
+              Componentes ({folders.length})
             </span>
-            <span className="text-neutral-300 font-bold">
-              {activeFolderMeta?.name || selectedFolder} &gt; {selectedFile || 'sin archivo'}
-            </span>
+            <span className="text-[9.5px] font-mono text-[var(--text-muted)]">LOGS</span>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <span>
-              Mostrando <strong className="text-white font-bold">{entries.length}</strong> de{' '}
-              <strong className="text-white font-bold">{filteredEntries}</strong> registros
-            </span>
-            <select
-              value={perPage}
-              onChange={(e) => {
-                setPerPage(parseInt(e.target.value));
-                setPage(1);
-              }}
-              className="bg-neutral-900 border border-neutral-700 text-white rounded px-2 py-0.5 text-xs focus:outline-none"
-            >
-              <option value="25">25 / pág</option>
-              <option value="50">50 / pág</option>
-              <option value="100">100 / pág</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Cuerpo de la tabla / lista de eventos */}
-        <div className="divide-y divide-neutral-800/80 font-mono text-xs">
-          {loadingEntries ? (
-            <div className="p-16 text-center text-neutral-400 space-y-3">
-              <RefreshCw className="w-8 h-8 text-amber-400 animate-spin mx-auto" />
-              <p className="text-sm font-semibold">Cargando y parseando registros del sistema...</p>
-            </div>
-          ) : entries.length === 0 ? (
-            <div className="p-16 text-center text-neutral-500 space-y-3">
-              <FileText className="w-10 h-10 text-neutral-600 mx-auto" />
-              <p className="text-sm font-semibold text-neutral-400">
-                No se encontraron registros que coincidan con los filtros aplicados.
-              </p>
-              <p className="text-xs text-neutral-500">
-                Puedes generar eventos reales presionando el botón &quot;Generar Logs de Prueba&quot;.
-              </p>
-            </div>
-          ) : (
-            entries.map((entry) => {
-              const isExpanded = !!expandedContexts[entry.id];
-              const isTraceExpanded = !!expandedTraces[entry.id];
-              const jsonString = entry.context ? JSON.stringify(entry.context, null, 2) : '';
-
+          {/* Lista de Carpetas con scroll interno */}
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-1 my-1.5 pr-1">
+            {folders.map((folder) => {
+              const isSelected = selectedFolder === folder.id;
               return (
                 <div
-                  key={entry.id}
-                  className="p-3.5 hover:bg-neutral-800/40 transition-colors space-y-2 group"
+                  key={folder.id}
+                  onClick={() => setSelectedFolder(folder.id)}
+                  className={`p-1.5 rounded-[2px] border cursor-pointer transition text-xs font-mono flex items-center justify-between ${
+                    isSelected
+                      ? 'bg-[var(--bg-surface)] border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]/50'
+                      : 'bg-[var(--bg-card)] border-[var(--border-fine)] hover:border-[var(--color-accent)]'
+                  }`}
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      <span className="text-neutral-500 text-[11px] select-none font-bold">
-                        #{entry.id}
-                      </span>
-                      <span className="text-neutral-400 text-xs font-semibold flex items-center space-x-1">
-                        <Clock className="w-3 h-3 text-neutral-500" />
-                        <span>{entry.timestamp}</span>
-                      </span>
-                      {getLevelBadge(entry.level)}
-                      <span className="text-white font-bold text-xs bg-neutral-950/80 px-2 py-0.5 rounded border border-neutral-800">
-                        {entry.action}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center space-x-3 text-[11px] text-neutral-400">
-                      <span className="flex items-center space-x-1">
-                        <User className="w-3 h-3 text-neutral-500" />
-                        <span className="text-neutral-300 font-semibold">{entry.user}</span>
-                      </span>
-                      <span className="text-neutral-500">•</span>
-                      <span className="text-neutral-400 font-mono">{entry.ip}</span>
+                  <div className="flex items-center gap-1.5 truncate">
+                    {renderFolderIcon(folder.icon, folder.color)}
+                    <div className="truncate">
+                      <p className="font-bold text-[11px] text-[var(--text-main)] truncate">{folder.name}</p>
+                      <p className="text-[9.5px] text-[var(--text-muted)] truncate">{folder.scope.toUpperCase()} • {folder.file_count} arch.</p>
                     </div>
                   </div>
-
-                  {/* Mensaje principal / resumen */}
-                  <div className="text-neutral-300 font-sans text-xs pl-2 border-l-2 border-neutral-700 group-hover:border-amber-500/70 transition-colors">
-                    <p className="font-mono text-xs text-neutral-200 break-words">{entry.message}</p>
-                  </div>
-
-                  {/* Acciones para contexto JSON y Stacktrace */}
-                  <div className="flex items-center space-x-3 pt-1">
-                    {entry.context && (
-                      <button
-                        onClick={() => toggleContext(entry.id)}
-                        className="inline-flex items-center space-x-1 text-[11px] text-amber-400 hover:text-amber-300 font-bold transition"
-                      >
-                        {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                        <span>{isExpanded ? 'Ocultar Contexto JSON' : 'Ver Contexto JSON'}</span>
-                      </button>
-                    )}
-
-                    {entry.stacktrace && entry.stacktrace.length > 0 && (
-                      <button
-                        onClick={() => toggleTrace(entry.id)}
-                        className="inline-flex items-center space-x-1 text-[11px] text-rose-400 hover:text-rose-300 font-bold transition"
-                      >
-                        {isTraceExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                        <span>{isTraceExpanded ? 'Ocultar Traza Técnica' : `Ver Traza (${entry.stacktrace.length} líneas)`}</span>
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Detalle de Contexto JSON Expandido */}
-                  {isExpanded && entry.context && (
-                    <div className="mt-2 bg-neutral-950 border border-neutral-800 rounded-xl p-3 relative font-mono text-[11px]">
-                      <button
-                        onClick={() => handleCopyJson(entry.id, jsonString)}
-                        className="absolute right-2.5 top-2.5 px-2 py-1 rounded bg-neutral-900 hover:bg-neutral-800 text-neutral-300 flex items-center space-x-1 border border-neutral-700 transition"
-                        title="Copiar JSON al portapapeles"
-                      >
-                        {copiedId === entry.id ? (
-                          <>
-                            <Check className="w-3 h-3 text-emerald-400" />
-                            <span className="text-[10px] text-emerald-400">Copiado</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3 h-3 text-neutral-400" />
-                            <span className="text-[10px]">Copiar</span>
-                          </>
-                        )}
-                      </button>
-                      <pre className="text-amber-200/90 overflow-x-auto pr-16">{jsonString}</pre>
-                    </div>
-                  )}
-
-                  {/* Traza de Error Expandida */}
-                  {isTraceExpanded && entry.stacktrace && (
-                    <div className="mt-2 bg-rose-950/20 border border-rose-900/40 rounded-xl p-3 font-mono text-[11px] text-rose-300 overflow-x-auto max-h-64 overflow-y-auto">
-                      <p className="font-bold text-rose-400 mb-1 flex items-center space-x-1">
-                        <AlertTriangle className="w-3 h-3" />
-                        <span>Traza de excepción (Stacktrace):</span>
-                      </p>
-                      <pre className="whitespace-pre-wrap">{entry.stacktrace.join('\n')}</pre>
-                    </div>
-                  )}
+                  <span className="text-[9px] font-mono text-[var(--text-muted)] shrink-0">{folder.total_human}</span>
                 </div>
               );
-            })
-          )}
+            })}
+          </div>
+
+          {/* Selector de Archivo Específico en el Pie */}
+          <div className="pt-2 border-t border-[var(--border-fine)] shrink-0">
+            <label className="text-[10px] font-mono text-[var(--text-muted)] block mb-1 uppercase font-bold">
+              Archivo Activo:
+            </label>
+            {files.length > 0 ? (
+              <select
+                value={selectedFile}
+                onChange={(e) => {
+                  setSelectedFile(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] text-xs text-[var(--text-main)] rounded px-2 py-1 font-mono outline-none"
+              >
+                {files.map((file) => (
+                  <option key={file.filename} value={file.filename}>
+                    {file.filename} ({file.size_human}){file.is_today ? ' ★ HOY' : ''}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-[10px] text-[var(--text-muted)] italic">Sin archivos</span>
+            )}
+          </div>
         </div>
 
-        {/* Paginador */}
-        {totalPages > 1 && (
-          <div className="bg-neutral-950 px-5 py-3 border-t border-neutral-800 flex items-center justify-between text-xs">
-            <span className="text-neutral-400">
-              Página <strong className="text-white font-bold">{page}</strong> de{' '}
-              <strong className="text-white font-bold">{totalPages}</strong>
+        {/* Panel Derecho (9 cols): Barra de Búsqueda + Lista de Entradas de Log */}
+        <div className="col-span-12 lg:col-span-9 bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[2px] p-2 flex flex-col justify-between shadow-xs overflow-hidden">
+          {/* Barra Superior con Buscador */}
+          <div className="flex items-center justify-between gap-2 pb-2 border-b border-[var(--border-fine)] shrink-0">
+            <div className="relative flex-1 max-w-md">
+              <Search className="w-3.5 h-3.5 text-[var(--text-muted)] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Buscar por usuario, IP, acción, JSON..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded pl-8 pr-2 py-1 text-xs text-[var(--text-main)] outline-none font-mono"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 text-xs font-mono text-[var(--text-muted)]">
+              <span>{filteredEntries} eventos</span>
+              <select
+                value={perPage}
+                onChange={(e) => {
+                  setPerPage(parseInt(e.target.value));
+                  setPage(1);
+                }}
+                className="bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded px-1.5 py-0.5 text-xs text-[var(--text-main)] font-mono"
+              >
+                <option value="25">25 / pág</option>
+                <option value="50">50 / pág</option>
+                <option value="100">100 / pág</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Consola de Registros con Scroll Interno */}
+          <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-[var(--border-fine)] font-mono text-xs my-1 pr-1">
+            {loadingEntries ? (
+              <div className="p-12 text-center text-[var(--text-muted)] space-y-2">
+                <RefreshCw className="w-6 h-6 text-[var(--color-accent)] animate-spin mx-auto" />
+                <p className="text-xs font-semibold">Leyendo bitácora de eventos...</p>
+              </div>
+            ) : entries.length === 0 ? (
+              <div className="p-12 text-center text-[var(--text-muted)] space-y-2">
+                <FileText className="w-8 h-8 text-[var(--text-muted)] mx-auto" />
+                <p className="text-xs font-semibold">No se encontraron eventos con los filtros actuales.</p>
+              </div>
+            ) : (
+              entries.map((entry) => {
+                const isExpanded = !!expandedContexts[entry.id];
+                const isTraceExpanded = !!expandedTraces[entry.id];
+                const jsonString = entry.context ? JSON.stringify(entry.context, null, 2) : '';
+
+                return (
+                  <div
+                    key={entry.id}
+                    className="p-2 hover:bg-[var(--bg-surface)]/60 transition-colors space-y-1 text-xs"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-1 text-[11px]">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[var(--text-muted)] font-bold text-[10px]">#{entry.id}</span>
+                        <span className="text-[var(--text-muted)] flex items-center gap-1">
+                          <Clock className="w-2.5 h-2.5" /> {entry.timestamp}
+                        </span>
+                        {getLevelBadge(entry.level)}
+                        <span className="font-bold text-[var(--text-main)] bg-[var(--bg-surface)] px-1.5 py-0.2 rounded border border-[var(--border-fine)] text-[10px]">
+                          {entry.action}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)]">
+                        <span className="flex items-center gap-1 text-[var(--text-main)]">
+                          <User className="w-2.5 h-2.5" /> {entry.user}
+                        </span>
+                        <span>•</span>
+                        <span>{entry.ip}</span>
+                      </div>
+                    </div>
+
+                    <div className="text-[var(--text-main)] pl-2 border-l-2 border-[var(--border-fine)]">
+                      <p className="break-words text-[11px] leading-tight font-sans">{entry.message}</p>
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-0.5">
+                      {entry.context && (
+                        <button
+                          onClick={() => toggleContext(entry.id)}
+                          className="text-[10px] text-[var(--color-accent)] hover:underline font-bold flex items-center gap-1"
+                        >
+                          {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                          <span>{isExpanded ? 'Ocultar JSON' : 'Ver Contexto JSON'}</span>
+                        </button>
+                      )}
+
+                      {entry.stacktrace && entry.stacktrace.length > 0 && (
+                        <button
+                          onClick={() => toggleTrace(entry.id)}
+                          className="text-[10px] text-rose-500 hover:underline font-bold flex items-center gap-1"
+                        >
+                          {isTraceExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                          <span>{isTraceExpanded ? 'Ocultar Traza' : `Traza (${entry.stacktrace.length} l.)`}</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {isExpanded && entry.context && (
+                      <div className="mt-1 bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded p-2 relative font-mono text-[10px]">
+                        <button
+                          onClick={() => handleCopyJson(entry.id, jsonString)}
+                          className="absolute right-2 top-2 px-1.5 py-0.5 rounded bg-[var(--bg-card)] border border-[var(--border-fine)] text-[var(--text-muted)] hover:text-[var(--text-main)]"
+                        >
+                          {copiedId === entry.id ? 'Copiado' : 'Copiar'}
+                        </button>
+                        <pre className="text-[var(--color-accent)] overflow-x-auto pr-12">{jsonString}</pre>
+                      </div>
+                    )}
+
+                    {isTraceExpanded && entry.stacktrace && (
+                      <div className="mt-1 bg-red-950/20 border border-red-500/30 rounded p-2 font-mono text-[10px] text-red-400 overflow-x-auto max-h-48 overflow-y-auto">
+                        <pre className="whitespace-pre-wrap">{entry.stacktrace.join('\n')}</pre>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Barra de Paginación Fija Inferior */}
+          <div className="tactical-pagination shrink-0">
+            <span className="font-mono text-xs">
+              PÁGINA {page} DE {totalPages} ({filteredEntries} EVENTOS)
             </span>
-            <div className="flex items-center space-x-2">
+
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white font-semibold disabled:opacity-40 transition flex items-center space-x-1 border border-neutral-700"
+                className="btn btn-secondary text-xs px-2 py-0.5"
               >
-                <ChevronLeft className="w-3.5 h-3.5" />
-                <span>Anterior</span>
+                <ChevronLeft className="w-3 h-3" />
+                <span className="hidden sm:inline">Anterior</span>
               </button>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
-                className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white font-semibold disabled:opacity-40 transition flex items-center space-x-1 border border-neutral-700"
+                className="btn btn-secondary text-xs px-2 py-0.5"
               >
-                <span>Siguiente</span>
-                <ChevronRight className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Siguiente</span>
+                <ChevronRight className="w-3 h-3" />
               </button>
             </div>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Modal de Purga de Log */}
+      {/* Modal de Purga */}
       {showPurgeModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-neutral-900 border border-neutral-700 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center space-x-3 text-red-400">
-              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-                <ShieldAlert className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-white">Confirmar Purga Militar</h3>
-                <p className="text-xs text-neutral-400">Acción restringida a personal de comando</p>
-              </div>
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[3px] max-w-md w-full p-5 shadow-2xl space-y-3">
+            <div className="flex items-center gap-2 text-red-500">
+              <ShieldAlert className="w-6 h-6" />
+              <h3 className="text-sm font-bold text-[var(--text-main)]">Confirmar Purga Militar</h3>
             </div>
 
-            <p className="text-sm text-neutral-300">
-              ¿Está seguro de que desea purgar el archivo{' '}
-              <strong className="text-white font-mono bg-neutral-950 px-1.5 py-0.5 rounded border border-neutral-800">
-                {selectedFile}
-              </strong>{' '}
-              de la carpeta{' '}
-              <strong className="text-amber-400 font-mono">{selectedFolder}</strong>?
+            <p className="text-xs text-[var(--text-muted)]">
+              ¿Desea purgar el archivo <strong className="text-[var(--text-main)] font-mono">{selectedFile}</strong> de la carpeta <strong className="text-[var(--color-accent)] font-mono">{selectedFolder}</strong>?
             </p>
 
-            <div className="p-3 bg-red-950/30 border border-red-900/40 rounded-xl text-xs text-red-300">
-              Esta acción vaciará los registros históricos de este archivo y registrará una entrada formal de
-              auditoría con fecha, hora y usuario que autorizó el reinicio.
-            </div>
-
-            <div className="flex items-center justify-end space-x-3 pt-2">
-              <button
-                onClick={() => setShowPurgeModal(false)}
-                className="px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-xs font-bold transition"
-              >
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border-fine)]">
+              <button onClick={() => setShowPurgeModal(false)} className="btn btn-secondary text-xs px-3 py-1">
                 Cancelar
               </button>
-              <button
-                onClick={handlePurgeLog}
-                disabled={purging}
-                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition shadow-lg disabled:opacity-50"
-              >
-                {purging ? 'Purgando...' : 'Confirmar y Purgar'}
+              <button onClick={handlePurgeLog} disabled={purging} className="btn btn-primary text-xs px-3 py-1 bg-red-600 text-white">
+                {purging ? 'Purgando...' : 'Confirmar Purga'}
               </button>
             </div>
           </div>

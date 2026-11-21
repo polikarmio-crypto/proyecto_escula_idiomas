@@ -17,96 +17,97 @@ html[data-font-size="medium"] { font-size: 17.5px; }
 html[data-font-size="large"]  { font-size: 20px; }
 
 /* ═══════════════════════════════════════════════════════════
-   TOKENS: SISTEMA TÁCTICO-EDITORIAL (Por defecto en :root)
+   TOKENS: SISTEMA TÁCTICO-EDITORIAL (Modo Claro: Archivo Técnico Militar)
    ═══════════════════════════════════════════════════════════ */
 :root,
 html[data-theme="light"] {
-  --bg-base:              #F4F5F2;
-  --bg-primary:           #F4F5F2;
-  --bg-surface:           rgba(255, 255, 255, 0.82);
-  --bg-surface-elevated:  #ECEEEB;
-  --bg-surface-hover:     #E3E6E1;
-  --bg-card:              rgba(255, 255, 255, 0.82);
+  --bg-base:              #F4F3EF;
+  --bg-primary:           #F4F3EF;
+  --bg-surface:           #FFFFFF;
+  --bg-surface-elevated:  #EAE8E1;
+  --bg-surface-hover:     #E2E0D8;
+  --bg-card:              #FFFFFF;
 
-  --border-fine:          #D5D9D4;
-  --border-subtle:        #D5D9D4;
-  --border-strong:        #BCC2BA;
-  --border-accent:        #B59449;
-  --border-gold:          #B59449;
+  --border-fine:          #D4D4D0;
+  --border-subtle:        #D4D4D0;
+  --border-strong:        #B8B8B2;
+  --border-accent:        #D97706;
+  --border-gold:          #D97706;
 
-  --color-primary:        #233329;
-  --color-accent:         #B59449;
+  --color-primary:        #1B3B2B;
+  --color-accent:         #D97706;
 
-  --military-green-primary: #233329;
-  --military-green-hover:   #19251E;
-  --military-green-light:   #2F4538;
-  --military-green-subtle:  rgba(35, 51, 41, 0.07);
+  --military-green-primary: #1B3B2B;
+  --military-green-hover:   #132B1F;
+  --military-green-light:   #2A5942;
+  --military-green-subtle:  rgba(27, 59, 43, 0.08);
 
-  --military-gold-primary:  #B59449;
-  --military-gold-hover:    #9E803E;
-  --military-gold-subtle:   rgba(181, 148, 73, 0.10);
+  --military-gold-primary:  #D97706;
+  --military-gold-hover:    #B45309;
+  --military-gold-subtle:   rgba(217, 119, 6, 0.12);
 
-  --military-navy:          #233329;
-  --military-blue-subtle:   rgba(35, 51, 41, 0.05);
+  --military-navy:          #1B3B2B;
+  --military-blue-subtle:   rgba(27, 59, 43, 0.05);
 
-  --status-active:  #1E5E3A;
-  --status-pending: #A0691A;
-  --status-danger:  #B91C1C;
+  --status-active:  #166534;
+  --status-pending: #D97706;
+  --status-danger:  #DC2626;
 
-  --text-main:  #141815;
-  --text-muted: #4A524C;
-  --text-dim:   #717A74;
+  --text-main:  #111312;
+  --text-muted: #4B524E;
+  --text-dim:   #727A75;
 
-  --shadow-sm:    0 1px 2px rgba(20, 24, 21, 0.04);
-  --shadow-md:    0 2px 4px rgba(20, 24, 21, 0.05);
-  --shadow-lg:    0 4px 8px rgba(20, 24, 21, 0.07);
-  --shadow-focus: 0 0 0 2px rgba(181, 148, 73, 0.35);
+  --shadow-sm:    none;
+  --shadow-md:    none;
+  --shadow-lg:    none;
+  --shadow-focus: 0 0 0 2px rgba(217, 119, 6, 0.40);
 }
 
 /* ═══════════════════════════════════════════════════════════
-   TOKENS: MODO OSCURO (Seleccionable)
+   TOKENS: MODO OSCURO (Consola Táctica Nocturna)
    ═══════════════════════════════════════════════════════════ */
-html[data-theme="dark"] {
-  --bg-base:              #0D120F;
-  --bg-primary:           #0D120F;
-  --bg-surface:           rgba(22, 30, 25, 0.85);
-  --bg-surface-elevated:  #161E19;
-  --bg-surface-hover:     #1F2B24;
-  --bg-card:              rgba(22, 30, 25, 0.85);
+html[data-theme="dark"],
+html.dark {
+  --bg-base:              #0A0C0B;
+  --bg-primary:           #0A0C0B;
+  --bg-surface:           #121614;
+  --bg-surface-elevated:  #181E1B;
+  --bg-surface-hover:     #202824;
+  --bg-card:              #121614;
 
-  --border-fine:          #28352D;
-  --border-subtle:        #28352D;
-  --border-strong:        #3D5044;
-  --border-accent:        #B59449;
-  --border-gold:          #B59449;
+  --border-fine:          #242B27;
+  --border-subtle:        #242B27;
+  --border-strong:        #38423D;
+  --border-accent:        #F59E0B;
+  --border-gold:          #F59E0B;
 
-  --color-primary:        #233329;
-  --color-accent:         #B59449;
+  --color-primary:        #F59E0B;
+  --color-accent:         #4D6B53;
 
-  --military-green-primary: #233329;
-  --military-green-hover:   #19251E;
-  --military-green-light:   #3D6B52;
-  --military-green-subtle:  rgba(35, 51, 41, 0.25);
+  --military-green-primary: #4D6B53;
+  --military-green-hover:   #3D5542;
+  --military-green-light:   #688D70;
+  --military-green-subtle:  rgba(77, 107, 83, 0.20);
 
-  --military-gold-primary:  #B59449;
-  --military-gold-hover:    #9E803E;
-  --military-gold-subtle:   rgba(181, 148, 73, 0.18);
+  --military-gold-primary:  #F59E0B;
+  --military-gold-hover:    #D97706;
+  --military-gold-subtle:   rgba(245, 158, 11, 0.15);
 
-  --military-navy:          #0D120F;
-  --military-blue-subtle:   rgba(13, 18, 15, 0.35);
+  --military-navy:          #0A0C0B;
+  --military-blue-subtle:   rgba(10, 12, 11, 0.35);
 
-  --status-active:  #3D8A5E;
-  --status-pending: #C68A2A;
-  --status-danger:  #C03333;
+  --status-active:  #10B981;
+  --status-pending: #F59E0B;
+  --status-danger:  #EF4444;
 
-  --text-main:  #EDF0ED;
-  --text-muted: #9BA59E;
-  --text-dim:   #6B7870;
+  --text-main:  #F4F4F0;
+  --text-muted: #9CA3AF;
+  --text-dim:   #6B7280;
 
-  --shadow-sm:    0 1px 2px rgba(0, 0, 0, 0.30);
-  --shadow-md:    0 2px 6px rgba(0, 0, 0, 0.35);
-  --shadow-lg:    0 4px 12px rgba(0, 0, 0, 0.40);
-  --shadow-focus: 0 0 0 2px rgba(181, 148, 73, 0.40);
+  --shadow-sm:    none;
+  --shadow-md:    none;
+  --shadow-lg:    none;
+  --shadow-focus: 0 0 0 2px rgba(245, 158, 11, 0.40);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -464,24 +465,13 @@ html.dark .text-red-400, html.dark .text-red-300 { color: #f87171 !important; }
    ═══════════════════════════════════════════════════════════ */
 :root body,
 body,
-html[data-theme="light"] body {
-  background-color: var(--bg-base);
-  color: var(--text-main);
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  max-height: 100vh;
-  overflow: hidden;
-}
-
+html[data-theme="light"] body,
 html[data-theme="dark"] body {
   background-color: var(--bg-base);
   color: var(--text-main);
   margin: 0;
   padding: 0;
-  height: 100vh;
-  max-height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
 }
 
 :root body::before,
@@ -599,11 +589,58 @@ body {
 }
 
 /* Tipografía institucional (ceremonial / headings de módulo) */
-.font-solemn {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-weight: 800;
-  letter-spacing: 0.03em;
+.font-solemn,
+.font-display {
+  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
+
+/* Patrón técnico de telemetría táctica */
+.bg-tactical-grid {
+  background-color: var(--bg-base);
+  background-image:
+    radial-gradient(rgba(217, 119, 6, 0.10) 1px, transparent 1px),
+    linear-gradient(to right, rgba(212, 212, 208, 0.45) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(212, 212, 208, 0.45) 1px, transparent 1px);
+  background-size: 32px 32px, 64px 64px, 64px 64px;
+}
+
+html[data-theme="dark"] .bg-tactical-grid,
+html.dark .bg-tactical-grid {
+  background-color: #0A0C0B;
+  background-image:
+    radial-gradient(rgba(245, 158, 11, 0.08) 1px, transparent 1px),
+    linear-gradient(to right, rgba(36, 43, 39, 0.45) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(36, 43, 39, 0.45) 1px, transparent 1px);
+  background-size: 32px 32px, 64px 64px, 64px 64px;
+}
+
+.hud-bracket-tl, .hud-corner-tl { position: absolute; top: 0; left: 0; width: 10px; height: 10px; border-top: 2px solid var(--color-accent); border-left: 2px solid var(--color-accent); pointer-events: none; }
+.hud-bracket-tr, .hud-corner-tr { position: absolute; top: 0; right: 0; width: 10px; height: 10px; border-top: 2px solid var(--color-accent); border-right: 2px solid var(--color-accent); pointer-events: none; }
+.hud-bracket-bl, .hud-corner-bl { position: absolute; bottom: 0; left: 0; width: 10px; height: 10px; border-bottom: 2px solid var(--color-accent); border-left: 2px solid var(--color-accent); pointer-events: none; }
+.hud-bracket-br, .hud-corner-br { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-bottom: 2px solid var(--color-accent); border-right: 2px solid var(--color-accent); pointer-events: none; }
+
+/* Indicadores Minimalistas de Estado (Status Dots) */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 2px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface-elevated);
+  color: var(--text-main);
+}
+
+.status-dot-active  { color: #10B981; }
+.status-dot-pending { color: #F59E0B; }
+.status-dot-danger  { color: #EF4444; }
+.status-dot-neutral { color: var(--text-muted); }
 
 /* Datos / códigos — JetBrains Mono */
 .font-data,
@@ -982,9 +1019,9 @@ tbody tr:hover td { background: var(--military-green-subtle) !important; }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   LAYOUT: ZERO-SCROLL ARCHITECTURE (100vh STRICT)
+   LAYOUT: ZERO-SCROLL ARCHITECTURE (100vh STRICT PARA APP INTERNA)
    ═══════════════════════════════════════════════════════════ */
-html, body {
+html:has(.layout), body:has(.layout) {
   height: 100vh;
   max-height: 100vh;
   overflow: hidden;
@@ -1014,6 +1051,17 @@ html, body {
   flex-shrink: 0;
   transition: transform .25s ease;
   z-index: 100;
+}
+
+html[data-theme="light"] .sidebar {
+  background: #EAE8E1;
+  border-right: 1px solid #D4D4D0;
+}
+
+html[data-theme="dark"] .sidebar,
+html.dark .sidebar {
+  background: #0D100F;
+  border-right: 1px solid #242B27;
 }
 
 .sidebar-logo {

@@ -11,6 +11,7 @@ module.exports = {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        display: ['Space Grotesk', 'Inter', 'sans-serif'],
         tactical: ['Inter', 'sans-serif'],
       },
       borderRadius: {

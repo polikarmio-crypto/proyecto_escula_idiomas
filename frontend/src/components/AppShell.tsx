@@ -41,10 +41,14 @@ import {
   LogIn,
   AlertCircle,
   CheckCircle2,
-  Sliders
+  Sliders,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 import { useAuthRole, RolUsuario, ROLES_CONFIG } from '@/context/AuthRoleContext';
 import { logger } from '@/utils/logger';
+
+import ThemeToggle from '@/components/workspace/ThemeToggle';
 
 export interface InfoRol {
   id: RolUsuario;
@@ -92,20 +96,41 @@ interface NavItem {
   badge?: string;
 }
 
-const ALL_NAV_ITEMS: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/catalogos', label: 'Catálogos Base', icon: Database },
-  { href: '/estructura', label: 'Estructura Académica', icon: FolderTree },
-  { href: '/docentes', label: 'Docentes', icon: GraduationCap },
-  { href: '/estudiantes', label: 'Estudiantes', icon: Users },
-  { href: '/paralelos', label: 'Paralelos', icon: Layers },
-  { href: '/inscripciones', label: 'Inscripciones', icon: ClipboardEdit },
-  { href: '/asistencia', label: 'Control de Asistencia', icon: UserCheck },
-  { href: '/calificaciones', label: 'Calificaciones', icon: Award },
-  { href: '/cajas', label: 'Cajas y Recaudaciones', icon: Landmark },
-  { href: '/almacen', label: 'Almacén de Libros', icon: Package },
-  { href: '/metodos-numericos', label: 'Modelos y Proyecciones', icon: LineChart },
-  { href: '/logs', label: 'Logs del Sistema', icon: ShieldAlert },
+interface NavCategory {
+  title: string;
+  items: NavItem[];
+}
+
+const CATEGORIZED_NAV_ITEMS: NavCategory[] = [
+  {
+    title: 'Operación Académica',
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/paralelos', label: 'Paralelos', icon: Layers },
+      { href: '/estudiantes', label: 'Estudiantes', icon: Users },
+      { href: '/docentes', label: 'Docentes', icon: GraduationCap },
+      { href: '/inscripciones', label: 'Inscripciones', icon: ClipboardEdit },
+      { href: '/calificaciones', label: 'Calificaciones', icon: Award },
+      { href: '/asistencia', label: 'Control Asistencia', icon: UserCheck },
+    ],
+  },
+  {
+    title: 'Control y Finanzas',
+    items: [
+      { href: '/cajas', label: 'Cajas y Recaudaciones', icon: Landmark },
+      { href: '/almacen', label: 'Almacén de Libros', icon: Package },
+    ],
+  },
+  {
+    title: 'Analítica y Auditoría',
+    items: [
+      { href: '/catalogos', label: 'Catálogos Base', icon: Database },
+      { href: '/estructura', label: 'Estructura Académica', icon: FolderTree },
+      { href: '/metodos-numericos', label: 'Modelos & Proyecciones', icon: LineChart },
+      { href: '/logs', label: 'Logs del Sistema', icon: ShieldAlert },
+      { href: '/configuracion', label: 'Configuración', icon: Sliders },
+    ],
+  },
 ];
 
 export type ThemeMode = 'dark' | 'light' | 'high-contrast';
@@ -140,11 +165,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [regErrors, setRegErrors] = useState<Record<string, string>>({});
   const [regSuccess, setRegSuccess] = useState<string | null>(null);
 
-
   const [modalCambioRol, setModalCambioRol] = useState(false);
   const [rolObjetivo, setRolObjetivo] = useState<RolUsuario | null>(null);
   const [pinIngresado, setPinIngresado] = useState('');
   const [pinError, setPinError] = useState<string | null>(null);
+
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const [theme, setTheme] = useState<ThemeMode>(() => {
     if (typeof window !== 'undefined') {
@@ -179,7 +205,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const prevPathRef = useRef(pathname);
   const expectedPathname = useRef<string | null>(null);
 
-  const navItems = ALL_NAV_ITEMS.filter((item) => rolConfig.rutasPermitidas.includes(item.href));
+  const navCategories = CATEGORIZED_NAV_ITEMS.map((cat) => ({
+    title: cat.title,
+    items: cat.items.filter((item) => rolConfig.rutasPermitidas.includes(item.href)),
+  })).filter((cat) => cat.items.length > 0);
+
+  const allFilteredNavItems = navCategories.flatMap((c) => c.items);
 
   useEffect(() => {
     if (transPhase === 'entering' || transPhase === 'holding') {
@@ -458,249 +489,252 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <p style={{ color: '#9ca3af', fontSize: '0.85rem' }}>Redirigiendo a autenticación institucional SACA...</p>
         </div>
       ) : (
-        <div className="layout">
-          <div
-            className={`sidebar-overlay ${mobileMenuOpen ? 'open' : ''}`}
-            onClick={() => setMobileMenuOpen(false)}
-            aria-hidden="true"
-          />
+        <div className="layout h-screen w-screen overflow-hidden flex flex-col bg-[var(--bg-base)] text-[var(--text-main)]">
+          {/* Franja Tricolor Institucional Superior (2px) */}
+          <div className="h-[2px] w-full bg-gradient-to-r from-[#dc2626] via-[#f59e0b] to-[#15803d] shrink-0 z-30" />
 
-          <aside className={`sidebar ${mobileMenuOpen ? 'open' : ''}`}>
-            <div className="sidebar-logo">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
-                <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 6,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <img src="/images/logos/logo-eie.png" alt="EIE" style={{ width: 34, height: 34, objectFit: 'contain' }} />
-                </div>
-                <div>
-                  <p className="font-solemn" style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1 }}>
-                    EIE &bull; CEDMIL
-                  </p>
-                  <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Escuela de Idiomas</p>
-                </div>
-              </div>
+          {/* Header Único Superior (48px) */}
+          <header className="topbar h-12 min-h-[48px] max-h-[48px] px-3 sm:px-4 flex items-center justify-between gap-3 shrink-0 z-20 shadow-xs border-b border-[var(--border-fine)]">
+            <div className="flex items-center gap-3 min-w-0">
               <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="btn-icon btn-ghost"
-                style={{ display: mobileMenuOpen ? 'flex' : 'none' }}
-                aria-label="Cerrar navegación"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="btn btn-secondary btn-icon md:hidden p-1.5"
+                aria-label="Abrir menú"
               >
-                <X size={18} />
+                <Menu size={16} />
               </button>
+
+              {/* Escudo Compacto EIE-CEDMIL con enlace al Dashboard */}
+              <Link href="/dashboard" className="flex items-center gap-2 group shrink-0">
+                <div className="w-8 h-8 rounded-[2px] bg-white dark:bg-[#121614] border border-[#D4D4D0] dark:border-[#242B27] flex items-center justify-center p-1 group-hover:border-[#D97706] dark:group-hover:border-[#F59E0B] transition">
+                  <img
+                    src="/images/logos/logo-eie.png"
+                    alt="EIE"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="hidden sm:block">
+                  <span className="text-[11px] font-black font-display text-white uppercase tracking-wider block leading-none">
+                    EIE • SACA
+                  </span>
+                  <span className="text-[8px] font-mono text-[#F59E0B] uppercase">
+                    CEDMIL // LA PAZ
+                  </span>
+                </div>
+              </Link>
+
+              {/* Botones de Historial y Home */}
+              <div className="hidden lg:flex items-center gap-0.5 bg-black/20 border border-white/10 px-1 py-0.5 rounded-[2px]">
+                <button
+                  type="button"
+                  onClick={() => router.back()}
+                  className="p-1 hover:text-white text-zinc-300 transition"
+                  title="Atrás"
+                  aria-label="Atrás"
+                >
+                  <ArrowLeft size={13} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.forward()}
+                  className="p-1 hover:text-white text-zinc-300 transition"
+                  title="Adelante"
+                  aria-label="Adelante"
+                >
+                  <ArrowRight size={13} />
+                </button>
+                <div className="w-[1px] h-3 bg-white/20 mx-0.5" />
+                <Link
+                  href="/dashboard"
+                  className="p-1 hover:text-white text-zinc-300 transition"
+                  title="Inicio SACA"
+                  aria-label="Inicio SACA"
+                >
+                  <Home size={13} />
+                </Link>
+              </div>
+
+              {/* Breadcrumb Dinámico Táctico */}
+              <div className="hidden md:flex items-center gap-1.5 text-xs font-mono text-zinc-300">
+                <span className="text-zinc-400">SISTEMA</span>
+                <span className="text-[#F59E0B]">&gt;</span>
+                <span className="text-zinc-300">{rolConfig.titulo.split(' ')[0].toUpperCase()}</span>
+                <span className="text-[#F59E0B]">&gt;</span>
+                <span className="text-white font-bold uppercase truncate max-w-[140px] lg:max-w-none">
+                  {pathname.replace('/', '') || 'DASHBOARD'}
+                </span>
+              </div>
             </div>
 
-            <nav className="sidebar-nav">
-              <div
-                style={{
-                  padding: '0.5rem 0.85rem 0.25rem',
-                  fontSize: '0.65rem',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  color: 'var(--text-dim)',
-                  letterSpacing: '0.08em',
-                }}
-              >
-                Módulos del Sistema
-              </div>
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={(e) => handleNavClick(e, item)}
-                    className={`nav-item ${isActive ? 'active' : ''}`}
-                  >
-                    <Icon size={16} />
-                    <span style={{ flex: 1 }}>{item.label}</span>
-                    {isActive && <ChevronRight size={14} />}
-                  </Link>
-                );
-              })}
-
-              <div
-                style={{
-                  padding: '0.75rem 0.85rem 0.25rem',
-                  fontSize: '0.65rem',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  color: 'var(--text-dim)',
-                  letterSpacing: '0.08em',
-                  marginTop: '0.5rem',
-                  borderTop: '1px solid var(--border-subtle)',
-                }}
-              >
-                Ajustes & Sistema
+            {/* Acciones de la Derecha: Telemetría, Toggle Tema, Pill Usuario */}
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              {/* Indicador de Conexión Táctico */}
+              <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 bg-black/30 border border-white/15 font-mono text-[10px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-zinc-400">SESIÓN:</span>
+                <span className="text-emerald-400 font-bold">ONLINE</span>
               </div>
 
+              {/* Acceso a Configuración */}
               <Link
                 href="/configuracion"
-                onClick={() => setMobileMenuOpen(false)}
-                className={`nav-item ${pathname === '/configuracion' ? 'active' : ''}`}
+                className="hidden md:flex items-center gap-1 px-2 py-1 bg-white/10 hover:bg-white/15 border border-white/20 text-white text-[11px] font-mono transition"
+                title="Configuración & Accesibilidad"
               >
-                <Sliders size={16} />
-                <span style={{ flex: 1 }}>Configuración & Accesibilidad</span>
-                {pathname === '/configuracion' && <ChevronRight size={14} />}
+                <Sliders size={12} className="text-[#F59E0B]" />
+                <span>Ajustes</span>
               </Link>
-            </nav>
 
-            <div style={{ padding: '0.75rem 0.85rem', borderTop: '1px solid var(--border-fine)', background: 'var(--bg-surface-elevated)', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--military-gold-primary)', color: '#181C19', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 800, flexShrink: 0 }}>
+              {/* Selector de Modo Claro / Oscuro */}
+              <ThemeToggle />
+
+              {/* Pill Compacta de Credenciales */}
+              <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-white/20">
+                <div
+                  style={{ backgroundColor: 'var(--military-green-primary)' }}
+                  className="w-7 h-7 rounded-[2px] text-white flex items-center justify-center text-xs font-black border border-[#D97706] dark:border-[#F59E0B] shrink-0"
+                >
                   {(usuario?.nombre || session?.user?.name || rolConfig.nombrePorDefecto).slice(0, 2).toUpperCase()}
                 </div>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-main)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div className="hidden xl:block min-w-0 max-w-[150px]">
+                  <p className="text-[11px] font-bold text-white truncate leading-none">
                     {usuario?.nombre || session?.user?.name || rolConfig.nombrePorDefecto}
                   </p>
-                  <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {usuario?.email || session?.user?.email || rolConfig.emailPorDefecto}
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={handleLogout}
-                className="btn btn-secondary"
-                style={{ width: '100%', padding: '0.45rem 0.6rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', color: 'var(--status-danger)', borderColor: 'var(--status-danger)', borderRadius: '3px' }}
-                title="Cerrar Sesión y volver al Portal"
-              >
-                <LogOut size={14} />
-                <span>Cerrar Sesión</span>
-              </button>
-            </div>
-          </aside>
-
-          <div className="main-content">
-            <div className="tricolor-stripe" />
-
-            {/* Marca de agua institucional centrada en el fondo */}
-            <div className="institutional-watermark" aria-hidden="true">
-              <img
-                src="/images/logos/logo-eie.png"
-                alt="Escudo Oficial Escuela de Idiomas del Ejército"
-                style={{ width: '380px', height: 'auto', pointerEvents: 'none', userSelect: 'none' }}
-              />
-            </div>
-
-            <header className="topbar" style={{ padding: '0 1.25rem', height: '44px', minHeight: '44px', maxHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <button
-                  onClick={() => setMobileMenuOpen(true)}
-                  className="btn btn-secondary btn-icon"
-                  style={{ display: 'none' }}
-                  id="mobile-menu-trigger"
-                  aria-label="Abrir menú"
-                >
-                  <Menu size={18} />
-                </button>
-                <style>{`
-                  @media (max-width: 860px) {
-                    #mobile-menu-trigger { display: inline-flex !important; }
-                  }
-                `}</style>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(255,255,255,0.08)', padding: '0.15rem 0.35rem', borderRadius: '3px', border: '1px solid rgba(181,148,73,0.25)' }}>
-                  <button
-                    type="button"
-                    onClick={() => router.back()}
-                    style={{ background: 'transparent', border: 'none', color: 'rgba(232,235,231,0.65)', cursor: 'pointer', padding: '0.2rem 0.35rem', borderRadius: '2px', display: 'flex', alignItems: 'center' }}
-                    title="Página anterior (Atrás)"
-                    aria-label="Atrás"
-                  >
-                    <ArrowLeft size={14} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => router.forward()}
-                    style={{ background: 'transparent', border: 'none', color: 'rgba(232,235,231,0.65)', cursor: 'pointer', padding: '0.2rem 0.35rem', borderRadius: '2px', display: 'flex', alignItems: 'center' }}
-                    title="Página siguiente (Adelante)"
-                    aria-label="Adelante"
-                  >
-                    <ArrowRight size={14} />
-                  </button>
-                  <div style={{ width: '1px', height: '14px', background: 'rgba(181,148,73,0.30)', margin: '0 0.15rem' }} />
-                  <Link
-                    href="/dashboard"
-                    style={{ background: 'transparent', border: 'none', color: 'rgba(232,235,231,0.65)', cursor: 'pointer', padding: '0.2rem 0.35rem', borderRadius: '2px', display: 'flex', alignItems: 'center' }}
-                    title="Inicio SACA"
-                    aria-label="Inicio SACA"
-                  >
-                    <Home size={14} />
-                  </Link>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: 'rgba(232,235,231,0.60)', fontWeight: 500, fontFamily: 'JetBrains Mono, monospace' }}>
-                  <span>SACA</span>
-                  <span style={{ color: 'rgba(181,148,73,0.70)' }}>/</span>
-                  <span style={{ color: '#E8EBE7', fontWeight: 700, textTransform: 'capitalize' }}>
-                    {pathname.replace('/', '') || 'Dashboard'}
+                  <span className="text-[9px] font-mono text-[#F59E0B] truncate block mt-0.5">
+                    ROL // {rolConfig.titulo.split(' ')[0].toUpperCase()}
                   </span>
                 </div>
               </div>
+            </div>
+          </header>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <Link
-                  href="/configuracion"
-                  className="btn btn-secondary"
-                  style={{ padding: '0.2rem 0.6rem', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(181,148,73,0.25)', color: '#E8EBE7', borderRadius: '3px' }}
-                  title="Configurar tema, alto contraste y tamaño de texto"
-                >
-                  <Sliders size={13} style={{ color: 'var(--military-gold-primary)' }} />
-                  <span style={{ color: '#E8EBE7' }}>Accesibilidad</span>
-                </Link>
+          {/* Área de Trabajo Dividida: Sidebar + Contenido */}
+          <div className="flex-1 flex min-h-0 overflow-hidden relative">
+            {/* Overlay para Móviles */}
+            <div
+              className={`sidebar-overlay ${mobileMenuOpen ? 'open' : ''}`}
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
 
+            {/* Sidebar Compacto (220px / 60px colapsable) */}
+            <aside
+              className={`sidebar flex flex-col justify-between shrink-0 transition-all duration-200 border-r border-[#D4D4D0] dark:border-[#242B27] ${
+                sidebarCollapsed ? 'w-[60px] min-w-[60px]' : 'w-[220px] min-w-[220px]'
+              } ${mobileMenuOpen ? 'open' : ''}`}
+              style={{ width: sidebarCollapsed ? 60 : 220, minWidth: sidebarCollapsed ? 60 : 220 }}
+            >
+              {/* Header del Sidebar con Botón Colapsar */}
+              <div className="h-10 px-2.5 border-b border-[#D4D4D0] dark:border-[#242B27] flex items-center justify-between shrink-0">
+                {!sidebarCollapsed && (
+                  <span className="text-[10px] font-mono font-bold tracking-widest text-[#D97706] dark:text-[#F59E0B] uppercase truncate">
+                    MENÚ OPERATIVO
+                  </span>
+                )}
                 <button
                   type="button"
-                  onClick={() => cambiarTema(theme === 'light' ? 'dark' : 'light')}
-                  className="btn btn-secondary btn-icon"
-                  style={{ padding: '0.25rem', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(181,148,73,0.25)', borderRadius: '3px' }}
-                  title={`Cambiar a ${theme === 'light' ? 'Modo Oscuro' : 'Modo Claro'}`}
-                  aria-label="Alternar tema claro y oscuro"
+                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                  className="p-1 hover:bg-[#EAE8E1] dark:hover:bg-[#181E1B] text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition mx-auto"
+                  title={sidebarCollapsed ? 'Expandir menú (220px)' : 'Colapsar menú (60px)'}
                 >
-                  {theme === 'light' ? <Sun size={14} style={{ color: '#B59449' }} /> : <Moon size={14} style={{ color: '#E8C97A' }} />}
+                  {sidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
                 </button>
+              </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingLeft: '0.5rem', borderLeft: '1px solid rgba(181,148,73,0.25)' }}>
-                  <div
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: '50%',
-                      background: 'var(--military-gold-primary)',
-                      color: '#181C19',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '0.72rem',
-                      fontWeight: 800,
-                    }}
+              {/* Navegación Agrupada por Categorías */}
+              <nav className="sidebar-nav flex-1 min-h-0 overflow-y-auto px-1.5 py-2 space-y-3">
+                {navCategories.map((cat, catIdx) => (
+                  <div key={catIdx} className="space-y-0.5">
+                    {!sidebarCollapsed ? (
+                      <div className="px-2 py-1 text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
+                        {cat.title}
+                      </div>
+                    ) : (
+                      <div className="h-[1px] bg-[#D4D4D0] dark:bg-[#242B27] my-1.5 mx-1" />
+                    )}
+
+                    {cat.items.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={(e) => handleNavClick(e, item)}
+                          className={`nav-item flex items-center gap-2.5 px-2 py-1.5 text-xs font-mono transition-all border-l-2 ${
+                            isActive
+                              ? 'bg-[#1B3B2B]/10 dark:bg-[#4D6B53]/20 text-[#1B3B2B] dark:text-white border-[#D97706] dark:border-[#F59E0B] font-bold'
+                              : 'text-zinc-700 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-[#EAE8E1]/60 dark:hover:bg-[#181E1B] border-transparent'
+                          } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                          title={sidebarCollapsed ? item.label : undefined}
+                        >
+                          <Icon size={16} className="shrink-0" />
+                          {!sidebarCollapsed && <span className="truncate flex-1 text-[11px]">{item.label}</span>}
+                          {!sidebarCollapsed && isActive && <ChevronRight size={12} className="text-[#D97706] dark:text-[#F59E0B] shrink-0" />}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ))}
+              </nav>
+
+              {/* Tarjeta de Credenciales al Fondo */}
+              <div className="p-2 border-t border-[#D4D4D0] dark:border-[#242B27] bg-[#F4F3EF]/60 dark:bg-[#0A0C0B] shrink-0">
+                {!sidebarCollapsed ? (
+                  <div className="space-y-2">
+                    <div className="p-2 bg-white dark:bg-[#121614] border border-[#D4D4D0] dark:border-[#242B27]">
+                      <div className="flex items-center justify-between text-[9px] font-mono mb-1">
+                        <span className="text-[#D97706] dark:text-[#F59E0B] font-bold uppercase truncate">
+                          ROL // {rolConfig.titulo.split(' ')[0]}
+                        </span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">● ACTIVO</span>
+                      </div>
+                      <p className="text-[11px] font-bold text-[#111312] dark:text-white truncate">
+                        {usuario?.nombre || session?.user?.name || rolConfig.nombrePorDefecto}
+                      </p>
+                      <p className="text-[9px] font-mono text-zinc-500 truncate">
+                        {usuario?.email || session?.user?.email || rolConfig.emailPorDefecto}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={handleLogout}
+                      className="w-full py-1.5 px-2 bg-red-100 hover:bg-red-200 dark:bg-red-950/40 dark:hover:bg-red-900/60 border border-red-300 dark:border-red-900/60 text-red-700 dark:text-red-400 text-[10px] font-mono font-bold uppercase flex items-center justify-center gap-1.5 transition"
+                    >
+                      <LogOut size={12} />
+                      <span>TERMINAR SESIÓN</span>
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleLogout}
+                    className="w-full py-2 flex items-center justify-center text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/40 transition"
+                    title="Terminar Sesión"
                   >
-                    {(usuario?.nombre || session?.user?.name || rolConfig.nombrePorDefecto).slice(0, 2).toUpperCase()}
-                  </div>
-                  <div className="hidden sm:block">
-                    <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#E8EBE7', margin: 0, lineHeight: 1.1 }}>
-                      {usuario?.nombre || session?.user?.name || rolConfig.nombrePorDefecto}
-                    </p>
-                  </div>
-                </div>
+                    <LogOut size={16} />
+                  </button>
+                )}
               </div>
-            </header>
+            </aside>
 
-            <main className="page-content">
-              <div key={pathname} className="page-transition-wrapper">
-                {children}
+            {/* Área Principal de Contenido (Zero-Scroll Estricto) */}
+            <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden relative">
+              {/* Marca de Agua Institucional de Fondo */}
+              <div className="institutional-watermark pointer-events-none select-none" aria-hidden="true">
+                <img
+                  src="/images/logos/logo-eie.png"
+                  alt="Escudo Oficial EIE"
+                  style={{ width: '360px', height: 'auto', opacity: 0.04 }}
+                />
               </div>
-            </main>
+
+              {/* Contenedor de la Página Actual */}
+              <main className="page-content flex-1 h-full min-h-0 overflow-hidden flex flex-col p-0 z-10">
+                <div key={pathname} className="h-full w-full min-h-0 overflow-hidden flex flex-col">
+                  {children}
+                </div>
+              </main>
+            </div>
           </div>
         </div>
       )}

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import {
   Sliders,
   Sun,
@@ -9,21 +8,16 @@ import {
   Eye,
   Type,
   CheckCircle2,
-  Home,
-  ArrowLeft,
-  ArrowRight,
-  Shield,
-  Sparkles,
-  ChevronRight,
-  Monitor,
   Lock,
   KeyRound,
-  AlertCircle
+  AlertCircle,
+  ShieldCheck,
+  RefreshCw
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
 
 export default function ConfiguracionPage() {
-  const { usuario, autenticado } = useAuthRole();
+  const { usuario } = useAuthRole();
   const [theme, setTheme] = useState<'light' | 'dark' | 'high-contrast'>('light');
   const [fontSize, setFontSize] = useState<'normal' | 'medium' | 'large'>('normal');
 
@@ -80,18 +74,37 @@ export default function ConfiguracionPage() {
   };
 
   useEffect(() => {
+    const sincronizarTema = () => {
+      try {
+        const savedTheme = localStorage.getItem('eie_theme') as any;
+        if (savedTheme === 'dark' || savedTheme === 'light' || savedTheme === 'high-contrast') {
+          setTheme(savedTheme);
+          document.documentElement.setAttribute('data-theme', savedTheme);
+          if (savedTheme === 'dark' || savedTheme === 'high-contrast') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        }
+      } catch (e) {}
+    };
+
+    sincronizarTema();
+
     try {
-      const savedTheme = localStorage.getItem('eie_theme') as any;
-      if (savedTheme === 'dark' || savedTheme === 'light' || savedTheme === 'high-contrast') {
-        setTheme(savedTheme);
-        document.documentElement.setAttribute('data-theme', savedTheme);
-      }
       const savedFontSize = localStorage.getItem('eie_font_size') as any;
       if (savedFontSize === 'normal' || savedFontSize === 'medium' || savedFontSize === 'large') {
         setFontSize(savedFontSize);
         document.documentElement.setAttribute('data-font-size', savedFontSize);
       }
     } catch (e) {}
+
+    window.addEventListener('eie_theme_change', sincronizarTema);
+    window.addEventListener('storage', sincronizarTema);
+    return () => {
+      window.removeEventListener('eie_theme_change', sincronizarTema);
+      window.removeEventListener('storage', sincronizarTema);
+    };
   }, []);
 
   const aplicarTema = (nuevo: 'light' | 'dark' | 'high-contrast') => {
@@ -99,308 +112,244 @@ export default function ConfiguracionPage() {
     try {
       localStorage.setItem('eie_theme', nuevo);
       document.documentElement.setAttribute('data-theme', nuevo);
+      if (nuevo === 'dark' || nuevo === 'high-contrast') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      window.dispatchEvent(new Event('eie_theme_change'));
     } catch (e) {}
   };
 
-  const aplicarFontSize = (nuevaEscala: 'normal' | 'medium' | 'large') => {
-    setFontSize(nuevaEscala);
+  const aplicarFontSize = (nuevo: 'normal' | 'medium' | 'large') => {
+    setFontSize(nuevo);
     try {
-      localStorage.setItem('eie_font_size', nuevaEscala);
-      document.documentElement.setAttribute('data-font-size', nuevaEscala);
+      localStorage.setItem('eie_font_size', nuevo);
+      document.documentElement.setAttribute('data-font-size', nuevo);
     } catch (e) {}
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-12">
-      <div className="rounded-2xl border p-6 shadow-sm transition-all bg-white dark:bg-[#121d2b] border-slate-200 dark:border-[#24354a]">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
-            <Sliders className="w-5 h-5" />
+    <div className="h-full flex flex-col min-h-0 overflow-hidden bg-[var(--bg-base)] text-[var(--text-main)]">
+      {/* 1. FRANJA SUPERIOR COMPACTA (44px) */}
+      <div className="strip-utility-bar">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[var(--military-green-subtle)] border border-[var(--border-accent)] text-[var(--military-green-primary)] dark:text-[var(--military-gold-primary)] font-mono text-[11px] font-bold shrink-0">
+            <Sliders className="w-3.5 h-3.5" />
+            <span>SACA / Preferencias & Accesibilidad</span>
           </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Configuración & Accesibilidad
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-              Personalice la apariencia visual, contraste, escala tipográfica y experiencia de navegación del sistema.
-            </p>
-          </div>
-        </div>
-      </div>
 
-      <div className="rounded-2xl border p-6 shadow-sm bg-white dark:bg-[#121d2b] border-slate-200 dark:border-[#24354a]">
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Sun className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-              Tema Visual Institucional
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Seleccione la paleta de colores para la interfaz de trabajo.
-            </p>
-          </div>
-        </div>
+          <div className="h-4 w-[1px] bg-[var(--border-fine)] shrink-0" />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <button
-            type="button"
-            onClick={() => aplicarTema('light')}
-            className={`p-4 rounded-xl border text-left transition flex flex-col justify-between ${
-              theme === 'light'
-                ? 'border-[#1b4332] bg-amber-50/40 ring-2 ring-[#1b4332]/20 shadow-sm'
-                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center">
-                  <Sun className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-slate-900">Modo Claro Institucional</h3>
-                  <span className="text-[11px] text-slate-500">Fondo limpio y tonos académicos</span>
-                </div>
-              </div>
-              {theme === 'light' && <CheckCircle2 className="w-5 h-5 text-[#1b4332]" />}
-            </div>
-            <p className="text-xs text-slate-600">
-              Ideal para ambientes con iluminación natural diurna. Diseñado con verdes militares profundos y dorados sobrios.
-            </p>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => aplicarTema('dark')}
-            className={`p-4 rounded-xl border text-left transition flex flex-col justify-between ${
-              theme === 'dark'
-                ? 'border-amber-400 bg-slate-900/60 ring-2 ring-amber-400/20 shadow-sm'
-                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-slate-800 text-amber-300 flex items-center justify-center">
-                  <Moon className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-white">Modo Oscuro Militar</h3>
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400">Naval táctico (#0b131f)</span>
-                </div>
-              </div>
-              {theme === 'dark' && <CheckCircle2 className="w-5 h-5 text-amber-400" />}
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Reduce la fatiga ocular durante jornadas prolongadas en pantalla. Acentos dorados y contraste calibrado sin saturación.
-            </p>
-          </button>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border p-6 shadow-sm bg-white dark:bg-[#121d2b] border-slate-200 dark:border-[#24354a]">
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Eye className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-              Modo Alto Contraste (Accesibilidad Visual)
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Aumenta la legibilidad del texto y la nitidez de los bordes sin alterar ni romper la composición.
-            </p>
-          </div>
-          <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-            theme === 'high-contrast' ? 'bg-amber-400 text-black' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-          }`}>
-            {theme === 'high-contrast' ? 'Activado' : 'Desactivado'}
+          <span className="text-xs font-bold text-[var(--text-main)] truncate hidden sm:inline">
+            Configuración del Cockpit
           </span>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40">
-          <div className="space-y-1">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-              Activar Alto Contraste Optimizado
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xl">
-              Aplica fondo ultra oscuro, texto blanco de alta nitidez y contornos definidos para usuarios que requieren máxima claridad óptica sin saturación.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => aplicarTema(theme === 'high-contrast' ? 'light' : 'high-contrast')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition shrink-0 ${
-              theme === 'high-contrast'
-                ? 'bg-amber-400 hover:bg-amber-300 text-black shadow-md'
-                : 'bg-[#1b4332] hover:bg-[#245842] text-white shadow-sm'
-            }`}
-          >
-            {theme === 'high-contrast' ? 'Desactivar Alto Contraste' : 'Activar Alto Contraste'}
-          </button>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border p-6 shadow-sm bg-white dark:bg-[#121d2b] border-slate-200 dark:border-[#24354a]">
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Type className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-              Escala de Texto y Tipografía
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Ajuste el tamaño de la fuente para optimizar la lectura según la resolución de su monitor.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[
-            { id: 'normal', label: 'Normal (100%)', sample: 'Texto base a 15px', icon: 'A' },
-            { id: 'medium', label: 'Mediano (+16%)', sample: 'Texto ampliado a 17.5px', icon: 'A+' },
-            { id: 'large', label: 'Grande (+33%)', sample: 'Texto ampliado a 20px', icon: 'A++' },
-          ].map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => aplicarFontSize(item.id as any)}
-              className={`p-4 rounded-xl border text-left transition flex items-center justify-between ${
-                fontSize === item.id
-                  ? 'border-[#1b4332] bg-amber-50/40 dark:bg-slate-900/60 ring-2 ring-[#1b4332]/20'
-                  : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-              }`}
-            >
-              <div>
-                <span className="text-xs font-bold text-slate-900 dark:text-white block">
-                  {item.label}
-                </span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                  {item.sample}
-                </span>
-              </div>
-              <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${
-                fontSize === item.id ? 'bg-[#1b4332] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
-              }`}>
-                {item.icon}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Sección: Seguridad & Cambio de Contraseña */}
-      <div className="rounded-2xl border p-6 shadow-sm bg-white dark:bg-[#121d2b] border-slate-200 dark:border-[#24354a]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <KeyRound className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-              Seguridad de la Cuenta & Cambio de Contraseña
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Modifique su contraseña de acceso institucional. Recomendado especialmente tras el primer ingreso con credenciales temporales.
-            </p>
-          </div>
+        <div className="flex items-center gap-2 shrink-0">
           {usuario?.email && (
-            <span className="text-[11px] font-mono px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 w-fit">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--bg-surface)] border border-[var(--border-fine)] text-[var(--text-muted)]">
               {usuario.email}
             </span>
           )}
         </div>
-
-        <form onSubmit={handleCambiarPassword} className="space-y-4 max-w-xl">
-          {passMensaje && (
-            <div
-              className={`p-3 rounded-xl border text-xs flex items-center gap-2.5 ${
-                passMensaje.tipo === 'ok'
-                  ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-200'
-                  : 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-500/40 text-red-800 dark:text-red-200'
-              }`}
-            >
-              {passMensaje.tipo === 'ok' ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              ) : (
-                <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-              )}
-              <span>{passMensaje.texto}</span>
-            </div>
-          )}
-
-          <div>
-            <label className="block text-xs font-semibold mb-1 text-slate-700 dark:text-slate-300">
-              Contraseña Actual o Clave Temporal:
-            </label>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="password"
-                value={passActual}
-                onChange={(e) => setPassActual(e.target.value)}
-                placeholder="Ingrese su clave actual o temporal"
-                required
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:border-amber-500"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold mb-1 text-slate-700 dark:text-slate-300">
-                Nueva Contraseña:
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
-                  value={passNueva}
-                  onChange={(e) => setPassNueva(e.target.value)}
-                  placeholder="Mínimo 4 caracteres"
-                  required
-                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:border-amber-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold mb-1 text-slate-700 dark:text-slate-300">
-                Confirmar Nueva Contraseña:
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
-                  value={passConfirm}
-                  onChange={(e) => setPassConfirm(e.target.value)}
-                  placeholder="Repita la nueva clave"
-                  required
-                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:border-amber-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={passLoading}
-            className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#1b4332] hover:bg-[#245842] text-white flex items-center gap-2 transition shadow-sm disabled:opacity-50"
-          >
-            <KeyRound className="w-3.5 h-3.5 text-amber-300" />
-            <span>{passLoading ? 'Actualizando...' : 'Guardar Nueva Contraseña'}</span>
-          </button>
-        </form>
       </div>
 
-      <div className="rounded-2xl border p-6 shadow-sm bg-white dark:bg-[#121d2b] border-slate-200 dark:border-[#24354a]">
-        <h2 className="text-base font-bold text-slate-900 dark:text-white mb-1">
-          Navegación Estratégica del Sistema
-        </h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-          Los controles de desplazamiento se ubican en la parte superior izquierda de cada panel para navegación rápida:
-        </p>
-        <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 w-fit">
-          <div className="flex items-center gap-1 p-0.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800">
-            <span className="p-1.5 text-slate-600 dark:text-slate-300" title="Atrás"><ArrowLeft className="w-3.5 h-3.5" /></span>
-            <span className="p-1.5 text-slate-600 dark:text-slate-300" title="Adelante"><ArrowRight className="w-3.5 h-3.5" /></span>
-            <span className="p-1.5 text-slate-600 dark:text-slate-300" title="Inicio"><Home className="w-3.5 h-3.5" /></span>
+      {/* 2. ÁREA DE PANELES PARALELOS (100% CERO SCROLL EXTERNO) */}
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-2.5 p-2.5 overflow-hidden">
+        {/* Panel Izquierdo: Apariencia, Tema y Escala Tipográfica */}
+        <div className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[2px] p-3 flex flex-col justify-between shadow-xs overflow-hidden">
+          <div className="space-y-3">
+            <div className="pb-2 border-b border-[var(--border-fine)] flex items-center justify-between">
+              <h2 className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider flex items-center gap-1.5 font-sans">
+                <Sun className="w-3.5 h-3.5 text-[var(--color-accent)]" />
+                Tema Visual Institucional
+              </h2>
+              <span className="text-[10px] font-mono text-[var(--text-muted)]">ESTILO DUAL</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => aplicarTema('light')}
+                className={`p-2.5 rounded-[2px] border text-left transition flex flex-col justify-between ${
+                  theme === 'light'
+                    ? 'border-[var(--color-primary)] dark:border-[var(--color-accent)] bg-[var(--bg-surface)] ring-1 ring-[var(--color-accent)]/50'
+                    : 'border-[var(--border-fine)] bg-[var(--bg-card)] hover:border-[var(--color-accent)]'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <Sun className="w-4 h-4 text-amber-600" />
+                    <span className="font-bold text-xs text-[var(--text-main)] font-sans">Modo Claro</span>
+                  </div>
+                  {theme === 'light' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+                </div>
+                <p className="text-[10.5px] text-[var(--text-muted)] leading-tight">
+                  Papel técnico cálido (#F4F3EF), bordes finos y verde militar institucional.
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => aplicarTema('dark')}
+                className={`p-2.5 rounded-[2px] border text-left transition flex flex-col justify-between ${
+                  theme === 'dark'
+                    ? 'border-[var(--color-accent)] bg-[var(--bg-surface)] ring-1 ring-[var(--color-accent)]/50'
+                    : 'border-[var(--border-fine)] bg-[var(--bg-card)] hover:border-[var(--color-accent)]'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <Moon className="w-4 h-4 text-amber-400" />
+                    <span className="font-bold text-xs text-[var(--text-main)] font-sans">Modo Oscuro</span>
+                  </div>
+                  {theme === 'dark' && <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />}
+                </div>
+                <p className="text-[10.5px] text-[var(--text-muted)] leading-tight">
+                  Consola táctica nocturna (#0A0C0B), acentos dorados y alto contraste.
+                </p>
+              </button>
+            </div>
+
+            <div className="pt-2 border-t border-[var(--border-fine)]">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider flex items-center gap-1.5 font-sans">
+                  <Type className="w-3.5 h-3.5 text-[var(--color-accent)]" />
+                  Escala Tipográfica del Monitor
+                </h3>
+                <span className="text-[10px] font-mono text-[var(--text-muted)]">ACCESIBILIDAD</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: 'normal', label: 'Estándar', sample: '100% (14px)', tag: 'A' },
+                  { id: 'medium', label: 'Mediano', sample: '+15% (16px)', tag: 'A+' },
+                  { id: 'large', label: 'Ampliado', sample: '+30% (18px)', tag: 'A++' },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => aplicarFontSize(item.id as any)}
+                    className={`p-2 rounded-[2px] border text-left transition flex items-center justify-between ${
+                      fontSize === item.id
+                        ? 'border-[var(--color-primary)] dark:border-[var(--color-accent)] bg-[var(--bg-surface)] ring-1 ring-[var(--color-accent)]/50'
+                        : 'border-[var(--border-fine)] bg-[var(--bg-card)] hover:border-[var(--color-accent)]'
+                    }`}
+                  >
+                    <div>
+                      <span className="text-xs font-bold text-[var(--text-main)] block">{item.label}</span>
+                      <span className="text-[10px] text-[var(--text-muted)] font-mono">{item.sample}</span>
+                    </div>
+                    <span className="font-mono text-xs font-black text-[var(--color-accent)]">{item.tag}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">
-            Permiten regresar o avanzar entre vistas del sistema con un solo clic.
-          </span>
+
+          <div className="pt-2 border-t border-[var(--border-fine)] text-[10.5px] font-mono text-[var(--text-muted)] flex items-center justify-between">
+            <span>SACA CEDMIL • Sistema Operativo</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-bold">● SINCRONIZADO</span>
+          </div>
+        </div>
+
+        {/* Panel Derecho: Seguridad & Cambio de Credenciales */}
+        <div className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[2px] p-3 flex flex-col justify-between shadow-xs overflow-hidden">
+          <div className="space-y-3">
+            <div className="pb-2 border-b border-[var(--border-fine)] flex items-center justify-between">
+              <h2 className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider flex items-center gap-1.5 font-sans">
+                <KeyRound className="w-3.5 h-3.5 text-[var(--color-accent)]" />
+                Seguridad & Actualización de Contraseña
+              </h2>
+              <span className="text-[10px] font-mono text-[var(--text-muted)]">CREDENCIALES</span>
+            </div>
+
+            {passMensaje && (
+              <div
+                className={`p-2 rounded-[2px] border text-xs flex items-center gap-2 ${
+                  passMensaje.tipo === 'ok'
+                    ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
+                    : 'bg-red-950/20 border-red-500/40 text-red-600 dark:text-red-400'
+                }`}
+              >
+                {passMensaje.tipo === 'ok' ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                ) : (
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                )}
+                <span>{passMensaje.texto}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleCambiarPassword} className="space-y-2.5 text-xs">
+              <div>
+                <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">
+                  Contraseña Actual o Clave Temporal:
+                </label>
+                <div className="relative">
+                  <Lock className="w-3.5 h-3.5 text-[var(--text-muted)] absolute left-2.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="password"
+                    value={passActual}
+                    onChange={(e) => setPassActual(e.target.value)}
+                    placeholder="Ingrese su clave actual"
+                    required
+                    className="w-full pl-8 pr-2.5 py-1.5 text-xs rounded bg-[var(--bg-surface)] border border-[var(--border-fine)] text-[var(--text-main)] outline-none focus:border-[var(--color-accent)] font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">
+                    Nueva Contraseña:
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-3.5 h-3.5 text-[var(--text-muted)] absolute left-2.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      value={passNueva}
+                      onChange={(e) => setPassNueva(e.target.value)}
+                      placeholder="Mínimo 4 caracteres"
+                      required
+                      className="w-full pl-8 pr-2.5 py-1.5 text-xs rounded bg-[var(--bg-surface)] border border-[var(--border-fine)] text-[var(--text-main)] outline-none focus:border-[var(--color-accent)] font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">
+                    Confirmar Contraseña:
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-3.5 h-3.5 text-[var(--text-muted)] absolute left-2.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      value={passConfirm}
+                      onChange={(e) => setPassConfirm(e.target.value)}
+                      placeholder="Repita la clave"
+                      required
+                      className="w-full pl-8 pr-2.5 py-1.5 text-xs rounded bg-[var(--bg-surface)] border border-[var(--border-fine)] text-[var(--text-main)] outline-none focus:border-[var(--color-accent)] font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={passLoading}
+                className="btn btn-primary w-full py-2 text-xs font-bold mt-2 flex items-center justify-center gap-1.5"
+              >
+                <KeyRound className="w-3.5 h-3.5" />
+                <span>{passLoading ? 'Actualizando...' : 'Guardar Nueva Contraseña'}</span>
+              </button>
+            </form>
+          </div>
+
+          <div className="pt-2 border-t border-[var(--border-fine)] text-[10.5px] font-mono text-[var(--text-muted)]">
+            Cifrado de credenciales de usuario bajo régimen militar
+          </div>
         </div>
       </div>
     </div>

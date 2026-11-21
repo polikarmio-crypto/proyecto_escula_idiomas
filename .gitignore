@@ -57,6 +57,7 @@ Captura de pantalla*.jpg
 *.swo
 .DS_Store
 Thumbs.db
+*.tsbuildinfo
 *.jpg
 *.png
 *.jpeg

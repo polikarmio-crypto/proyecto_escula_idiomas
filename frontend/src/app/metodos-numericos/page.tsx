@@ -9,7 +9,9 @@ import {
   GraduationCap,
   AlertTriangle,
   Server,
-  RotateCcw
+  RotateCcw,
+  RefreshCw,
+  LineChart
 } from 'lucide-react';
 
 interface PuntoDato {
@@ -25,7 +27,7 @@ interface CalificacionRegistro {
 }
 
 export default function MetodosNumericosPage() {
-  const [tabActiva, setTabActiva] = useState<'PROYECCION' | 'CAPACIDAD' | 'RECURSOS' | 'VENTANILLAS' | 'MONITOREO'>('PROYECCION');
+  const [tabActiva, setTabActiva] = useState<'PROYECCION' | 'CAPACIDAD' | 'VENTANILLAS' | 'MONITOREO'>('PROYECCION');
 
   const SERIE_DEMANDA: PuntoDato[] = [
     { id: 1, x: 1, y: 45, etiqueta: 'Enero' },
@@ -37,9 +39,6 @@ export default function MetodosNumericosPage() {
   ];
 
   const [puntos, setPuntos] = useState<PuntoDato[]>(SERIE_DEMANDA);
-  const [nuevoX, setNuevoX] = useState<string>('7');
-  const [nuevoY, setNuevoY] = useState<string>('105');
-  const [nuevaEtiqueta, setNuevaEtiqueta] = useState<string>('Julio');
   const [horizonteEstimacion, setHorizonteEstimacion] = useState<number>(7);
 
   const resultadoTendencia = useMemo(() => {
@@ -155,263 +154,304 @@ export default function MetodosNumericosPage() {
   }, [calificacionesEstudiante]);
 
   return (
-    <div className="space-y-6">
-      <div className="pb-5 border-b border-neutral-800">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shadow-sm shrink-0">
-            <TrendingUp className="w-6 h-6" />
+    <div className="h-full flex flex-col min-h-0 overflow-hidden bg-[var(--bg-base)] text-[var(--text-main)]">
+      {/* 1. FRANJA SUPERIOR COMPACTA (44px) */}
+      <div className="strip-utility-bar">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[var(--military-green-subtle)] border border-[var(--border-accent)] text-[var(--military-green-primary)] dark:text-[var(--military-gold-primary)] font-mono text-[11px] font-bold shrink-0">
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>SACA / Modelos y Proyecciones</span>
           </div>
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400">
-              <span>SACA</span>
-              <span>/</span>
-              <span className="text-purple-400 font-semibold">Modelos y Proyecciones</span>
-            </div>
-            <h1 className="text-xl md:text-2xl font-extrabold text-white">
-              Modelos y Proyecciones Institucionales
-            </h1>
+
+          <div className="h-4 w-[1px] bg-[var(--border-fine)] shrink-0" />
+
+          {/* Selector de Pestañas Inline */}
+          <div className="flex items-center gap-1 bg-[var(--bg-surface)] p-0.5 rounded border border-[var(--border-fine)] shrink-0">
+            {[
+              { id: 'PROYECCION', label: 'Demanda (Regresión)' },
+              { id: 'CAPACIDAD', label: 'Capacidad Aulas' },
+              { id: 'VENTANILLAS', label: 'Colas & Ventanillas' },
+              { id: 'MONITOREO', label: 'Monitoreo Preventivo' },
+            ].map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTabActiva(t.id as any)}
+                className={`px-2.5 py-0.5 rounded text-[11px] font-bold font-mono transition ${
+                  tabActiva === t.id
+                    ? 'bg-[var(--military-green-primary)] text-white'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[10px] font-mono text-[var(--text-muted)] hidden md:inline">
+            CEDMIL • MODELOS MATEMÁTICOS APLICADOS
+          </span>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 border-b border-neutral-800 pb-3 overflow-x-auto">
-        <button
-          onClick={() => setTabActiva('PROYECCION')}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
-            tabActiva === 'PROYECCION' ? 'bg-purple-600 text-white' : 'bg-neutral-900 text-neutral-400 hover:text-white'
-          }`}
-        >
-          Proyección de Demanda
-        </button>
-        <button
-          onClick={() => setTabActiva('CAPACIDAD')}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
-            tabActiva === 'CAPACIDAD' ? 'bg-sky-600 text-white' : 'bg-neutral-900 text-neutral-400 hover:text-white'
-          }`}
-        >
-          Capacidad Operativa
-        </button>
-        <button
-          onClick={() => setTabActiva('VENTANILLAS')}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
-            tabActiva === 'VENTANILLAS' ? 'bg-amber-600 text-white' : 'bg-neutral-900 text-neutral-400 hover:text-white'
-          }`}
-        >
-          Flujo de Ventanillas
-        </button>
-        <button
-          onClick={() => setTabActiva('MONITOREO')}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
-            tabActiva === 'MONITOREO' ? 'bg-emerald-600 text-white' : 'bg-neutral-900 text-neutral-400 hover:text-white'
-          }`}
-        >
-          Monitoreo Académico
-        </button>
-      </div>
-
-      {tabActiva === 'PROYECCION' && resultadoTendencia && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="bg-neutral-900/60 border border-neutral-800 p-3 rounded-xl">
-              <span className="text-[11px] text-neutral-400 block">Proyección Estimada</span>
-              <p className="text-2xl font-bold font-mono text-white mt-1">{resultadoTendencia.pronostico}</p>
-              <span className="text-[10px] text-neutral-500">Unidades estimadas</span>
-            </div>
-            <div className="bg-neutral-900/60 border border-neutral-800 p-3 rounded-xl">
-              <span className="text-[11px] text-neutral-400 block">Índice de Confiabilidad</span>
-              <p className="text-2xl font-bold font-mono text-emerald-400 mt-1">{resultadoTendencia.confiabilidad}%</p>
-              <span className="text-[10px] text-neutral-500">Ajuste de datos</span>
-            </div>
-            <div className="bg-neutral-900/60 border border-neutral-800 p-3 rounded-xl">
-              <span className="text-[11px] text-neutral-400 block">Margen de Variabilidad</span>
-              <p className="text-2xl font-bold font-mono text-purple-400 mt-1">±{resultadoTendencia.variabilidad}</p>
-              <span className="text-[10px] text-neutral-500">Desviación estándar</span>
-            </div>
-            <div className="bg-neutral-900/60 border border-neutral-800 p-3 rounded-xl">
-              <span className="text-[11px] text-neutral-400 block">Promedio Histórico</span>
-              <p className="text-2xl font-bold font-mono text-sky-400 mt-1">{resultadoTendencia.promedio}</p>
-              <span className="text-[10px] text-neutral-500">Unidades base</span>
-            </div>
-          </div>
-
-          <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <h3 className="text-sm font-bold text-white">Parámetros de Entrada y Proyección</h3>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-neutral-400">Periodo a Estimar:</span>
-                <input
-                  type="number"
-                  min="1"
-                  value={horizonteEstimacion}
-                  onChange={(e) => setHorizonteEstimacion(parseInt(e.target.value) || 1)}
-                  className="w-20 bg-neutral-950 border border-neutral-700 rounded px-2.5 py-1 text-xs text-white font-mono"
-                />
+      {/* 2. ÁREA DE TRABAJO PRINCIPAL (CERO SCROLL GENERAL) */}
+      <div className="flex-1 min-h-0 p-2.5 overflow-hidden flex flex-col gap-2.5">
+        {tabActiva === 'PROYECCION' && resultadoTendencia && (
+          <div className="flex-1 min-h-0 flex flex-col gap-2.5 overflow-hidden">
+            {/* Tira Ledger de KPIs */}
+            <div className="h-14 shrink-0 border border-[var(--border-fine)] rounded-[2px] bg-[var(--bg-card)] shadow-xs overflow-hidden">
+              <div className="grid grid-cols-2 md:grid-cols-4 h-full divide-x divide-[var(--border-fine)]">
+                <div className="px-3 py-1 flex flex-col justify-between">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-[var(--text-muted)] font-mono">Pronóstico Periodo {horizonteEstimacion}</span>
+                  <p className="text-xl font-black font-mono text-[var(--text-main)] tabular-nums">{resultadoTendencia.pronostico} unids.</p>
+                </div>
+                <div className="px-3 py-1 flex flex-col justify-between">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-[var(--text-muted)] font-mono">Confiabilidad (R²)</span>
+                  <p className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">{resultadoTendencia.confiabilidad}%</p>
+                </div>
+                <div className="px-3 py-1 flex flex-col justify-between">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-[var(--text-muted)] font-mono">Variabilidad (σ)</span>
+                  <p className="text-xl font-black font-mono text-purple-600 dark:text-purple-400 tabular-nums">±{resultadoTendencia.variabilidad}</p>
+                </div>
+                <div className="px-3 py-1 flex flex-col justify-between">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-[var(--text-muted)] font-mono">Promedio Base</span>
+                  <p className="text-xl font-black font-mono text-sky-600 dark:text-sky-400 tabular-nums">{resultadoTendencia.promedio}</p>
+                </div>
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-neutral-950 text-neutral-400 uppercase tracking-wider border-b border-neutral-800">
-                  <tr>
-                    <th className="p-2.5">Periodo</th>
-                    <th className="p-2.5 text-center">Valor Registrado</th>
-                    <th className="p-2.5 text-center">Valor Estimado</th>
-                    <th className="p-2.5 text-right">Diferencia</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-800 text-neutral-300">
-                  {resultadoTendencia.filas.map((f) => (
-                    <tr key={f.id} className="hover:bg-neutral-800/20">
-                      <td className="p-2.5 font-semibold text-white">{f.etiqueta}</td>
-                      <td className="p-2.5 text-center font-mono text-sky-400">{f.observado}</td>
-                      <td className="p-2.5 text-center font-mono text-neutral-300">{f.estimado}</td>
-                      <td className="p-2.5 text-right font-mono text-neutral-400">{f.diferencia}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {/* Split Panel: Parámetros + Tabla */}
+            <div className="flex-1 min-h-0 grid grid-cols-12 gap-2.5 overflow-hidden">
+              <div className="col-span-12 lg:col-span-4 bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[2px] p-3 flex flex-col justify-between shadow-xs">
+                <div>
+                  <h3 className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider pb-2 border-b border-[var(--border-fine)] font-sans">
+                    Parámetros de Simulación
+                  </h3>
+                  <div className="space-y-3 pt-3 text-xs">
+                    <div>
+                      <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">
+                        Horizonte a Estimar (Periodo X)
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="24"
+                        value={horizonteEstimacion}
+                        onChange={(e) => setHorizonteEstimacion(parseInt(e.target.value) || 1)}
+                        className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded px-2.5 py-1.5 text-xs text-[var(--text-main)] font-mono font-bold"
+                      />
+                    </div>
+                    <div className="p-2.5 rounded-[2px] bg-[var(--bg-surface)] border border-[var(--border-fine)] space-y-1 font-mono text-[11px] text-[var(--text-muted)]">
+                      <p className="font-bold text-[var(--text-main)]">Algoritmo: Mínimos Cuadrados</p>
+                      <p>Ajuste lineal continuo sobre la serie histórica semestral institucional.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-[var(--border-fine)] text-[10px] font-mono text-[var(--text-muted)]">
+                  Simulación de demanda CEDMIL
+                </div>
+              </div>
+
+              <div className="col-span-12 lg:col-span-8 bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[2px] p-3 flex flex-col justify-between shadow-xs overflow-hidden">
+                <div className="flex items-center justify-between pb-2 border-b border-[var(--border-fine)] shrink-0">
+                  <h3 className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider font-sans">
+                    Serie Temporal y Ajuste
+                  </h3>
+                  <span className="text-[10px] font-mono text-[var(--text-muted)]">N={resultadoTendencia.filas.length} Muestras</span>
+                </div>
+
+                <div className="flex-1 min-h-0 overflow-y-auto my-1">
+                  <table className="compact-table">
+                    <thead>
+                      <tr>
+                        <th>Periodo / Etiqueta</th>
+                        <th className="text-center">Valor Observado</th>
+                        <th className="text-center">Ajuste Lineal</th>
+                        <th className="text-right">Residuo (Error)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {resultadoTendencia.filas.map((f) => (
+                        <tr key={f.id}>
+                          <td className="font-bold text-[var(--text-main)]">{f.etiqueta}</td>
+                          <td className="text-center font-mono font-bold text-sky-600 dark:text-sky-400">{f.observado}</td>
+                          <td className="text-center font-mono text-[var(--text-main)]">{f.estimado}</td>
+                          <td className="text-right font-mono text-[var(--text-muted)]">{f.diferencia}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="tactical-pagination shrink-0">
+                  <span className="font-mono text-xs">MODELO ACTIVO</span>
+                  <span className="font-mono text-xs text-emerald-600 dark:text-emerald-400 font-bold">R² = {resultadoTendencia.confiabilidad}%</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {tabActiva === 'CAPACIDAD' && (
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-neutral-950 p-4 rounded-xl border border-neutral-800 space-y-2">
-              <span className="text-xs text-neutral-400">Capacidad Máxima por Aula</span>
-              <p className="text-2xl font-bold font-mono text-white">30 Alumnos</p>
-              <p className="text-[11px] text-neutral-500">Aforo estándar normado</p>
-            </div>
-            <div className="bg-neutral-950 p-4 rounded-xl border border-neutral-800 space-y-2">
-              <span className="text-xs text-neutral-400">Apertura Mínima Viable</span>
-              <p className="text-2xl font-bold font-mono text-amber-400">10 Alumnos</p>
-              <p className="text-[11px] text-neutral-500">Punto de equilibrio operativo</p>
-            </div>
-            <div className="bg-neutral-950 p-4 rounded-xl border border-neutral-800 space-y-2">
-              <span className="text-xs text-neutral-400">Eficiencia Institucional</span>
-              <p className="text-2xl font-bold font-mono text-emerald-400">85%</p>
-              <p className="text-[11px] text-neutral-500">Aprovechamiento global de espacios</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {tabActiva === 'VENTANILLAS' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="bg-neutral-900/60 border border-neutral-800 p-3 rounded-xl">
-              <span className="text-[11px] text-neutral-400 block">Nivel de Ocupación</span>
-              <p className="text-2xl font-bold font-mono text-amber-400 mt-1">{flujoAtencion.ocupacion}%</p>
-              <span className="text-[10px] text-neutral-500">{flujoAtencion.balance}</span>
-            </div>
-            <div className="bg-neutral-900/60 border border-neutral-800 p-3 rounded-xl">
-              <span className="text-[11px] text-neutral-400 block">Tiempo Estimado en Sala</span>
-              <p className="text-2xl font-bold font-mono text-sky-400 mt-1">{flujoAtencion.tiempoEsperaMin} min</p>
-              <span className="text-[10px] text-neutral-500">Por usuario</span>
-            </div>
-            <div className="bg-neutral-900/60 border border-neutral-800 p-3 rounded-xl">
-              <span className="text-[11px] text-neutral-400 block">Promedio en Espera</span>
-              <p className="text-2xl font-bold font-mono text-purple-400 mt-1">{flujoAtencion.personasEnEspera}</p>
-              <span className="text-[10px] text-neutral-500">Personas simultáneas</span>
-            </div>
-            <div className="bg-neutral-900/60 border border-neutral-800 p-3 rounded-xl">
-              <span className="text-[11px] text-neutral-400 block">Capacidad de Atención</span>
-              <p className="text-2xl font-bold font-mono text-emerald-400 mt-1">{flujoAtencion.capacidadTotal}</p>
-              <span className="text-[10px] text-neutral-500">Trámites / hora</span>
-            </div>
-          </div>
-
-          <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 space-y-4">
-            <h3 className="text-sm font-bold text-white">Configuración del Flujo Operativo</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+        {tabActiva === 'CAPACIDAD' && (
+          <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-2.5 overflow-hidden">
+            <div className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[2px] p-4 flex flex-col justify-between shadow-xs">
               <div>
-                <label className="text-neutral-300 block mb-1">Afluencia Estimada (solicitudes/hora)</label>
-                <input
-                  type="number"
-                  min="5"
-                  max="200"
-                  value={tasaEntrada}
-                  onChange={(e) => setTasaEntrada(parseInt(e.target.value) || 5)}
-                  className="w-full bg-neutral-950 border border-neutral-700 rounded px-3 py-2 text-white font-mono"
-                />
+                <span className="text-[10px] font-mono text-[var(--text-muted)] block uppercase">Aforo Normativo</span>
+                <p className="text-3xl font-black font-mono text-[var(--text-main)] mt-1">30 Plazas</p>
+                <p className="text-xs text-[var(--text-muted)] mt-1">Capacidad máxima establecida por aula física.</p>
               </div>
+              <span className="badge badge-gold">NORMATIVA MILITAR</span>
+            </div>
+            <div className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[2px] p-4 flex flex-col justify-between shadow-xs">
               <div>
-                <label className="text-neutral-300 block mb-1">Velocidad de Ventanilla (atenciones/hora)</label>
-                <input
-                  type="number"
-                  min="5"
-                  max="100"
-                  value={capacidadAtencion}
-                  onChange={(e) => setCapacidadAtencion(parseInt(e.target.value) || 5)}
-                  className="w-full bg-neutral-950 border border-neutral-700 rounded px-3 py-2 text-white font-mono"
-                />
+                <span className="text-[10px] font-mono text-[var(--text-muted)] block uppercase">Umbral Mínimo Viable</span>
+                <p className="text-3xl font-black font-mono text-amber-500 mt-1">10 Plazas</p>
+                <p className="text-xs text-[var(--text-muted)] mt-1">Punto de equilibrio para apertura de paralelo.</p>
               </div>
+              <span className="badge badge-civil">PUNTO EQUILIBRIO</span>
+            </div>
+            <div className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[2px] p-4 flex flex-col justify-between shadow-xs">
               <div>
-                <label className="text-neutral-300 block mb-1">Ventanillas Habilitadas</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={numVentanillas}
-                  onChange={(e) => setNumVentanillas(parseInt(e.target.value) || 1)}
-                  className="w-full bg-neutral-950 border border-neutral-700 rounded px-3 py-2 text-white font-mono"
-                />
+                <span className="text-[10px] font-mono text-[var(--text-muted)] block uppercase">Aprovechamiento Global</span>
+                <p className="text-3xl font-black font-mono text-emerald-500 mt-1">85%</p>
+                <p className="text-xs text-[var(--text-muted)] mt-1">Índice institucional de ocupación de aulas.</p>
               </div>
+              <span className="text-[10px] font-mono text-emerald-500 font-bold">● EFICIENTE</span>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {tabActiva === 'MONITOREO' && monitoreoEstudiante && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-neutral-900/60 border border-neutral-800 p-4 rounded-xl">
-              <span className="text-xs text-neutral-400">Promedio Parcial Actual</span>
-              <p className="text-3xl font-extrabold font-mono text-white mt-1">{monitoreoEstudiante.promedioActual}</p>
-              <span className="text-[10px] text-neutral-500">Sobre 100 puntos</span>
+        {tabActiva === 'VENTANILLAS' && (
+          <div className="flex-1 min-h-0 flex flex-col gap-2.5 overflow-hidden">
+            <div className="h-14 shrink-0 border border-[var(--border-fine)] rounded-[2px] bg-[var(--bg-card)] shadow-xs overflow-hidden">
+              <div className="grid grid-cols-2 md:grid-cols-4 h-full divide-x divide-[var(--border-fine)]">
+                <div className="px-3 py-1 flex flex-col justify-between">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-[var(--text-muted)] font-mono">Nivel Ocupación</span>
+                  <p className="text-xl font-black font-mono text-amber-500 tabular-nums">{flujoAtencion.ocupacion}%</p>
+                </div>
+                <div className="px-3 py-1 flex flex-col justify-between">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-[var(--text-muted)] font-mono">Tiempo en Sala</span>
+                  <p className="text-xl font-black font-mono text-sky-500 tabular-nums">{flujoAtencion.tiempoEsperaMin} min</p>
+                </div>
+                <div className="px-3 py-1 flex flex-col justify-between">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-[var(--text-muted)] font-mono">Cola Promedio</span>
+                  <p className="text-xl font-black font-mono text-purple-500 tabular-nums">{flujoAtencion.personasEnEspera} pers.</p>
+                </div>
+                <div className="px-3 py-1 flex flex-col justify-between">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-[var(--text-muted)] font-mono">Capacidad Atención</span>
+                  <p className="text-xl font-black font-mono text-emerald-500 tabular-nums">{flujoAtencion.capacidadTotal}/h</p>
+                </div>
+              </div>
             </div>
-            <div className="bg-neutral-900/60 border border-neutral-800 p-4 rounded-xl">
-              <span className="text-xs text-neutral-400">Desempeño Estimado Examen de Nivel</span>
-              <p className={`text-3xl font-extrabold font-mono mt-1 ${
-                monitoreoEstudiante.proyeccionExamenNivel >= 71 ? 'text-emerald-400' : (monitoreoEstudiante.proyeccionExamenNivel >= 51 ? 'text-amber-400' : 'text-red-400')
-              }`}>
-                {monitoreoEstudiante.proyeccionExamenNivel}
-              </p>
-              <span className="text-[10px] text-neutral-500">Estimación al cierre de nivel</span>
-            </div>
-            <div className="bg-neutral-900/60 border border-neutral-800 p-4 rounded-xl">
-              <span className="text-xs text-neutral-400">Diagnóstico Preventivo</span>
-              <p className="text-base font-bold mt-2 text-white">{monitoreoEstudiante.estado}</p>
-              <span className="text-[10px] text-neutral-400">Tendencia: {monitoreoEstudiante.tendencia}</span>
-            </div>
-          </div>
 
-          <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 space-y-3">
-            <h3 className="text-sm font-bold text-white">Notas Históricas por Libro</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
-              {calificacionesEstudiante.map((c, i) => (
-                <div key={c.libro} className="bg-neutral-950 p-2.5 rounded-lg border border-neutral-800 text-center">
-                  <span className="text-[10px] text-neutral-400 block">Libro {c.libro}</span>
+            <div className="flex-1 min-h-0 bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[2px] p-4 flex flex-col justify-between shadow-xs">
+              <h3 className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider pb-2 border-b border-[var(--border-fine)] font-sans">
+                Simulación M/M/s de Atención en Ventanilla
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs my-3">
+                <div>
+                  <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">
+                    Afluencia Estimada (solicitudes/hora)
+                  </label>
                   <input
                     type="number"
-                    min="0"
-                    max="100"
-                    value={c.nota}
-                    onChange={(e) => {
-                      const val = parseFloat(e.target.value) || 0;
-                      const copia = [...calificacionesEstudiante];
-                      copia[i].nota = val;
-                      setCalificacionesEstudiante(copia);
-                    }}
-                    className="w-full bg-neutral-900 border border-neutral-700 text-center text-sm font-mono font-bold text-white rounded mt-1 py-1"
+                    min="5"
+                    max="200"
+                    value={tasaEntrada}
+                    onChange={(e) => setTasaEntrada(parseInt(e.target.value) || 5)}
+                    className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded px-2.5 py-1.5 text-xs text-[var(--text-main)] font-mono font-bold"
                   />
                 </div>
-              ))}
+                <div>
+                  <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">
+                    Velocidad por Ventanilla (atenciones/hora)
+                  </label>
+                  <input
+                    type="number"
+                    min="5"
+                    max="100"
+                    value={capacidadAtencion}
+                    onChange={(e) => setCapacidadAtencion(parseInt(e.target.value) || 5)}
+                    className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded px-2.5 py-1.5 text-xs text-[var(--text-main)] font-mono font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">
+                    Ventanillas Habilitadas
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={numVentanillas}
+                    onChange={(e) => setNumVentanillas(parseInt(e.target.value) || 1)}
+                    className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded px-2.5 py-1.5 text-xs text-[var(--text-main)] font-mono font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 rounded-[2px] bg-[var(--bg-surface)] border border-[var(--border-fine)] text-xs font-mono">
+                Estado del Sistema: <strong className="text-[var(--color-accent)]">{flujoAtencion.balance}</strong> • Régimen de colas estable.
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {tabActiva === 'MONITOREO' && monitoreoEstudiante && (
+          <div className="flex-1 min-h-0 flex flex-col gap-2.5 overflow-hidden">
+            <div className="h-16 shrink-0 border border-[var(--border-fine)] rounded-[2px] bg-[var(--bg-card)] shadow-xs overflow-hidden">
+              <div className="grid grid-cols-1 md:grid-cols-3 h-full divide-x divide-[var(--border-fine)]">
+                <div className="px-3 py-1 flex flex-col justify-between">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-[var(--text-muted)] font-mono">Promedio Parcial Actual</span>
+                  <p className="text-2xl font-black font-mono text-[var(--text-main)] tabular-nums">{monitoreoEstudiante.promedioActual}</p>
+                </div>
+                <div className="px-3 py-1 flex flex-col justify-between">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-[var(--text-muted)] font-mono">Proyección Examen de Nivel</span>
+                  <p className="text-2xl font-black font-mono text-emerald-500 tabular-nums">{monitoreoEstudiante.proyeccionExamenNivel}</p>
+                </div>
+                <div className="px-3 py-1 flex flex-col justify-between">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-[var(--text-muted)] font-mono">Diagnóstico Preventivo</span>
+                  <p className="text-xs font-bold text-[var(--color-accent)] font-mono">{monitoreoEstudiante.estado}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 min-h-0 bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[2px] p-3 flex flex-col justify-between shadow-xs">
+              <h3 className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider pb-2 border-b border-[var(--border-fine)] font-sans">
+                Notas Registradas por Texto Curricular
+              </h3>
+
+              <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 my-auto">
+                {calificacionesEstudiante.map((c, i) => (
+                  <div key={c.libro} className="bg-[var(--bg-surface)] p-2.5 rounded-[2px] border border-[var(--border-fine)] text-center">
+                    <span className="text-[10px] text-[var(--text-muted)] font-mono block">Libro {c.libro}</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={c.nota}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value) || 0;
+                        const copia = [...calificacionesEstudiante];
+                        copia[i].nota = val;
+                        setCalificacionesEstudiante(copia);
+                      }}
+                      className="w-full bg-[var(--bg-card)] border border-[var(--border-fine)] text-center text-sm font-mono font-bold text-[var(--text-main)] rounded mt-1 py-1"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2 border-t border-[var(--border-fine)] text-[10px] font-mono text-[var(--text-muted)]">
+                Seguimiento pedagógico preventivo SACA CEDMIL
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

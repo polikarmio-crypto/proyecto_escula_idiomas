@@ -17,11 +17,12 @@ import {
   Edit,
   Save,
   X,
-  RefreshCw
+  RefreshCw,
+  Power
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
 
-type TabCat = 'gestiones' | 'idiomas' | 'aulas' | 'horarios' | 'tipos_programa' | 'modalidades' | 'tipos_pago';
+type TabCat = 'gestiones' | 'idiomas' | 'aulas' | 'horarios' | 'tipos_programa' | 'tipos_pago';
 
 export default function CatalogosPage() {
   const { esAdmin, rolConfig } = useAuthRole();
@@ -42,7 +43,6 @@ export default function CatalogosPage() {
   const [formAula, setFormAula] = useState({ nombre: '', capacidad: 30 });
   const [formHorario, setFormHorario] = useState({ inicio: '08:00', fin: '09:30' });
   const [formTipoProg, setFormTipoProg] = useState({ nombre: '' });
-  const [formMod, setFormMod] = useState({ nombre: '' });
   const [formTipoPago, setFormTipoPago] = useState({ nombre: '' });
 
   // Modal de confirmación de baja lógica
@@ -79,7 +79,7 @@ export default function CatalogosPage() {
 
   const mostrarMensaje = (tipo: 'ok' | 'error', mensaje: string) => {
     setAlerta({ tipo, mensaje });
-    setTimeout(() => setAlerta(null), 6000);
+    setTimeout(() => setAlerta(null), 5000);
   };
 
   const handleCrearGestion = async (e: React.FormEvent) => {
@@ -91,8 +91,8 @@ export default function CatalogosPage() {
         body: JSON.stringify({ anio_gestion: formGestion.anio, estado_gestion: formGestion.estado }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al registrar gestión.');
-      mostrarMensaje('ok', data.message || 'Gestión registrada exitosamente.');
+      if (!res.ok) throw new Error(data.error || 'Error al crear gestión');
+      mostrarMensaje('ok', data.message);
       cargarCatalogos();
     } catch (err: any) {
       mostrarMensaje('error', err.message);
@@ -103,7 +103,7 @@ export default function CatalogosPage() {
     e.preventDefault();
     const nombre = formIdioma.nombre.trim();
     if (nombre.length < 3 || !/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(nombre)) {
-      mostrarMensaje('error', 'El nombre del idioma debe tener al menos 3 letras y solo caracteres alfabéticos.');
+      mostrarMensaje('error', 'El nombre del idioma debe tener al menos 3 letras y solo contener caracteres alfabéticos.');
       return;
     }
     try {
@@ -113,8 +113,8 @@ export default function CatalogosPage() {
         body: JSON.stringify({ nombre_idioma: formIdioma.nombre }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al registrar idioma.');
-      mostrarMensaje('ok', data.message || 'Idioma registrado con éxito.');
+      if (!res.ok) throw new Error(data.error || 'Error.');
+      mostrarMensaje('ok', data.message);
       setFormIdioma({ nombre: '' });
       cargarCatalogos();
     } catch (err: any) {
@@ -125,8 +125,8 @@ export default function CatalogosPage() {
   const handleCrearAula = async (e: React.FormEvent) => {
     e.preventDefault();
     const nombre = formAula.nombre.trim();
-    if (nombre.length < 3) {
-      mostrarMensaje('error', 'El nombre del aula debe tener al menos 3 caracteres.');
+    if (nombre.length < 2) {
+      mostrarMensaje('error', 'El nombre del aula debe tener al menos 2 caracteres.');
       return;
     }
     try {
@@ -136,7 +136,7 @@ export default function CatalogosPage() {
         body: JSON.stringify({ nombre_aula: formAula.nombre, capacidad_aula: formAula.capacidad }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al registrar aula.');
+      if (!res.ok) throw new Error(data.error || 'Error al crear aula.');
       mostrarMensaje('ok', data.message || 'Aula registrada.');
       setFormAula({ nombre: '', capacidad: 30 });
       cargarCatalogos();
@@ -237,7 +237,6 @@ export default function CatalogosPage() {
 
   const guardarEdicion = async () => {
     if (!modalEditar) return;
-    // Validar campos de texto
     const nombre = formEditar.nombre_idioma || formEditar.nombre_aula || formEditar.nombre_tipo_programa || formEditar.nombre_tipo_pago || '';
     if (nombre && nombre.trim().length < 3) {
       setErrValidacion('El nombre debe tener al menos 3 caracteres.');
@@ -250,8 +249,8 @@ export default function CatalogosPage() {
         body: JSON.stringify(formEditar),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al actualizar.');
-      mostrarMensaje('ok', data.message || 'Registro actualizado correctamente.');
+      if (!res.ok) throw new Error(data.error || 'Error al actualizar registro.');
+      mostrarMensaje('ok', data.message || 'Registro actualizado.');
       setModalEditar(null);
       cargarCatalogos();
     } catch (err: any) {
@@ -262,580 +261,588 @@ export default function CatalogosPage() {
   if (!esAdmin) {
     return (
       <div className="max-w-4xl mx-auto p-8">
-        <div className="bg-red-950/40 border border-red-500/40 rounded-xl p-8 text-center space-y-4">
-          <ShieldAlert className="w-16 h-16 text-red-500 mx-auto" />
-          <h2 className="text-2xl font-bold text-white">Acceso Restringido</h2>
-          <p className="text-neutral-300 max-w-xl mx-auto">
-            Este apartado corresponde exclusivamente al <strong className="text-amber-400">Administrador del Sistema</strong>.
-            Tu rol activo es <span className="px-2 py-0.5 rounded bg-neutral-800 text-sky-400 font-semibold">{rolConfig.titulo}</span>.
-          </p>
-          <p className="text-xs text-neutral-400">
-            Para gestionar gestiones, idiomas, aulas, horarios y tipos de pago, inicie sesión con la cuenta de Administrador.
+        <div className="bg-[var(--bg-card)] border border-red-500/40 rounded-[3px] p-8 text-center space-y-4 shadow-xs">
+          <ShieldAlert className="w-12 h-12 text-red-600 dark:text-red-400 mx-auto" />
+          <h2 className="text-xl font-bold text-[var(--text-main)] font-sans">Acceso Restringido</h2>
+          <p className="text-xs text-[var(--text-muted)] max-w-xl mx-auto">
+            La parametrización y configuración de catálogos base corresponde a la <strong className="text-[var(--color-accent)] font-mono">Administración General</strong>.
           </p>
         </div>
       </div>
     );
   }
 
+  const tabsInfo = [
+    { id: 'gestiones', label: 'Gestiones', icon: Calendar, count: gestiones.length, ruta: 'gestiones' },
+    { id: 'idiomas', label: 'Idiomas', icon: Languages, count: idiomas.length, ruta: 'idiomas' },
+    { id: 'aulas', label: 'Aulas', icon: DoorOpen, count: aulas.length, ruta: 'aulas' },
+    { id: 'horarios', label: 'Horarios', icon: Clock, count: horarios.length, ruta: 'horarios' },
+    { id: 'tipos_programa', label: 'Programas', icon: Layers, count: tiposPrograma.length, ruta: 'tipos-programa' },
+    { id: 'tipos_pago', label: 'Aranceles', icon: CreditCard, count: tiposPago.length, ruta: 'tipos-pago' },
+  ];
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-neutral-800">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-sm shrink-0">
-            <Database className="w-6 h-6" />
+    <div className="h-full flex flex-col min-h-0 overflow-hidden bg-[var(--bg-base)] text-[var(--text-main)]">
+      {/* 1. FRANJA SUPERIOR COMPACTA (44px) */}
+      <div className="strip-utility-bar">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[var(--military-green-subtle)] border border-[var(--border-accent)] text-[var(--military-green-primary)] dark:text-[var(--military-gold-primary)] font-mono text-[11px] font-bold shrink-0">
+            <Database className="w-3.5 h-3.5" />
+            <span>SACA / Catálogos</span>
           </div>
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400">
-              <span>SACA</span>
-              <span>/</span>
-              <span className="text-amber-400 font-semibold">Catálogos</span>
-            </div>
-            <h1 className="text-xl md:text-2xl font-extrabold text-white">
-              Parametrizaciones Generales
-            </h1>
+
+          <div className="h-4 w-[1px] bg-[var(--border-fine)] shrink-0" />
+
+          {/* Selector de Catálogo Inline */}
+          <div className="flex items-center gap-1 bg-[var(--bg-surface)] p-0.5 rounded border border-[var(--border-fine)] overflow-x-auto">
+            {tabsInfo.map((t) => {
+              const active = tab === t.id;
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id as TabCat)}
+                  className={`px-2 py-0.5 rounded text-[11px] font-bold font-mono transition flex items-center gap-1 shrink-0 ${
+                    active
+                      ? 'bg-[var(--military-green-primary)] text-white'
+                      : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+                  }`}
+                >
+                  <Icon className="w-3 h-3" />
+                  <span>{t.label}</span>
+                  <span className="text-[9.5px] px-1 rounded bg-[var(--bg-card)] border border-[var(--border-fine)]">
+                    {t.count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
-        <button
-          onClick={cargarCatalogos}
-          disabled={loading}
-          className="flex items-center gap-2.5 px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-100 dark:border-neutral-700 text-xs font-semibold transition shadow-sm"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${loading ? 'animate-spin' : ''}`} />
-          <span>Sincronizar Catálogos</span>
-        </button>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={cargarCatalogos}
+            disabled={loading}
+            className="btn btn-secondary"
+            style={{ padding: '0.2rem 0.55rem', fontSize: '0.70rem', height: '28px' }}
+            title="Sincronizar Catálogos"
+          >
+            <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Sincronizar</span>
+          </button>
+        </div>
       </div>
 
       {alerta && (
         <div
-          className={`flex items-center gap-3 p-4 rounded-xl border text-sm font-medium ${
+          className={`flex items-center gap-2 px-3 py-1.5 rounded mb-2 text-xs font-semibold shrink-0 border ${
             alerta.tipo === 'ok'
-              ? 'bg-emerald-950/50 border-emerald-500/50 text-emerald-200'
-              : 'bg-red-950/50 border-red-500/50 text-red-200'
+              ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
+              : 'bg-red-950/20 border-red-500/40 text-red-600 dark:text-red-400'
           }`}
         >
-          {alerta.tipo === 'ok' ? <CheckCircle2 className="w-5 h-5 flex-shrink-0" /> : <AlertCircle className="w-5 h-5 flex-shrink-0" />}
+          {alerta.tipo === 'ok' ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
           <span>{alerta.mensaje}</span>
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2 border-b border-neutral-800 pb-3">
-        {[
-          { id: 'gestiones', label: 'Gestiones Anuales', icon: Calendar, count: gestiones.length },
-          { id: 'idiomas', label: 'Idiomas Ofertados', icon: Languages, count: idiomas.length },
-          { id: 'aulas', label: 'Aulas y Capacidad', icon: DoorOpen, count: aulas.length },
-          { id: 'horarios', label: 'Horarios / Turnos', icon: Clock, count: horarios.length },
-          { id: 'tipos_programa', label: 'Tipos de Programa', icon: Layers, count: tiposPrograma.length },
-          { id: 'tipos_pago', label: 'Tipos de Pago / Aranceles', icon: CreditCard, count: tiposPago.length },
-        ].map((t) => {
-          const Icon = t.icon;
-          const active = tab === t.id;
-          return (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id as TabCat)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition ${
-                active
-                  ? 'bg-amber-500 text-neutral-950 shadow-md shadow-amber-500/20'
-                  : 'bg-neutral-900/60 hover:bg-neutral-800 text-neutral-300'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {t.label}
-              <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${active ? 'bg-neutral-950 text-amber-400' : 'bg-neutral-800 text-neutral-400'}`}>
-                {t.count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      {/* 2. ÁREA DE TRABAJO DIVIDIDA (SPLIT-WORKSPACE) */}
+      <div className="split-workspace flex-1 min-h-0">
+        {/* PANEL PRINCIPAL: TABLA DE REGISTROS (8 COLS) */}
+        <div className="workspace-main-panel">
+          <div className="workspace-table-container">
+            {tab === 'gestiones' && (
+              <table className="compact-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Año Gestión</th>
+                    <th>Estado Operativo</th>
+                    <th className="text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {gestiones.map((g) => (
+                    <tr key={g.id_gestion}>
+                      <td className="font-mono text-[11px] text-[var(--color-accent)] font-bold">#{g.id_gestion}</td>
+                      <td className="font-bold text-[var(--text-main)] font-mono">{g.anio_gestion}</td>
+                      <td>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                          g.estado_gestion === 'Activa'
+                            ? 'bg-emerald-950/30 text-emerald-500 border border-emerald-500/30'
+                            : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                        }`}>
+                          {g.estado_gestion}
+                        </span>
+                      </td>
+                      <td className="text-right">
+                        <button
+                          onClick={() => abrirEditar('gestiones', g.id_gestion, { anio_gestion: g.anio_gestion, estado_gestion: g.estado_gestion })}
+                          className="btn btn-secondary text-xs px-2 py-0.5 mr-1"
+                        >
+                          <Edit className="w-3 h-3 text-[var(--color-accent)]" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 space-y-4">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <Plus className="w-4 h-4 text-amber-400" />
-            {tab === 'gestiones' && 'Añadir Gestión Académica'}
-            {tab === 'idiomas' && 'Añadir Idioma Ofertado'}
-            {tab === 'aulas' && 'Añadir Aula / Ambiente'}
-            {tab === 'horarios' && 'Añadir Franja Horaria'}
-            {tab === 'tipos_programa' && 'Añadir Tipo de Programa'}
-            {tab === 'tipos_pago' && 'Añadir Concepto de Pago'}
-          </h3>
+            {tab === 'idiomas' && (
+              <table className="compact-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre de Idioma</th>
+                    <th>Estado</th>
+                    <th className="text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {idiomas.map((i) => (
+                    <tr key={i.id_idioma}>
+                      <td className="font-mono text-[11px] text-[var(--color-accent)] font-bold">#{i.id_idioma}</td>
+                      <td className="font-bold text-[var(--text-main)]">{i.nombre_idioma}</td>
+                      <td>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                          i.estado_idioma === 'Activo'
+                            ? 'bg-emerald-950/30 text-emerald-500 border border-emerald-500/30'
+                            : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                        }`}>
+                          {i.estado_idioma}
+                        </span>
+                      </td>
+                      <td className="text-right">
+                        <button
+                          onClick={() => abrirEditar('idiomas', i.id_idioma, { nombre_idioma: i.nombre_idioma, estado_idioma: i.estado_idioma })}
+                          className="btn btn-secondary text-xs px-2 py-0.5 mr-1"
+                          title="Editar"
+                        >
+                          <Edit className="w-3 h-3 text-[var(--color-accent)]" />
+                        </button>
+                        <button
+                          onClick={() => abrirConfirmarBaja('idiomas', i.id_idioma, i.nombre_idioma)}
+                          className="btn btn-secondary text-xs px-2 py-0.5 text-amber-500"
+                          title="Alternar Estado"
+                        >
+                          <Power className="w-3 h-3" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
 
+            {tab === 'aulas' && (
+              <table className="compact-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre / Código</th>
+                    <th className="text-center">Capacidad (Aforo)</th>
+                    <th>Estado</th>
+                    <th className="text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {aulas.map((a) => (
+                    <tr key={a.id_aula}>
+                      <td className="font-mono text-[11px] text-[var(--color-accent)] font-bold">#{a.id_aula}</td>
+                      <td className="font-bold text-[var(--text-main)]">{a.nombre_aula}</td>
+                      <td className="text-center font-mono font-bold text-sky-500">{a.capacidad_aula} plazas</td>
+                      <td>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                          a.estado_aula === 'Activo'
+                            ? 'bg-emerald-950/30 text-emerald-500 border border-emerald-500/30'
+                            : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                        }`}>
+                          {a.estado_aula}
+                        </span>
+                      </td>
+                      <td className="text-right">
+                        <button
+                          onClick={() => abrirEditar('aulas', a.id_aula, { nombre_aula: a.nombre_aula, capacidad_aula: a.capacidad_aula, estado_aula: a.estado_aula })}
+                          className="btn btn-secondary text-xs px-2 py-0.5 mr-1"
+                        >
+                          <Edit className="w-3 h-3 text-[var(--color-accent)]" />
+                        </button>
+                        <button
+                          onClick={() => abrirConfirmarBaja('aulas', a.id_aula, a.nombre_aula)}
+                          className="btn btn-secondary text-xs px-2 py-0.5 text-amber-500"
+                        >
+                          <Power className="w-3 h-3" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
 
-          {tab === 'gestiones' && (
-            <form onSubmit={handleCrearGestion} className="space-y-3">
-              <div>
-                <label className="text-xs text-neutral-300 block mb-1">Año de la Gestión</label>
-                <input
-                  type="number"
-                  min="2020"
-                  max="2040"
-                  value={formGestion.anio}
-                  onChange={(e) => setFormGestion({ ...formGestion, anio: parseInt(e.target.value) || 2026 })}
-                  className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white"
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-xs text-neutral-300 block mb-1">Estado</label>
-                <select
-                  value={formGestion.estado}
-                  onChange={(e) => setFormGestion({ ...formGestion, estado: e.target.value })}
-                  className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white"
-                >
-                  <option value="Activa">Activa</option>
-                  <option value="Cerrada">Cerrada</option>
-                </select>
-              </div>
-              <button
-                type="submit"
-                className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-lg text-xs transition"
-              >
-                Guardar Gestión
-              </button>
-            </form>
-          )}
+            {tab === 'horarios' && (
+              <table className="compact-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Franja Horaria</th>
+                    <th>Estado</th>
+                    <th className="text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {horarios.map((h) => (
+                    <tr key={h.id_horario}>
+                      <td className="font-mono text-[11px] text-[var(--color-accent)] font-bold">#{h.id_horario}</td>
+                      <td className="font-mono font-bold text-[var(--text-main)] text-xs">
+                        {h.hora_inicio_horario} — {h.hora_fin_horario}
+                      </td>
+                      <td>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                          h.estado_horario === 'Activo'
+                            ? 'bg-emerald-950/30 text-emerald-500 border border-emerald-500/30'
+                            : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                        }`}>
+                          {h.estado_horario}
+                        </span>
+                      </td>
+                      <td className="text-right">
+                        <button
+                          onClick={() => abrirConfirmarBaja('horarios', h.id_horario, `${h.hora_inicio_horario} - ${h.hora_fin_horario}`)}
+                          className="btn btn-secondary text-xs px-2 py-0.5 text-amber-500"
+                        >
+                          <Power className="w-3 h-3" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
 
-          {tab === 'idiomas' && (
-            <form onSubmit={handleCrearIdioma} className="space-y-3">
-              <div>
-                <label className="text-xs text-neutral-300 block mb-1">Nombre del Idioma</label>
-                <input
-                  type="text"
-                  placeholder="Ej: Italiano, Ruso..."
-                  value={formIdioma.nombre}
-                  onChange={(e) => setFormIdioma({ nombre: e.target.value })}
-                  className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-lg text-xs transition"
-              >
-                Guardar Idioma
-              </button>
-            </form>
-          )}
+            {tab === 'tipos_programa' && (
+              <table className="compact-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Tipo de Programa</th>
+                    <th>Estado</th>
+                    <th className="text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tiposPrograma.map((tp) => (
+                    <tr key={tp.id_tipo_programa}>
+                      <td className="font-mono text-[11px] text-[var(--color-accent)] font-bold">#{tp.id_tipo_programa}</td>
+                      <td className="font-bold text-[var(--text-main)]">{tp.nombre_tipo_programa}</td>
+                      <td>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                          tp.estado_tipo_programa === 'Activo'
+                            ? 'bg-emerald-950/30 text-emerald-500 border border-emerald-500/30'
+                            : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                        }`}>
+                          {tp.estado_tipo_programa}
+                        </span>
+                      </td>
+                      <td className="text-right">
+                        <button
+                          onClick={() => abrirEditar('tipos-programa', tp.id_tipo_programa, { nombre_tipo_programa: tp.nombre_tipo_programa, estado_tipo_programa: tp.estado_tipo_programa })}
+                          className="btn btn-secondary text-xs px-2 py-0.5 mr-1"
+                        >
+                          <Edit className="w-3 h-3 text-[var(--color-accent)]" />
+                        </button>
+                        <button
+                          onClick={() => abrirConfirmarBaja('tipos-programa', tp.id_tipo_programa, tp.nombre_tipo_programa)}
+                          className="btn btn-secondary text-xs px-2 py-0.5 text-amber-500"
+                        >
+                          <Power className="w-3 h-3" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
 
-          {tab === 'aulas' && (
-            <form onSubmit={handleCrearAula} className="space-y-3">
-              <div>
-                <label className="text-xs text-neutral-300 block mb-1">Nombre o Código del Aula</label>
-                <input
-                  type="text"
-                  placeholder="Ej: Aula 104 - Pabellón A"
-                  value={formAula.nombre}
-                  onChange={(e) => setFormAula({ ...formAula, nombre: e.target.value })}
-                  className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white"
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-xs text-neutral-300 block mb-1">Capacidad Máxima (Aforo)</label>
-                <input
-                  type="number"
-                  min="5"
-                  max="100"
-                  value={formAula.capacidad}
-                  onChange={(e) => setFormAula({ ...formAula, capacidad: parseInt(e.target.value) || 30 })}
-                  className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-lg text-xs transition"
-              >
-                Guardar Aula
-              </button>
-            </form>
-          )}
-
-          {tab === 'horarios' && (
-            <form onSubmit={handleCrearHorario} className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs text-neutral-300 block mb-1">Hora Inicio</label>
-                  <input
-                    type="time"
-                    value={formHorario.inicio}
-                    onChange={(e) => setFormHorario({ ...formHorario, inicio: e.target.value })}
-                    className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-neutral-300 block mb-1">Hora Fin</label>
-                  <input
-                    type="time"
-                    value={formHorario.fin}
-                    onChange={(e) => setFormHorario({ ...formHorario, fin: e.target.value })}
-                    className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white"
-                    required
-                  />
-                </div>
-              </div>
-              <button
-                type="submit"
-                className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-lg text-xs transition"
-              >
-                Guardar Franja Horaria
-              </button>
-            </form>
-          )}
-
-          {tab === 'tipos_programa' && (
-            <form onSubmit={handleCrearTipoPrograma} className="space-y-3">
-              <div>
-                <label className="text-xs text-neutral-300 block mb-1">Tipo de Programa</label>
-                <input
-                  type="text"
-                  placeholder="Ej: Regular, Niños, Intensivo"
-                  value={formTipoProg.nombre}
-                  onChange={(e) => setFormTipoProg({ nombre: e.target.value })}
-                  className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-lg text-xs transition"
-              >
-                Guardar Tipo de Programa
-              </button>
-            </form>
-          )}
-
-          {tab === 'tipos_pago' && (
-            <form onSubmit={handleCrearTipoPago} className="space-y-3">
-              <div>
-                <label className="text-xs text-neutral-300 block mb-1">Concepto / Tipo de Pago</label>
-                <input
-                  type="text"
-                  placeholder="Ej: Matrícula, Mensualidad, Libro"
-                  value={formTipoPago.nombre}
-                  onChange={(e) => setFormTipoPago({ nombre: e.target.value })}
-                  className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-lg text-xs transition"
-              >
-                Guardar Concepto
-              </button>
-            </form>
-          )}
-        </div>
-
-        <div className="lg:col-span-2 bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 overflow-x-auto">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-white">Registros en Base de Datos</h3>
-
+            {tab === 'tipos_pago' && (
+              <table className="compact-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Concepto Arancelario</th>
+                    <th>Estado</th>
+                    <th className="text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tiposPago.map((tp) => (
+                    <tr key={tp.id_tipo_pago}>
+                      <td className="font-mono text-[11px] text-[var(--color-accent)] font-bold">#{tp.id_tipo_pago}</td>
+                      <td className="font-bold text-[var(--text-main)]">{tp.nombre_tipo_pago}</td>
+                      <td>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                          tp.estado_tipo_pago === 'Activo'
+                            ? 'bg-emerald-950/30 text-emerald-500 border border-emerald-500/30'
+                            : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                        }`}>
+                          {tp.estado_tipo_pago}
+                        </span>
+                      </td>
+                      <td className="text-right">
+                        <button
+                          onClick={() => abrirEditar('tipos-pago', tp.id_tipo_pago, { nombre_tipo_pago: tp.nombre_tipo_pago, estado_tipo_pago: tp.estado_tipo_pago })}
+                          className="btn btn-secondary text-xs px-2 py-0.5 mr-1"
+                        >
+                          <Edit className="w-3 h-3 text-[var(--color-accent)]" />
+                        </button>
+                        <button
+                          onClick={() => abrirConfirmarBaja('tipos-pago', tp.id_tipo_pago, tp.nombre_tipo_pago)}
+                          className="btn btn-secondary text-xs px-2 py-0.5 text-amber-500"
+                        >
+                          <Power className="w-3 h-3" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
 
-          {tab === 'gestiones' && (
-            <table className="w-full text-left text-xs">
-              <thead className="bg-neutral-950 text-neutral-400 uppercase tracking-wider border-b border-neutral-800">
-                <tr>
-                  <th className="p-3">ID</th>
-                  <th className="p-3">Año Gestión</th>
-                  <th className="p-3">Estado</th>
-                  <th className="p-3 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-800 text-neutral-300">
-                {gestiones.map((g) => (
-                  <tr key={g.id_gestion} className="hover:bg-neutral-800/40">
-                    <td className="p-3 font-mono text-neutral-500">#{g.id_gestion}</td>
-                    <td className="p-3 font-bold text-white">{g.anio_gestion}</td>
-                    <td className="p-3">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${g.estado_gestion === 'Activa' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-neutral-800 text-neutral-400'}`}>
-                        {g.estado_gestion}
-                      </span>
-                    </td>
-                    <td className="p-3 text-right flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => abrirConfirmarBaja('gestiones', g.id_gestion, `Gestión ${g.anio_gestion}`)}
-                        className={`px-2 py-1 rounded text-[10px] font-semibold flex items-center gap-1 ${g.estado_gestion === 'Activa' ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'}`}
-                        title={g.estado_gestion === 'Activa' ? 'Dar de baja' : 'Reactivar'}
-                      >
-                        <ShieldAlert className="w-3 h-3" />
-                        {g.estado_gestion === 'Activa' ? 'Dar de Baja' : 'Reactivar'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+          <div className="tactical-pagination">
+            <span className="font-mono text-xs text-[var(--text-muted)]">
+              CATEGORÍA SELECCIONADA: <strong className="text-[var(--text-main)]">{tab.toUpperCase()}</strong>
+            </span>
+            <span className="font-mono text-xs text-[var(--color-accent)]">SACA CEDMIL</span>
+          </div>
+        </div>
 
-          {tab === 'idiomas' && (
-            <table className="w-full text-left text-xs">
-              <thead className="bg-neutral-950 text-neutral-400 uppercase tracking-wider border-b border-neutral-800">
-                <tr>
-                  <th className="p-3">ID</th>
-                  <th className="p-3">Nombre del Idioma</th>
-                  <th className="p-3 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-800 text-neutral-300">
-                {idiomas.map((i) => (
-                  <tr key={i.id_idioma} className="hover:bg-neutral-800/40">
-                    <td className="p-3 font-mono text-neutral-500">#{i.id_idioma}</td>
-                    <td className="p-3 font-bold text-white">{i.nombre_idioma}</td>
-                    <td className="p-3 text-right flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => abrirEditar('idiomas', i.id_idioma, { nombre_idioma: i.nombre_idioma })}
-                        className="px-2 py-1 rounded text-[10px] font-semibold bg-sky-500/20 text-sky-400 hover:bg-sky-500/30 flex items-center gap-1"
-                        title="Editar"
-                      >
-                        <Edit className="w-3 h-3" /> Editar
-                      </button>
-                      <button
-                        onClick={() => abrirConfirmarBaja('idiomas', i.id_idioma, i.nombre_idioma)}
-                        className="px-2 py-1 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 flex items-center gap-1"
-                        title="Dar de baja"
-                      >
-                        <ShieldAlert className="w-3 h-3" /> Dar de Baja
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+        {/* PANEL LATERAL: FORMULARIO DE ACCIÓN RÁPIDA (4 COLS) */}
+        <div className="workspace-inspector-panel">
+          <div className="workspace-inspector-header">
+            <div className="flex items-center gap-2">
+              <Plus className="w-4 h-4 text-[var(--color-accent)]" />
+              <h3 className="font-bold text-xs uppercase tracking-wider text-[var(--text-main)] font-sans">
+                Registrar Nuevo {tab.replace('_', ' ')}
+              </h3>
+            </div>
+            <span className="badge badge-gold">ALTA RÁPIDA</span>
+          </div>
 
-          {tab === 'aulas' && (
-            <table className="w-full text-left text-xs">
-              <thead className="bg-neutral-950 text-neutral-400 uppercase tracking-wider border-b border-neutral-800">
-                <tr>
-                  <th className="p-3">ID</th>
-                  <th className="p-3">Nombre del Aula</th>
-                  <th className="p-3">Capacidad Máx. (Aforo)</th>
-                  <th className="p-3 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-800 text-neutral-300">
-                {aulas.map((a) => (
-                  <tr key={a.id_aula} className="hover:bg-neutral-800/40">
-                    <td className="p-3 font-mono text-neutral-500">#{a.id_aula}</td>
-                    <td className="p-3 font-bold text-white">{a.nombre_aula}</td>
-                    <td className="p-3 text-sky-400 font-semibold">{a.capacidad_aula} estudiantes</td>
-                    <td className="p-3 text-right flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => abrirEditar('aulas', a.id_aula, { nombre_aula: a.nombre_aula, capacidad_aula: a.capacidad_aula })}
-                        className="px-2 py-1 rounded text-[10px] font-semibold bg-sky-500/20 text-sky-400 hover:bg-sky-500/30 flex items-center gap-1"
-                        title="Editar"
-                      >
-                        <Edit className="w-3 h-3" /> Editar
-                      </button>
-                      <button
-                        onClick={() => abrirConfirmarBaja('aulas', a.id_aula, a.nombre_aula)}
-                        className="px-2 py-1 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 flex items-center gap-1"
-                        title="Dar de baja"
-                      >
-                        <ShieldAlert className="w-3 h-3" /> Dar de Baja
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+          <div className="workspace-inspector-body">
+            {tab === 'gestiones' && (
+              <form onSubmit={handleCrearGestion} className="space-y-3">
+                <div>
+                  <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">Año de Gestión</label>
+                  <input
+                    type="number"
+                    min="2020"
+                    max="2040"
+                    value={formGestion.anio}
+                    onChange={(e) => setFormGestion({ ...formGestion, anio: parseInt(e.target.value) || 2026 })}
+                    className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded px-2.5 py-1.5 text-xs text-[var(--text-main)] font-mono font-bold"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">Estado</label>
+                  <select
+                    value={formGestion.estado}
+                    onChange={(e) => setFormGestion({ ...formGestion, estado: e.target.value })}
+                    className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded px-2.5 py-1.5 text-xs text-[var(--text-main)] font-mono"
+                  >
+                    <option value="Activa">Activa</option>
+                    <option value="Cerrada">Cerrada</option>
+                  </select>
+                </div>
+                <button type="submit" className="w-full btn btn-primary text-xs font-bold py-2 mt-2">
+                  + Guardar Gestión
+                </button>
+              </form>
+            )}
 
-          {tab === 'horarios' && (
-            <table className="w-full text-left text-xs">
-              <thead className="bg-neutral-950 text-neutral-400 uppercase tracking-wider border-b border-neutral-800">
-                <tr>
-                  <th className="p-3">ID</th>
-                  <th className="p-3">Hora Inicio</th>
-                  <th className="p-3">Hora Fin</th>
-                  <th className="p-3 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-800 text-neutral-300">
-                {horarios.map((h) => (
-                  <tr key={h.id_horario} className="hover:bg-neutral-800/40">
-                    <td className="p-3 font-mono text-neutral-500">#{h.id_horario}</td>
-                    <td className="p-3 text-white font-mono">{h.hora_inicio_horario}</td>
-                    <td className="p-3 text-white font-mono">{h.hora_fin_horario}</td>
-                    <td className="p-3 text-right flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => abrirEditar('horarios', h.id_horario, { hora_inicio_horario: h.hora_inicio_horario, hora_fin_horario: h.hora_fin_horario })}
-                        className="px-2 py-1 rounded text-[10px] font-semibold bg-sky-500/20 text-sky-400 hover:bg-sky-500/30 flex items-center gap-1"
-                        title="Editar"
-                      >
-                        <Edit className="w-3 h-3" /> Editar
-                      </button>
-                      <button
-                        onClick={() => abrirConfirmarBaja('horarios', h.id_horario, `${h.hora_inicio_horario} - ${h.hora_fin_horario}`)}
-                        className="px-2 py-1 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 flex items-center gap-1"
-                        title="Dar de baja"
-                      >
-                        <ShieldAlert className="w-3 h-3" /> Dar de Baja
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+            {tab === 'idiomas' && (
+              <form onSubmit={handleCrearIdioma} className="space-y-3">
+                <div>
+                  <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">Nombre del Idioma</label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Italiano, Ruso..."
+                    value={formIdioma.nombre}
+                    onChange={(e) => setFormIdioma({ nombre: e.target.value })}
+                    className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded px-2.5 py-1.5 text-xs text-[var(--text-main)]"
+                    required
+                  />
+                </div>
+                <button type="submit" className="w-full btn btn-primary text-xs font-bold py-2 mt-2">
+                  + Guardar Idioma
+                </button>
+              </form>
+            )}
 
-          {tab === 'tipos_programa' && (
-            <table className="w-full text-left text-xs">
-              <thead className="bg-neutral-950 text-neutral-400 uppercase tracking-wider border-b border-neutral-800">
-                <tr>
-                  <th className="p-3">ID</th>
-                  <th className="p-3">Nombre del Tipo de Programa</th>
-                  <th className="p-3 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-800 text-neutral-300">
-                {tiposPrograma.map((tp) => (
-                  <tr key={tp.id_tipo_programa} className="hover:bg-neutral-800/40">
-                    <td className="p-3 font-mono text-neutral-500">#{tp.id_tipo_programa}</td>
-                    <td className="p-3 font-bold text-white">{tp.nombre_tipo_programa}</td>
-                    <td className="p-3 text-right flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => abrirEditar('tipos-programa', tp.id_tipo_programa, { nombre_tipo_programa: tp.nombre_tipo_programa })}
-                        className="px-2 py-1 rounded text-[10px] font-semibold bg-sky-500/20 text-sky-400 hover:bg-sky-500/30 flex items-center gap-1"
-                        title="Editar"
-                      >
-                        <Edit className="w-3 h-3" /> Editar
-                      </button>
-                      <button
-                        onClick={() => abrirConfirmarBaja('tipos-programa', tp.id_tipo_programa, tp.nombre_tipo_programa)}
-                        className="px-2 py-1 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 flex items-center gap-1"
-                        title="Dar de baja"
-                      >
-                        <ShieldAlert className="w-3 h-3" /> Dar de Baja
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+            {tab === 'aulas' && (
+              <form onSubmit={handleCrearAula} className="space-y-3">
+                <div>
+                  <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">Nombre / Código de Aula</label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Aula 104 - Pabellón A"
+                    value={formAula.nombre}
+                    onChange={(e) => setFormAula({ ...formAula, nombre: e.target.value })}
+                    className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded px-2.5 py-1.5 text-xs text-[var(--text-main)]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">Capacidad Máxima (Plazas)</label>
+                  <input
+                    type="number"
+                    min="5"
+                    max="100"
+                    value={formAula.capacidad}
+                    onChange={(e) => setFormAula({ ...formAula, capacidad: parseInt(e.target.value) || 30 })}
+                    className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded px-2.5 py-1.5 text-xs text-[var(--text-main)] font-mono font-bold"
+                    required
+                  />
+                </div>
+                <button type="submit" className="w-full btn btn-primary text-xs font-bold py-2 mt-2">
+                  + Guardar Aula
+                </button>
+              </form>
+            )}
 
-          {tab === 'tipos_pago' && (
-            <table className="w-full text-left text-xs">
-              <thead className="bg-neutral-950 text-neutral-400 uppercase tracking-wider border-b border-neutral-800">
-                <tr>
-                  <th className="p-3">ID</th>
-                  <th className="p-3">Concepto / Tipo de Pago</th>
-                  <th className="p-3 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-800 text-neutral-300">
-                {tiposPago.map((tp) => (
-                  <tr key={tp.id_tipo_pago} className="hover:bg-neutral-800/40">
-                    <td className="p-3 font-mono text-neutral-500">#{tp.id_tipo_pago}</td>
-                    <td className="p-3 font-bold text-white">{tp.nombre_tipo_pago}</td>
-                    <td className="p-3 text-right flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => abrirEditar('tipos-pago', tp.id_tipo_pago, { nombre_tipo_pago: tp.nombre_tipo_pago })}
-                        className="px-2 py-1 rounded text-[10px] font-semibold bg-sky-500/20 text-sky-400 hover:bg-sky-500/30 flex items-center gap-1"
-                        title="Editar"
-                      >
-                        <Edit className="w-3 h-3" /> Editar
-                      </button>
-                      <button
-                        onClick={() => abrirConfirmarBaja('tipos-pago', tp.id_tipo_pago, tp.nombre_tipo_pago)}
-                        className="px-2 py-1 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 flex items-center gap-1"
-                        title="Dar de baja"
-                      >
-                        <ShieldAlert className="w-3 h-3" /> Dar de Baja
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+            {tab === 'horarios' && (
+              <form onSubmit={handleCrearHorario} className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">Hora Inicio</label>
+                    <input
+                      type="time"
+                      value={formHorario.inicio}
+                      onChange={(e) => setFormHorario({ ...formHorario, inicio: e.target.value })}
+                      className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded px-2 py-1.5 text-xs text-[var(--text-main)] font-mono"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">Hora Fin</label>
+                    <input
+                      type="time"
+                      value={formHorario.fin}
+                      onChange={(e) => setFormHorario({ ...formHorario, fin: e.target.value })}
+                      className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded px-2 py-1.5 text-xs text-[var(--text-main)] font-mono"
+                      required
+                    />
+                  </div>
+                </div>
+                <button type="submit" className="w-full btn btn-primary text-xs font-bold py-2 mt-2">
+                  + Guardar Franja Horaria
+                </button>
+              </form>
+            )}
+
+            {tab === 'tipos_programa' && (
+              <form onSubmit={handleCrearTipoPrograma} className="space-y-3">
+                <div>
+                  <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">Nombre Tipo Programa</label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Regular, Niños, Intensivo"
+                    value={formTipoProg.nombre}
+                    onChange={(e) => setFormTipoProg({ nombre: e.target.value })}
+                    className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded px-2.5 py-1.5 text-xs text-[var(--text-main)]"
+                    required
+                  />
+                </div>
+                <button type="submit" className="w-full btn btn-primary text-xs font-bold py-2 mt-2">
+                  + Guardar Tipo Programa
+                </button>
+              </form>
+            )}
+
+            {tab === 'tipos_pago' && (
+              <form onSubmit={handleCrearTipoPago} className="space-y-3">
+                <div>
+                  <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1">Concepto Arancelario</label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Matrícula Regular, Mensualidad"
+                    value={formTipoPago.nombre}
+                    onChange={(e) => setFormTipoPago({ nombre: e.target.value })}
+                    className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded px-2.5 py-1.5 text-xs text-[var(--text-main)]"
+                    required
+                  />
+                </div>
+                <button type="submit" className="w-full btn btn-primary text-xs font-bold py-2 mt-2">
+                  + Guardar Concepto
+                </button>
+              </form>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Modal confirmación baja lógica */}
+      {/* MODAL DE CONFIRMACIÓN DE BAJA */}
       {modalConfirmar && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-neutral-900 border border-amber-500/50 rounded-2xl w-full max-w-sm p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <ShieldAlert className="w-8 h-8 text-amber-400 shrink-0" />
-              <div>
-                <h3 className="text-base font-bold text-white">Cambio de Estado</h3>
-                <p className="text-xs text-neutral-400 mt-0.5">
-                  Registro: <span className="text-amber-300 font-semibold">{modalConfirmar.nombre}</span>
-                </p>
-              </div>
-            </div>
-            <p className="text-sm text-neutral-300 leading-relaxed">
-              Esta operación dará de <strong className="text-amber-400">baja lógica</strong> al registro seleccionado.
-              El registro permanecerá en la base de datos pero quedará marcado como inactivo.
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[3px] p-5 max-w-sm w-full space-y-3 shadow-xl">
+            <h3 className="text-sm font-bold text-[var(--text-main)]">Cambiar Estado de Registro</h3>
+            <p className="text-xs text-[var(--text-muted)]">
+              ¿Desea cambiar el estado operativo de <strong className="text-[var(--text-main)]">{modalConfirmar.nombre}</strong>?
             </p>
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-800">
-              <button
-                onClick={() => setModalConfirmar(null)}
-                className="px-4 py-2 rounded-lg bg-neutral-800 text-white font-semibold text-xs hover:bg-neutral-700"
-              >
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border-fine)]">
+              <button onClick={() => setModalConfirmar(null)} className="btn btn-secondary text-xs px-3 py-1">
                 Cancelar
               </button>
-              <button
-                onClick={confirmarBajaLogica}
-                className="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs"
-              >
-                Confirmar Baja
+              <button onClick={confirmarBajaLogica} className="btn btn-primary text-xs px-3 py-1">
+                Confirmar
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal de edición */}
+      {/* MODAL DE EDICIÓN */}
       {modalEditar && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-neutral-900 border border-sky-500/50 rounded-2xl w-full max-w-sm p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Edit className="w-4 h-4 text-sky-400" /> Editar Registro
-              </h3>
-              <button onClick={() => setModalEditar(null)} className="text-neutral-400 hover:text-white">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[3px] p-5 max-w-md w-full space-y-3 shadow-xl">
+            <div className="flex items-center justify-between border-b border-[var(--border-fine)] pb-2">
+              <h3 className="text-sm font-bold text-[var(--text-main)]">Editar {modalEditar.ruta}</h3>
+              <button onClick={() => setModalEditar(null)} className="text-[var(--text-muted)] hover:text-[var(--text-main)]">
                 <X className="w-4 h-4" />
               </button>
             </div>
+
+            {errValidacion && (
+              <p className="text-xs text-red-500 font-semibold">{errValidacion}</p>
+            )}
+
             <div className="space-y-3 text-xs">
-              {Object.keys(formEditar).map((key) => (
-                <div key={key}>
-                  <label className="text-neutral-300 block mb-1 capitalize">{key.replace(/_/g, ' ')}</label>
-                  <input
-                    type={typeof formEditar[key] === 'number' ? 'number' : 'text'}
-                    value={formEditar[key]}
-                    onChange={(e) => setFormEditar({ ...formEditar, [key]: typeof formEditar[key] === 'number' ? parseInt(e.target.value) : e.target.value })}
-                    className="w-full bg-neutral-950 border border-neutral-700 rounded px-3 py-2 text-white"
-                    minLength={typeof formEditar[key] === 'string' ? 3 : undefined}
-                  />
-                </div>
-              ))}
-              {errValidacion && (
-                <p className="text-red-400 text-xs flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" /> {errValidacion}
-                </p>
-              )}
+              {Object.keys(formEditar).map((key) => {
+                if (key.startsWith('id_') || key.startsWith('created_') || key.startsWith('updated_')) return null;
+                return (
+                  <div key={key}>
+                    <label className="text-[11px] font-mono text-[var(--text-muted)] block mb-1 uppercase">
+                      {key.replace(/_/g, ' ')}
+                    </label>
+                    <input
+                      type="text"
+                      value={formEditar[key] || ''}
+                      onChange={(e) => setFormEditar({ ...formEditar, [key]: e.target.value })}
+                      className="w-full bg-[var(--bg-surface)] border border-[var(--border-fine)] rounded px-2.5 py-1.5 text-xs text-[var(--text-main)]"
+                    />
+                  </div>
+                );
+              })}
             </div>
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-800">
-              <button
-                onClick={() => setModalEditar(null)}
-                className="px-4 py-2 rounded-lg bg-neutral-800 text-white font-semibold text-xs hover:bg-neutral-700"
-              >
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border-fine)]">
+              <button onClick={() => setModalEditar(null)} className="btn btn-secondary text-xs px-3 py-1">
                 Cancelar
               </button>
-              <button
-                onClick={guardarEdicion}
-                className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center gap-1"
-              >
-                <Save className="w-3.5 h-3.5" /> Guardar Cambios
+              <button onClick={guardarEdicion} className="btn btn-primary text-xs px-3 py-1">
+                Guardar Cambios
               </button>
             </div>
           </div>

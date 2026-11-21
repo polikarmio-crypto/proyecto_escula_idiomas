@@ -50,7 +50,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
   useEffect(() => {
     try {
@@ -64,11 +64,26 @@ export default function LoginPage() {
           document.documentElement.classList.remove('dark');
         }
       } else {
-        setTheme('light');
-        document.documentElement.setAttribute('data-theme', 'light');
-        document.documentElement.classList.remove('dark');
+        setTheme('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.documentElement.classList.add('dark');
       }
     } catch (e) {}
+
+    const handleSync = () => {
+      try {
+        const current = localStorage.getItem('eie_theme');
+        if (current === 'light' || current === 'dark') {
+          setTheme(current);
+        }
+      } catch (e) {}
+    };
+    window.addEventListener('eie_theme_change', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('eie_theme_change', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
   }, []);
 
   const alternarTema = () => {
@@ -82,6 +97,7 @@ export default function LoginPage() {
       } else {
         document.documentElement.classList.remove('dark');
       }
+      window.dispatchEvent(new CustomEvent('eie_theme_change', { detail: nuevoTema }));
     } catch (e) {}
   };
 

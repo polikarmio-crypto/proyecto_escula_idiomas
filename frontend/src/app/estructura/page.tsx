@@ -6,14 +6,11 @@ import {
   Layers,
   BookOpen,
   Plus,
-  Trash2,
   AlertCircle,
   CheckCircle2,
   ShieldAlert,
   ChevronRight,
   FolderTree,
-  Languages,
-  Clock,
   RefreshCw
 } from 'lucide-react';
 import { useAuthRole } from '@/context/AuthRoleContext';
@@ -187,13 +184,13 @@ export default function EstructuraAcademicaPage() {
   if (!puedeGestionar) {
     return (
       <div className="max-w-4xl mx-auto p-8">
-        <div className="bg-red-950/40 border border-red-500/40 rounded-xl p-8 text-center space-y-4">
-          <ShieldAlert className="w-16 h-16 text-red-500 mx-auto" />
-          <h2 className="text-2xl font-bold text-white">Acceso Restringido</h2>
-          <p className="text-neutral-300 max-w-xl mx-auto">
+        <div className="bg-[var(--bg-card)] border border-red-500/40 rounded-[3px] p-8 text-center space-y-4 shadow-xs">
+          <ShieldAlert className="w-12 h-12 text-red-600 dark:text-red-400 mx-auto" />
+          <h2 className="text-xl font-bold text-[var(--text-main)] font-sans">Acceso Restringido</h2>
+          <p className="text-xs text-[var(--text-muted)] max-w-xl mx-auto">
             La creación de la malla curricular, niveles y asignación de libros corresponde exclusivamente al{' '}
-            <strong className="text-sky-400">Jefe Académico</strong>.
-            Tu rol activo es <span className="px-2 py-0.5 rounded bg-neutral-800 text-amber-400 font-semibold">{rolConfig.titulo}</span>.
+            <strong className="text-[var(--color-accent)] font-mono">Jefe Académico</strong>.
+            Rol activo: <span className="px-2 py-0.5 rounded bg-[var(--bg-surface)] text-[var(--color-accent)] font-mono font-bold">{rolConfig.titulo}</span>.
           </p>
         </div>
       </div>
@@ -201,70 +198,76 @@ export default function EstructuraAcademicaPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-neutral-800">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 shadow-sm shrink-0">
-            <FolderTree className="w-6 h-6" />
+    <div className="h-full flex flex-col min-h-0 overflow-hidden bg-[var(--bg-base)] text-[var(--text-main)]">
+      {/* 1. FRANJA SUPERIOR COMPACTA (44px) */}
+      <div className="strip-utility-bar">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[var(--military-green-subtle)] border border-[var(--border-accent)] text-[var(--military-green-primary)] dark:text-[var(--military-gold-primary)] font-mono text-[11px] font-bold shrink-0">
+            <FolderTree className="w-3.5 h-3.5" />
+            <span>SACA / Estructura Curricular</span>
           </div>
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400">
-              <span>SACA</span>
-              <span>/</span>
-              <span className="text-sky-400 font-semibold">Estructura Académica</span>
-            </div>
-            <h1 className="text-xl md:text-2xl font-extrabold text-white">
-              Malla Curricular y Contenidos
-            </h1>
-          </div>
+
+          <div className="h-4 w-[1px] bg-[var(--border-fine)] shrink-0" />
+
+          <span className="text-xs font-bold text-[var(--text-main)] truncate hidden sm:inline">
+            Planes de Estudio • Niveles • Libros de Texto
+          </span>
         </div>
-        <button
-          onClick={cargarDatos}
-          disabled={loading}
-          className="flex items-center gap-2.5 px-3.5 py-2 rounded-lg bg-neutral-800/80 hover:bg-neutral-700 text-neutral-200 text-xs font-medium border border-neutral-700 transition"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${loading ? 'animate-spin' : ''}`} />
-          <span>Sincronizar Malla</span>
-        </button>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={cargarDatos}
+            disabled={loading}
+            className="btn btn-secondary"
+            style={{ padding: '0.2rem 0.55rem', fontSize: '0.70rem', height: '28px' }}
+            title="Sincronizar Malla"
+          >
+            <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Sincronizar</span>
+          </button>
+        </div>
       </div>
 
       {alerta && (
         <div
-          className={`flex items-center gap-3 p-4 rounded-xl border text-sm font-medium ${
+          className={`flex items-center gap-2 px-3 py-1.5 rounded mb-2 text-xs font-semibold shrink-0 border ${
             alerta.tipo === 'ok'
-              ? 'bg-emerald-950/50 border-emerald-500/50 text-emerald-200'
-              : 'bg-red-950/50 border-red-500/50 text-red-200'
+              ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
+              : 'bg-red-950/20 border-red-500/40 text-red-600 dark:text-red-400'
           }`}
         >
-          {alerta.tipo === 'ok' ? <CheckCircle2 className="w-5 h-5 flex-shrink-0" /> : <AlertCircle className="w-5 h-5 flex-shrink-0" />}
+          {alerta.tipo === 'ok' ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
           <span>{alerta.mensaje}</span>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <GraduationCap className="w-4 h-4 text-sky-400" />
+      {/* 2. ÁREA DE 3 COLUMNAS EN CASCADA (100% CERO SCROLL EXTERNO) */}
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-2.5 p-2 overflow-hidden">
+        {/* Columna 1: Programas de Idioma */}
+        <div className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[2px] p-3 flex flex-col justify-between shadow-xs overflow-hidden">
+          <div className="flex items-center justify-between pb-2 border-b border-[var(--border-fine)] shrink-0">
+            <h3 className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider flex items-center gap-1.5 font-sans">
+              <GraduationCap className="w-3.5 h-3.5 text-[var(--color-accent)]" />
               1. Programas ({programas.length})
             </h3>
+            <span className="text-[10px] font-mono text-[var(--text-muted)]">Paso 1</span>
           </div>
 
-          <form onSubmit={handleCrearPrograma} className="space-y-2 bg-neutral-950/60 p-3 rounded-lg border border-neutral-800 text-xs">
+          <form onSubmit={handleCrearPrograma} className="my-2 p-2 rounded-[2px] bg-[var(--bg-surface)] border border-[var(--border-fine)] space-y-1.5 text-xs shrink-0">
             <input
               type="text"
-              placeholder="Nombre del programa (ej: Inglés Militar)"
+              placeholder="Nombre programa (ej: Inglés Militar)"
               value={formProg.nombre}
               onChange={(e) => setFormProg({ ...formProg, nombre: e.target.value })}
-              className="w-full bg-neutral-900 border border-neutral-700 rounded px-2.5 py-1.5 text-white"
+              className="w-full bg-[var(--bg-card)] border border-[var(--border-fine)] rounded px-2 py-1 text-xs text-[var(--text-main)] outline-none"
               required
               minLength={3}
             />
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               <select
                 value={formProg.id_idioma}
                 onChange={(e) => setFormProg({ ...formProg, id_idioma: e.target.value })}
-                className="bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-white"
+                className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded px-1.5 py-1 text-xs text-[var(--text-main)] outline-none"
               >
                 {idiomas.map((i) => (
                   <option key={i.id_idioma} value={i.id_idioma}>{i.nombre_idioma}</option>
@@ -273,7 +276,7 @@ export default function EstructuraAcademicaPage() {
               <select
                 value={formProg.id_tipo_programa}
                 onChange={(e) => setFormProg({ ...formProg, id_tipo_programa: e.target.value })}
-                className="bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-white"
+                className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded px-1.5 py-1 text-xs text-[var(--text-main)] outline-none"
               >
                 {tiposPrograma.map((tp) => (
                   <option key={tp.id_tipo_programa} value={tp.id_tipo_programa}>{tp.nombre_tipo_programa}</option>
@@ -282,13 +285,13 @@ export default function EstructuraAcademicaPage() {
             </div>
             <button
               type="submit"
-              className="w-full py-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded text-xs transition"
+              className="w-full py-1 btn btn-primary rounded text-xs font-bold"
             >
               + Crear Programa
             </button>
           </form>
 
-          <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1">
             {programas.map((p) => {
               const selected = programaSeleccionado?.id_programa === p.id_programa;
               return (
@@ -298,47 +301,49 @@ export default function EstructuraAcademicaPage() {
                     setProgramaSeleccionado(p);
                     setNivelSeleccionado(p.niveles?.[0] || null);
                   }}
-                  className={`p-3 rounded-lg border cursor-pointer transition flex items-center justify-between ${
+                  className={`p-2 rounded-[2px] border cursor-pointer transition flex items-center justify-between text-xs ${
                     selected
-                      ? 'bg-sky-950/40 border-sky-500/60 shadow-sm'
-                      : 'bg-neutral-950/40 border-neutral-800 hover:border-neutral-700'
+                      ? 'bg-[var(--bg-surface)] border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]/50'
+                      : 'bg-[var(--bg-card)] border-[var(--border-fine)] hover:border-[var(--color-accent)]'
                   }`}
                 >
-                  <div>
-                    <h4 className="text-xs font-bold text-white">{p.nombre_programa}</h4>
-                    <p className="text-[11px] text-neutral-400">
+                  <div className="min-w-0 pr-1">
+                    <h4 className="font-bold text-[var(--text-main)] truncate">{p.nombre_programa}</h4>
+                    <p className="text-[10.5px] text-[var(--text-muted)] truncate">
                       {p.idioma?.nombre_idioma} • {p.tipo_programa?.nombre_tipo_programa || p.tipoPrograma?.nombre_tipo_programa}
                     </p>
-                    <span className="text-[10px] text-sky-400 font-mono">
+                    <span className="text-[10px] text-[var(--color-accent)] font-mono font-bold">
                       {p.niveles?.length || 0} niveles configurados
                     </span>
                   </div>
-                  <ChevronRight className={`w-4 h-4 ${selected ? 'text-sky-400' : 'text-neutral-600'}`} />
+                  <ChevronRight className={`w-3.5 h-3.5 shrink-0 ${selected ? 'text-[var(--color-accent)]' : 'text-[var(--text-muted)]'}`} />
                 </div>
               );
             })}
           </div>
         </div>
 
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Layers className="w-4 h-4 text-emerald-400" />
-              2. Niveles de: <span className="text-sky-400 truncate max-w-[140px]">{programaSeleccionado?.nombre_programa || 'Seleccione'}</span>
+        {/* Columna 2: Niveles Curriculares */}
+        <div className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[2px] p-3 flex flex-col justify-between shadow-xs overflow-hidden">
+          <div className="flex items-center justify-between pb-2 border-b border-[var(--border-fine)] shrink-0">
+            <h3 className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider flex items-center gap-1.5 font-sans truncate">
+              <Layers className="w-3.5 h-3.5 text-emerald-500" />
+              2. Niveles: <span className="text-[var(--color-accent)] truncate max-w-[120px]">{programaSeleccionado?.nombre_programa || '—'}</span>
             </h3>
+            <span className="text-[10px] font-mono text-[var(--text-muted)]">Paso 2</span>
           </div>
 
           {programaSeleccionado ? (
             <>
-              <form onSubmit={handleCrearNivel} className="space-y-2 bg-neutral-950/60 p-3 rounded-lg border border-neutral-800 text-xs">
-                <div className="grid grid-cols-2 gap-2">
+              <form onSubmit={handleCrearNivel} className="my-2 p-2 rounded-[2px] bg-[var(--bg-surface)] border border-[var(--border-fine)] space-y-1.5 text-xs shrink-0">
+                <div className="grid grid-cols-2 gap-1.5">
                   <input
                     type="number"
                     min="1"
                     placeholder="N° Nivel"
                     value={formNivel.numero}
                     onChange={(e) => setFormNivel({ ...formNivel, numero: parseInt(e.target.value) || 1 })}
-                    className="bg-neutral-900 border border-neutral-700 rounded px-2.5 py-1.5 text-white"
+                    className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded px-2 py-1 text-xs text-[var(--text-main)] font-mono"
                     required
                   />
                   <input
@@ -347,7 +352,7 @@ export default function EstructuraAcademicaPage() {
                     placeholder="Cant. Libros"
                     value={formNivel.cantidad_libros}
                     onChange={(e) => setFormNivel({ ...formNivel, cantidad_libros: parseInt(e.target.value) || 6 })}
-                    className="bg-neutral-900 border border-neutral-700 rounded px-2.5 py-1.5 text-white"
+                    className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded px-2 py-1 text-xs text-[var(--text-main)] font-mono"
                     required
                   />
                 </div>
@@ -356,110 +361,118 @@ export default function EstructuraAcademicaPage() {
                   placeholder="Nombre nivel (ej: Básico 1 / Nivel 1)"
                   value={formNivel.nombre}
                   onChange={(e) => setFormNivel({ ...formNivel, nombre: e.target.value })}
-                  className="w-full bg-neutral-900 border border-neutral-700 rounded px-2.5 py-1.5 text-white"
+                  className="w-full bg-[var(--bg-card)] border border-[var(--border-fine)] rounded px-2 py-1 text-xs text-[var(--text-main)] outline-none"
                   required
                   minLength={3}
                 />
                 <button
                   type="submit"
-                  className="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded text-xs transition"
+                  className="w-full py-1 btn btn-primary rounded text-xs font-bold"
                 >
                   + Añadir Nivel Secuencial
                 </button>
               </form>
 
-              <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
+              <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1">
                 {(programaSeleccionado.niveles || []).map((n: any) => {
                   const selected = nivelSeleccionado?.id_nivel === n.id_nivel;
                   return (
                     <div
                       key={n.id_nivel}
                       onClick={() => setNivelSeleccionado(n)}
-                      className={`p-3 rounded-lg border cursor-pointer transition flex items-center justify-between ${
+                      className={`p-2 rounded-[2px] border cursor-pointer transition flex items-center justify-between text-xs ${
                         selected
-                          ? 'bg-emerald-950/40 border-emerald-500/60 shadow-sm'
-                          : 'bg-neutral-950/40 border-neutral-800 hover:border-neutral-700'
+                          ? 'bg-[var(--bg-surface)] border-emerald-500 ring-1 ring-emerald-500/50'
+                          : 'bg-[var(--bg-card)] border-[var(--border-fine)] hover:border-emerald-500/50'
                       }`}
                     >
-                      <div>
-                        <h4 className="text-xs font-bold text-white">
+                      <div className="min-w-0 pr-1">
+                        <h4 className="font-bold text-[var(--text-main)] truncate">
                           Nivel {n.numero_nivel}: {n.nombre_nivel}
                         </h4>
-                        <p className="text-[11px] text-neutral-400">
+                        <p className="text-[10.5px] text-[var(--text-muted)] font-mono truncate">
                           {n.libros?.length || 0} de {n.cantidad_libros_nivel} libros asignados
                         </p>
                       </div>
-                      <ChevronRight className={`w-4 h-4 ${selected ? 'text-emerald-400' : 'text-neutral-600'}`} />
+                      <ChevronRight className={`w-3.5 h-3.5 shrink-0 ${selected ? 'text-emerald-500' : 'text-[var(--text-muted)]'}`} />
                     </div>
                   );
                 })}
               </div>
             </>
           ) : (
-            <p className="text-xs text-neutral-500">Seleccione un programa a la izquierda.</p>
+            <div className="flex-1 flex items-center justify-center text-xs text-[var(--text-muted)] font-mono">
+              Seleccione un programa a la izquierda.
+            </div>
           )}
         </div>
 
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-purple-400" />
-              3. Libros de: <span className="text-emerald-400 truncate max-w-[140px]">{nivelSeleccionado?.nombre_nivel || 'Seleccione'}</span>
+        {/* Columna 3: Libros de Texto Asignados */}
+        <div className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded-[2px] p-3 flex flex-col justify-between shadow-xs overflow-hidden">
+          <div className="flex items-center justify-between pb-2 border-b border-[var(--border-fine)] shrink-0">
+            <h3 className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider flex items-center gap-1.5 font-sans truncate">
+              <BookOpen className="w-3.5 h-3.5 text-purple-500" />
+              3. Libros: <span className="text-emerald-600 dark:text-emerald-400 truncate max-w-[120px]">{nivelSeleccionado?.nombre_nivel || '—'}</span>
             </h3>
+            <span className="text-[10px] font-mono text-[var(--text-muted)]">Paso 3</span>
           </div>
 
           {nivelSeleccionado ? (
             <>
-              <form onSubmit={handleCrearLibro} className="space-y-2 bg-neutral-950/60 p-3 rounded-lg border border-neutral-800 text-xs">
-                <div className="grid grid-cols-3 gap-2">
+              <form onSubmit={handleCrearLibro} className="my-2 p-2 rounded-[2px] bg-[var(--bg-surface)] border border-[var(--border-fine)] space-y-1.5 text-xs shrink-0">
+                <div className="grid grid-cols-3 gap-1.5">
                   <input
                     type="number"
                     min="1"
                     placeholder="N°"
                     value={formLibro.numero}
                     onChange={(e) => setFormLibro({ ...formLibro, numero: parseInt(e.target.value) || 1 })}
-                    className="bg-neutral-900 border border-neutral-700 rounded px-2.5 py-1.5 text-white"
+                    className="bg-[var(--bg-card)] border border-[var(--border-fine)] rounded px-2 py-1 text-xs text-[var(--text-main)] font-mono"
                     required
                   />
                   <input
                     type="text"
-                    placeholder="Título del Libro (ej: Book 1)"
+                    placeholder="Título (ej: Book 1)"
                     value={formLibro.nombre}
                     onChange={(e) => setFormLibro({ ...formLibro, nombre: e.target.value })}
-                    className="col-span-2 bg-neutral-900 border border-neutral-700 rounded px-2.5 py-1.5 text-white"
+                    className="col-span-2 bg-[var(--bg-card)] border border-[var(--border-fine)] rounded px-2 py-1 text-xs text-[var(--text-main)] outline-none"
                     required
                     minLength={3}
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded text-xs transition"
+                  className="w-full py-1 btn btn-primary rounded text-xs font-bold"
                 >
                   + Asignar Libro al Nivel
                 </button>
               </form>
 
-              <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
+              <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1">
                 {(nivelSeleccionado.libros || []).map((lib: any) => (
                   <div
                     key={lib.id_libro}
-                    className="p-2.5 rounded-lg border border-neutral-800 bg-neutral-950/50 flex items-center justify-between text-xs"
+                    className="p-2 rounded-[2px] border border-[var(--border-fine)] bg-[var(--bg-surface)] flex items-center justify-between text-xs font-mono"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-mono text-[10px] font-bold">
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="w-4 h-4 rounded-[1px] bg-purple-950/40 text-purple-400 border border-purple-500/30 flex items-center justify-center font-mono text-[9.5px] font-bold shrink-0">
                         {lib.numero_libro}
                       </span>
-                      <span className="font-semibold text-white">{lib.nombre_libro}</span>
+                      <span className="font-semibold text-[var(--text-main)] font-sans truncate">{lib.nombre_libro}</span>
                     </div>
                   </div>
                 ))}
                 {(nivelSeleccionado.libros || []).length === 0 && (
-                  <p className="text-xs text-neutral-500 p-2">No hay libros asignados aún a este nivel.</p>
+                  <p className="text-xs text-[var(--text-muted)] p-4 text-center font-mono">
+                    No hay libros asignados aún a este nivel.
+                  </p>
                 )}
               </div>
             </>
           ) : (
-            <p className="text-xs text-neutral-500">Seleccione un nivel al medio.</p>
+            <div className="flex-1 flex items-center justify-center text-xs text-[var(--text-muted)] font-mono">
+              Seleccione un nivel al medio.
+            </div>
           )}
         </div>
       </div>
